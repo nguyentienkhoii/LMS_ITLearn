@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+<<<<<<< HEAD
+    "angular-ui-notification": "^0.3.6"
+=======
+    "notyf": "^3.10.0"
+>>>>>>> 66d296244dccfdb3cd094107f9b6219eddf5eee1
+  }
+}

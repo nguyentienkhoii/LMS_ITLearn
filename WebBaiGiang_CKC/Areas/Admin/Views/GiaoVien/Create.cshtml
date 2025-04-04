@@ -1,0 +1,92 @@
+﻿@model WebBaiGiang_CKC.Models.GiaoVien
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="GiaoVien" asp-action="Index">Quản lý tài khoản</a></li>
+    <li class="breadcrumb-item"><a asp-controller="GiaoVien" asp-action="Create">Thêm</a></li>
+</ol>
+<h1 style="text-align: center;">THÊM TÀI KHOẢN GIÁO VIÊN</h1>
+
+<hr />
+<br />
+<div class="row">
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="TenDangNhap" class="control-label"></label>
+            <input asp-for="TenDangNhap" class="form-control" />
+            <span asp-validation-for="TenDangNhap" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="MatKhau" class="control-label"></label>
+            <input asp-for="MatKhau" class="form-control" />
+            <span asp-validation-for="MatKhau" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="HoTen" class="control-label"></label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="Email" class="control-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <div id="image-preview">
+                <img id="preview" src="#" alt="" style="width: 200px; height: 200px; border-radius: 20px; display: none;">
+                <br />
+                <label asp-for="AnhDaiDien" class="control-label"></label>
+                <input type="file" name="fAvatar" asp-for="AnhDaiDien" class="form-control-file" onchange="previewImage(this)" />
+            </div>
+            <span asp-validation-for="AnhDaiDien" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group form-check  flex-grow-1 mx-4">
+            <label class="form-check-label">
+                <input class="form-check-input" asp-for="IsGiaoVien" /> @Html.DisplayNameFor(model => model.IsGiaoVien)
+            </label>
+        </div>
+        <br />
+        <div class="form-group form-check  flex-grow-1 mx-4">
+            <label class="form-check-label">
+                <input class="form-check-input" asp-for="TrangThai" /> @Html.DisplayNameFor(model => model.TrangThai)
+            </label>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <div style="float: left; padding-right:10px">
+                <input type="submit" value="Thêm" class="btn btn-primary" />
+            </div>
+            <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
+        </div>
+    </form>
+
+</div>
+@section scripts{
+    <script>
+        function previewImage(input) {
+            var preview = document.getElementById('preview');
+            var imagePreview = document.getElementById('image-preview');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.setAttribute('src', e.target.result);
+                    preview.style.display = 'block';
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

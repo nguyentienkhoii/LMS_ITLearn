@@ -1,0 +1,55 @@
+﻿@{
+    var lstMon = ViewData["lstSubject"] as List<MonHoc>;
+}
+
+<div class="thanh">
+    <nav>
+        <ul class="menu">
+            <li><div class="close-btn"><i class="fas fa-times"></i></div></li>
+            <li class="menu-item">
+                <a href="#">
+                    <i class="fas fa-book" style="margin-right: 8px;"></i>Môn học của tôi
+                </a>
+            </li>
+
+
+            @if (lstMon != null && lstMon.Count > 0)
+            {
+                @foreach (var mon in lstMon)
+                {
+                    <li class="menu-item">
+                        <a asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
+                            <i class="fas fa-book" style="margin-right: 8px;"></i> @mon.TenMonHoc
+
+                        </a>
+                    </li>
+                }
+            }
+
+            @if (User.Identity.IsAuthenticated) // Chỉ hiện khi đã đăng nhập
+            {
+                <li class="menu-item">
+                    <a asp-controller="BaiGiangs" asp-action="KyThi">
+                        <i class="fas fa-calendar-day" style="margin-right: 8px;"></i>Kỳ thi
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+<style>
+
+    /* Căn chỉnh menu */
+    .default-item {
+        color: #333;
+        padding: 10px 15px;
+        font-size: 24px;
+        font-weight: normal;
+        cursor: default;
+    }
+    /* Các mục menu */
+    .menu-item a {
+        font-size: 20px;
+    }
+
+</style>

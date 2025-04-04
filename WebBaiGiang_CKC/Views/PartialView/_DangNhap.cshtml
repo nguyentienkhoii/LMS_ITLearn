@@ -1,0 +1,92 @@
+﻿
+
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <button style="color:black" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-title text-center">
+                    <h3 style="color:black"> Đăng nhập</h3>
+                </div>
+                <div class="d-flex flex-column text-center"ng-app="myLoginApp" ng-controller="LoginController">
+                    <form ng-submit="login()">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="mssv" ng-model="mssv" placeholder="MSSV" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" ng-model="password" placeholder=" Mật khẩu" required>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-block btn-round"> Đăng nhập</button>
+                    </form>
+                    <a class="btnQuen" style="margin-top:15px; color:black;" asp-controller="DangNhap" asp-action="QuenMatKhau"> Quên mật khẩu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+
+
+    .btnQuen:hover {
+        color: black;  background-color: transparent;
+    }
+
+   
+</style>
+<script>
+    ////dang nhap
+    var app = angular.module('myLoginApp', []);
+    app.controller('LoginController', function ($scope, $http, notyf, $window) {
+        $scope.login = function () {
+            $http.post('/api/authentication/login', { mssv: $scope.mssv, password: $scope.password })
+                .then(function (response) {
+                    notyf.success('Đăng nhập thành công.');
+                    $window.location.href = '/';
+                })
+                .catch(function (error) {
+                    notyf.error('Đăng nhập thất bại.');
+                });
+        };
+    });
+
+    app.factory('notyf', function () {
+    return new Notyf({
+        duration: 3000,
+        position: {
+            x: 'right',
+            y: 'top',
+        },
+        types: [
+            {
+                type: 'success',
+                background: '#00b300',
+                icon: {
+                    className: 'material-icons',
+                    tagName: 'i',
+                    text: 'check_circle',
+                        color: 'white',
+                },
+            },
+            {
+                type: 'error',
+                background: '#ff4d4d',
+                icon: {
+                    className: 'material-icons',
+                    tagName: 'i',
+                        text: 'cancel',
+                    color: 'white',
+                },
+            },
+           
+        ],
+    });
+});
+    //////// dang xuat
+
+
+</script>

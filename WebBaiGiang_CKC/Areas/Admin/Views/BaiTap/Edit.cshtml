@@ -1,0 +1,51 @@
+﻿@model WebBaiGiang_CKC.Models.BaiTap
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Bài Tập";
+}
+
+<h2 class="mb-4">Chỉnh sửa Bài Tập</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="BaiTapId" />
+
+    <div class="mb-3">
+        <label class="form-label">Môn Học</label>
+        <select asp-for="MonHocId" asp-items="ViewBag.MonHocId" class="form-control"></select>
+        <span asp-validation-for="MonHocId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tên Bài Tập</label>
+        <input asp-for="TenBaiTap" class="form-control" required />
+        <span asp-validation-for="TenBaiTap" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nội Dung</label>
+        <textarea asp-for="NoiDung" class="form-control summernote" required></textarea>
+        <span asp-validation-for="NoiDung" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('.summernote').summernote({
+                height: 200,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+        });
+    </script>
+}

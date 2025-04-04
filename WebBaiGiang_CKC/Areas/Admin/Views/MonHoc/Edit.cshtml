@@ -1,0 +1,159 @@
+﻿@model WebBaiGiang_CKC.Models.MonHoc
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="MonHoc" asp-action="Index">Quản lý môn học</a></li>
+    <li class="breadcrumb-item"><a asp-controller="MonHoc" asp-action="Edit">Sửa</a></li>
+</ol>
+
+<h1 style="text-align: center;">SỬA MÔN HỌC</h1>
+<hr />
+<br />
+
+<div class="row">
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="MonHocId" />
+        <input type="hidden" asp-for="AnhDaiDien" />
+
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="TenMonHoc" class="control-label"></label>
+            <input asp-for="TenMonHoc" class="form-control w-100" />
+            <span asp-validation-for="TenMonHoc" class="text-danger"></span>
+        </div>
+        <br />
+
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="MaMonHoc" class="control-label"></label>
+            <input asp-for="MaMonHoc" class="form-control w-100" />
+            <span asp-validation-for="MaMonHoc" class="text-danger"></span>
+        </div>
+        <br />
+
+        <!-- Thêm phần chọn giáo viên -->
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="GiaoVienId" class="control-label">Giáo viên phụ trách</label>
+            <select asp-for="GiaoVienId" class="form-control"
+                    asp-items="@(new SelectList(ViewBag.GiaoVienList, "Id", "HoTen", Model.GiaoVienId))">
+                <option value="">-- Chọn giáo viên --</option>
+            </select>
+            <span asp-validation-for="GiaoVienId" class="text-danger"></span>
+        </div>
+        <br />
+
+        <div class="form-group flex-grow-1 mx-4">
+            <label class="control-label">Ảnh đại diện</label>
+            <input type="file" name="fAvatar" class="form-control" />
+            @if (!string.IsNullOrEmpty(Model.AnhDaiDien))
+            {
+                <div class="mt-2">
+                    <p>Ảnh hiện tại:</p>
+                    <img src="@Url.Content("~/contents/Images/MonHoc/" + Model.AnhDaiDien)?v=@DateTime.Now.Ticks"
+                         alt="Ảnh hiện tại"
+                         style="max-width: 200px;"
+                         class="img-thumbnail" />
+                </div>
+            }
+        </div>
+        <br />
+
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="MoTa" class="control-label" for="htmlelementid"></label>
+            <textarea id="htmlelementid" style="max-width:auto" name="MoTa" class="form-control" asp-for="MoTa"></textarea>
+            <span asp-validation-for="MoTa" class="text-danger"></span>
+        </div>
+        <br />
+
+        <div class="form-group flex-grow-1 mx-4">
+            <input type="submit" value="Sửa" class="btn btn-primary" />
+            <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
+        </div>
+    </form>
+</div>
+
+@section scripts {
+    <script>
+        // Khởi tạo Summernote
+        $(document).ready(function () {
+            $('#htmlelementid').summernote({
+                height: 700,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['fontsize', ['fontsize']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video', 'elfinder']],
+                    ['view', ['fullscreen', 'codeview', 'help']],
+                ],
+            });
+
+            // Có thể thêm Select2 để làm đẹp dropdown
+            $('#GiaoVienId').select2({
+                placeholder: "Chọn giáo viên",
+                allowClear: true
+            });
+        });
+
+        // Phần elFinder giữ nguyên
+        (function (factory) {
+            if (typeof define === 'function' && define.amd) {
+                define(['jquery'], factory);
+            }
+            else if (typeof module === 'object' && module.exports) {
+                module.exports = factory(require('jquery'));
+            } else {
+                factory(window.jQuery);
+            }
+        }(function ($) {
+            $.extend($.summernote.plugins, {
+                'elfinder': function (context) {
+                    var self = this;
+                    var ui = $.summernote.ui;
+                    context.memo('button.elfinder', function () {
+                        var button = ui.button({
+                            contents: '<i class="note-icon-picture"/> elFinder',
+                            tooltip: 'Quản lý file',
+                            click: function () {
+                                elfinderDialog(context);
+                            }
+                        });
+                        var $elfinder = button.render();
+                        return $elfinder;
+                    });
+                    this.destroy = function () {
+                        this.$panel.remove();
+                        this.$panel = null;
+                    };
+                }
+            });
+        }));
+
+        function elfinderDialog(editor) {
+            var fm = $('<div/>').dialogelfinder({
+                baseUrl: "@Url.Content("~/lib/elfinder/")",
+                url: "@Url.Action("Connector", "HinhAnh", new { Area = "Admin" })",
+                lang: 'vi',
+                width: 840,
+                height: 450,
+                destroyOnClose: true,
+                getFileCallback: function (files, fm) {
+                    editor.invoke('editor.insertImage', files.url);
+                },
+                commandsOptions: {
+                    getfile: {
+                        oncomplete: 'close',
+                        folders: false
+                    }
+                }
+            }).dialogelfinder('instance');
+        }
+    </script>
+}

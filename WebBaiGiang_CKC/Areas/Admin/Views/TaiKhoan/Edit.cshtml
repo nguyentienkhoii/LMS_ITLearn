@@ -1,0 +1,75 @@
+﻿@model WebBaiGiang_CKC.Models.TaiKhoan
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    string matKhau = "";
+    if (Model.TaiKhoanId > 0)
+    {
+        matKhau = Model.MatKhau;
+    }
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="TaiKhoan" asp-action="Index">Quản lý tài khoản</a></li>
+    <li class="breadcrumb-item"><a asp-controller="TaiKhoan" asp-action="Edit">Sửa</a></li>
+</ol>
+<h1 style="text-align: center;">CHỈNH SỬA TÀI KHOẢN</h1>
+<hr />
+<br />
+<div class="row">
+ 
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="TaiKhoanId" />
+        <div class="form-group  flex-grow-1 mx-4">
+                <label asp-for="MSSV" class="control-label"></label>
+                <input asp-for="MSSV" class="form-control" />
+                <span asp-validation-for="MSSV" class="text-danger"></span>
+            </div>
+            <br />
+        <div class="form-group  flex-grow-1 mx-4">
+                <label asp-for="HoTen" class="control-label"></label>
+                <input asp-for="HoTen" class="form-control" />
+                <span asp-validation-for="HoTen" class="text-danger"></span>
+            </div>
+            <br />
+        <div class="form-group  flex-grow-1 mx-4">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <br>
+            <div class="form-row">
+            <div class="form-group form-check  flex-grow-1 mx-4">
+                    @if (Model.TrangThai)
+                    {
+                        <div class="switch m-r-10">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="TrangThai" /> @Html.DisplayNameFor(model => model.TrangThai)
+                            </label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="switch m-r-10">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="TrangThai" /> @Html.DisplayNameFor(model => model.TrangThai)
+                            </label>
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+            <br>
+        <div class="form-group  flex-grow-1 mx-4">
+                <a asp-action="Index" class="btn btn-outline-secondary" style="margin-right:20px;"> Trở về</a>
+                <input type="submit" value="Lưu" class="btn btn-primary" />
+            </div>
+        </form>
+    
+</div>

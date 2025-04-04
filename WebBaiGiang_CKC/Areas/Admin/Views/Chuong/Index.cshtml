@@ -1,0 +1,249 @@
+﻿@using WebBaiGiang_CKC.Areas.Admin.Data
+@model ChuongViewModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var MonHocId = @ViewBag.MonHocId;
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="Chuong" asp-action="Index">Quản lý chương</a></li>
+
+</ol>
+<br />
+<h1 style="text-align: center;">QUẢN LÝ CHƯƠNG </h1>
+<hr />
+<br />
+<div class="row" id="form-container">
+    <form id="create-form" asp-action="@((Model.Detail.ChuongId == 0) ? "Create" : "Edit")" asp-route-id="@Model.Detail?.ChuongId">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <br>
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="Detail.MonHocId" class="control-label"></label>
+            <select asp-for="Detail.MonHocId" class="form-control w-100" asp-items="@MonHocId"></select>
+        </div>
+     
+
+        <br />
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="Detail.TenChuong" class="control-label"></label>
+            <input asp-for="Detail.TenChuong" class="form-control w-100" />
+            <span asp-validation-for="Detail.TenChuong" class="text-danger"></span>
+        </div>   
+        <br />
+        @if (Model.Detail.ChuongId == 0)
+        {
+            <div class="form-group  flex-grow-1 mx-4">
+                <label asp-for="Detail.ChuongId" class="control-label"></label>
+                <input asp-for="Detail.ChuongId" class="form-control w-100" />
+                <span asp-validation-for="Detail.ChuongId" class="text-danger"></span>
+            </div>
+        }
+        else
+        {
+            <input type="hidden" asp-for="Detail.ChuongId" />
+        }
+        <br />
+        <div class="d-flex justify-content-end flex-grow-1 mx-4 mb-2">
+            <input type="submit" value="@((Model.Detail.ChuongId == 0) ? "Thêm" : "Lưu")" class="btn btn-success mb-2" />
+           
+           
+        </div>
+    </form>
+   
+
+</div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-centered w-100 dt-responsive nowrap" id="products-datatable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="display:none"></th>
+                            <th>Tên môn học </th>
+                            <th>Tên chương</th>
+                            <th>Số chương</th>
+                            <th style="width: 120px;"></th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    @foreach (var item in Model.ListChuong)
+                    {
+                        <tr>
+                            <td style="display:none"></td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MonHoc.TenMonHoc)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.TenChuong)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ChuongId)
+                            </td>
+                            <td class="table-action">
+                                <a href="#" class="modal-view-button" data-chuongid="@item.ChuongId">
+                                    <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
+                                </a>
+                                <a asp-action="Index" asp-route-id="@item.ChuongId" class="action-icon edit-button" > <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                                <a href="#" class="modal-view-button-dl" data-chuongid="@item.ChuongId"><i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div> <!-- end card-body-->
+</div> <!-- end card-->
+
+<!-- Large modal -->
+@*<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#bs-example-modal-lg">Large Modal</button>*@
+<div class="modal fade" id="bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">XEM CHI TIẾT</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.Detail.MonHoc.TenMonHoc)
+                    </dt>
+                    <dd class="col-sm-10" data-monhoc></dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.Detail.TenChuong)
+                    </dt>
+                    <dd class="col-sm-10" data-tenchuong></dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.Detail.ChuongId)
+                    </dt>
+                   <dd class="col-sm-10" data-chuongid></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
+               
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div class="modal fade" id="bs-example-modal-lg1" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">  Bạn có chắc chắn muốn xóa chương học không?</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.Detail.MonHoc.TenMonHoc)
+                    </dt>
+                    <dd class="col-sm-10" data-monhoc></dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.Detail.TenChuong)
+                    </dt>
+                    <dd class="col-sm-10" data-tenchuong></dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.Detail.ChuongId)
+                    </dt>
+                    <dd class="col-sm-10" data-chuongid></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+
+                <form asp-action="Delete">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    <div style="float: right; padding-left:20px">
+                        <input type="hidden" name="id" value="" />
+                        <input type="submit" value="Xóa" class="btn btn-danger" />
+                    </div>
+                   
+                </form>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+@section scripts{
+      <script>
+        $(document).ready(function () {
+            // Xử lý sự kiện khi nhấn vào nút xem chi tiết
+            $(".modal-view-button").click(function (e) {
+                e.preventDefault();
+                var chuongId = $(this).data("chuongid");
+                $.ajax({
+                    url: "/Admin/Chuong/GetDetail/" + chuongId,
+                    type: "GET",
+                    success: function (data) {
+                        // Hiển thị dữ liệu lên modal
+                        $("#bs-example-modal-lg .modal-title").text("XEM CHI TIẾT");
+                        $("#bs-example-modal-lg [data-monhoc]").text(data.monHoc.tenMonHoc);
+                        $("#bs-example-modal-lg [data-tenchuong]").text(data.tenChuong);
+                        $("#bs-example-modal-lg [data-chuongid]").text(data.chuongId);
+                        // Mở modal
+                        $("#bs-example-modal-lg").modal("show");
+                    },
+                    error: function () {
+                        alert("Lỗi khi tải dữ liệu.");
+                    }
+                });
+            });
+        });
+        $(document).ready(function () {
+            // Xử lý sự kiện khi nhấn vào nút xem chi tiết
+            $(".modal-view-button-dl").click(function (e) {
+                e.preventDefault();
+                var chuongId = $(this).data("chuongid");
+                $.ajax({
+                    url: "/Admin/Chuong/GetDetail/" + chuongId,
+                    type: "GET",
+                    success: function (data) {
+                        // Hiển thị dữ liệu lên modal
+                        $("#bs-example-modal-lg .modal-title").text("XÓA CHƯƠNG");
+                        $("#bs-example-modal-lg1 [data-monhoc]").text(data.monHoc.tenMonHoc);
+                        $("#bs-example-modal-lg1 [data-tenchuong]").text(data.tenChuong);
+                        $("#bs-example-modal-lg1 [data-chuongid]").text(data.chuongId);
+                        // Đặt giá trị của chuongId vào thuộc tính value của input trong form
+                        $('form[action="/Admin/Chuong/Delete"] input[name="id"]').val(data.chuongId);
+                        // Mở modal
+                        $("#bs-example-modal-lg1").modal("show");
+                    },
+                    error: function () {
+                        alert("Lỗi khi tải dữ liệu.");
+                    }
+                });
+            });
+        });
+
+          </script>
+    <link rel="shortcut icon" href="~/AdminAssets/images/favicon.ico">
+
+    <!-- third party css -->
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
+    <!-- third party css end -->
+    <!-- App css -->
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- third party js -->
+    <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.checkboxes.min.js"></script>
+
+    <!-- third party js ends -->
+    <!-- demo app -->
+    <script src="~/AdminAssets/js/pages/demo.products.js"></script>
+
+    }

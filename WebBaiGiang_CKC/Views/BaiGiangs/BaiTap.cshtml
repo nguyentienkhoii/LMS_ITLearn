@@ -1,0 +1,46 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.BaiTap>
+
+@{
+    var lstMon = ViewBag.lstSubject as List<WebBaiGiang_CKC.Models.MonHoc>;
+    var selectedMonHoc = ViewBag.SelectedMonHoc as WebBaiGiang_CKC.Models.MonHoc;
+}
+
+<main>
+
+    <div class="menu-toggle">
+        <a href="#">Menu</a>
+    </div>
+
+    <div class="wrapper">
+        @await Html.PartialAsync("~/Views/PartialView/_Menu.cshtml")
+
+        <div class="noidung">
+            <h2>Bài tập - @selectedMonHoc?.TenMonHoc</h2>
+            <hr />
+            <div class="baitap">
+                <ul>
+                    @if (Model.Any())
+                    {
+                        @foreach (var baiTap in Model)
+                        {
+                            <li>
+                                <a asp-controller="BaiGiangs" asp-action="DetailBaiTap" asp-route-id="@baiTap.BaiTapId">
+                                    - @baiTap.TenBaiTap
+                                </a>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <p class="alert alert-info">Không có bài tập nào.</p>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+@section Scripts {
+    <script src="~/assets/js/menu_.js"></script>
+}

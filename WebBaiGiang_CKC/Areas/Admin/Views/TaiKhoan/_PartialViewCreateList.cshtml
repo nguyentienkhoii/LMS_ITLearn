@@ -1,0 +1,30 @@
+﻿
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">THÊM TÀI KHOẢN</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div> <!-- end modal header -->
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row ">
+                        <form id="Create-btn" method="post" asp-area="Admin" asp-controller="TaiKhoan" asp-action="CreateList" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label>Thêm Danh Tài Khoản:</label>
+                                <br />
+                                <input type="file" name="formFile" class="form-control" accept=".csv,.xls,.xlsx" required />
+                            </div>
+                            <br />
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Xóa</button>
+                <button type="submit" class="btn btn-primary" form="Create-btn">Thêm</button>
+            </div> <!-- end modal footer -->
+        </div> <!-- end modal content-->
+    </div> <!-- end modal dialog-->
+</div> <!-- end modal-->

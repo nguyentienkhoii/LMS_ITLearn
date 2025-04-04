@@ -1,0 +1,33 @@
+﻿@model WebBaiGiang_CKC.Models.BaiTap
+
+<main>
+    <div class="menu-toggle">
+        <a href="#">Menu</a>
+    </div>
+
+    <div class="wrapper">
+        <!-- Menu vẫn được giữ nguyên -->
+        @await Html.PartialAsync("~/Views/PartialView/_Menu.cshtml")
+
+        <div class="noidung">
+            <!-- Nội dung chỉ hiển thị chi tiết bài tập -->
+            <h2>@ViewBag.Title</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h3>@Model.TenBaiTap</h3>
+                </div>
+                <div class="card-body">
+                    <p>@Html.Raw(Model.NoiDung)</p>
+
+                    <a href="@Url.Action("BaiTap", "BaiGiangs", new { monHocId = Model.MonHocId })" class="btn btn-primary">
+                        Quay lại danh sách bài tập
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="~/assets/js/menu_.js"></script>
+}

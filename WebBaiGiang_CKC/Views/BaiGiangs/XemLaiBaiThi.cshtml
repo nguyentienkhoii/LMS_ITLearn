@@ -1,0 +1,186 @@
+﻿@section Scripts{
+
+    <link rel="stylesheet" href="~/assets/css/BaiKiemTra.css" />
+    <script src="~/assets/js/BaiKiemTra.js"></script>
+}
+@{
+    var tg_tim = ViewBag.TimThoigian;
+    var cauhoi_baiLam = ViewBag.cauhoi_de_mssv as List<CauHoi_BaiLam>;
+    //var kiemtraSV = ViewBag.SVLamBai;
+    var tenkikiemtra = @ViewBag.TenKiKiemTra;
+}
+@{
+    var mssvClaim = User.Claims.FirstOrDefault(c => c.Type == "MSSV");
+    var mssv_ = "";
+    if (mssvClaim != null)
+    {
+        mssv_ = mssvClaim.Value;
+    }
+}
+<div class="menu" id="menu">
+    <div class="btn-dong" id="btn-dong">
+        <i class="fas fa-times"> </i>
+    </div>
+    <h4>Câu Hỏi</h4>
+    <ul>
+    @for (int i = 0; i < cauhoi_baiLam.Count; i++)
+    {
+        <li>
+            <a  href="#@cauhoi_baiLam[i].CauHoi_DeId">
+                @{
+                    int a = i + 1;
+                }
+                @a
+                    <span style="@((cauhoi_baiLam[i].DapAnSVChon != "X") ? "background-color: #AAAAAA;" : "")"> </span>
+            </a>
+        </li>
+    }
+</ul>
+
+</div>
+<div class="content" id="content">
+    <div class="container1">
+
+
+        @if (@ViewBag.kiemtrasv_id == mssv_)
+        {
+
+
+            <div style=" overflow:hidden;">
+                <div id="rectangle">
+
+                    <h1>@tenkikiemtra  </h1>
+                    <p>Trắc nghiệm <i class="fa-solid fa-check"></i></p>
+
+                </div>
+                <div id="triangle_left"></div>
+
+            </div>
+
+            <div class="kiemtracs">
+
+                <div style="overflow:hidden ; ">
+                    <p class="tieudethe">
+                        Bắt đầu vào lúc:
+                    </p>
+                    <p>
+                        @ViewBag.tg_batdau
+                    </p>
+
+                </div>
+
+                <div style="overflow:hidden ; ">
+                    <p class="tieudethe">
+                        Kết thúc lúc
+                    </p>
+                    <p>
+                        @ViewBag.tg_ketthuc
+                    </p>
+
+                </div>
+                <div style="overflow:hidden ; ">
+                    <p class="tieudethe">
+                        Họ và tên :
+                    </p>
+                    <p name="@mssv_">
+                        @User.Identity.Name
+                    </p>
+
+                </div>
+                <div style="overflow:hidden ; ">
+                    <p class="tieudethe">
+                        MSSV
+                    </p>
+                    <p name="@mssv_">
+                        @mssv_
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            @foreach (var cauhoi_kt in cauhoi_baiLam)
+            {
+                <a id="@cauhoi_kt.CauHoi_DeId" name="@cauhoi_kt.CauHoi_DeId"> </a>
+                <div class="question" data-question="1">
+                    <h3>
+                        Câu  @(cauhoi_baiLam.IndexOf(cauhoi_kt) + 1) : @Html.Raw( @cauhoi_kt.CauHoi_De.CauHoi.NoiDung)
+                    </h3>
+
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnA))
+                    {
+                        <div class="form-check">
+                            @if (cauhoi_kt.DapAnSVChon == "A")
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="A" checked>
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="A">
+                            }
+                            <label class="form-check-label" >
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnA
+                            </label>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnB))
+                    {
+                        <div class="form-check">
+                            @if (cauhoi_kt.DapAnSVChon == "B")
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="B" checked>
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="B">
+                            }
+                            <label class="form-check-label" >
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnB
+                            </label>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnC))
+                    {
+                        <div class="form-check">
+                            @if (cauhoi_kt.DapAnSVChon == "C")
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="C" checked>
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="C">
+                            }
+                            <label class="form-check-label" >
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnC
+                            </label>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnD))
+                    {
+                        <div class="form-check">
+                            @if (cauhoi_kt.DapAnSVChon == "D")
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="D" checked>
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="D">
+                            }
+                            <label class="form-check-label" >
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnD
+                            </label>
+                        </div>
+                    }
+                </div>
+            }
+            <div class="text-center">
+                <a asp-controller="BaiGiangs" asp-action="Index" class="nopbaibtn">Trang chủ</a>
+            </div>
+        }
+    </div>
+</div>
+<div class="toggle-menu" id="toggle-menu">
+    <i class="fa-solid fa-chevron-left"></i>
+
+</div>

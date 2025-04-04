@@ -1,0 +1,167 @@
+﻿@model WebBaiGiang_CKC.Models.Bai
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var ChuongId = @ViewBag.ChuongId;
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Index">Quản lý bài học</a></li>
+    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Edit">Sửa</a></li>
+</ol>
+
+<style>
+    h1 {
+        text-align: center;
+    }
+</style>
+<h1>SỬA BÀI HỌC  </h1>
+<hr />
+<br/>
+<div class="row">
+   
+        <form asp-action="Edit">
+            <input type="hidden" asp-action="LessonId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="BaiId" />
+            <div class="form-group flex-grow-1 mx-4">
+                <label asp-for="ChuongId" class="form-label">Chương <span id="ChuongDisplay"></span></label>
+                <select asp-for="ChuongId" asp-items="ChuongId" class="form-select w-100" onchange="showChuongInfo(this)">
+                    <option value="">-- Chọn chương học --</option>
+                </select>
+                <span asp-validation-for="ChuongId" class="text-danger"></span>
+            </div>
+
+            <br />
+            <div class="form-group flex-grow-1 mx-4">
+                <label asp-for="TenBai" class="control-label"></label>
+                <input asp-for="TenBai" class="form-control w-100" />
+                <span asp-validation-for="TenBai" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group flex-grow-1 mx-4">
+                <label asp-for="SoBai" class="control-label"></label>
+                <input asp-for="SoBai" class="form-control w-100" />
+                <span asp-validation-for="SoBai" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group flex-grow-1 mx-4">
+                <label asp-for="MoTa" class="control-label" for="htmlelementid"></label>
+                <textarea id="htmlelementid" style="max-width:auto" asp-for="MoTa" class="form-control"></textarea>
+                <span asp-validation-for="MoTa" class="text-danger"></span>
+            </div>
+            <br />
+
+            <div class="form-group flex-grow-1 mx-4">
+                <div style="float: left; padding-right:10px">
+                    <input type="submit" value="Lưu" class="btn btn-primary" />
+                </div>
+                <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
+            </div>
+        </form>
+   
+</div>
+@section scripts{
+    <script>
+        (function (factory) {
+            if (typeof define === 'function' && define.amd) {
+                define(['jquery'], factory);
+            }
+            else if (typeof module === 'object' && module.exports) {
+                module.exports = factory(require('jquery'));
+            } else {
+                factory(window.jQuery);
+            }
+        }(function ($) {
+            $.extend($.summernote.plugins, {
+                // Tạo plugin tên elfinder
+                'elfinder': function (context) {
+                    var self = this;
+                    // ui has renders to build ui elements.
+                    var ui = $.summernote.ui;
+                    // Tạo nút bấm
+                    context.memo('button.elfinder', function () {
+                        var button = ui.button({
+                            contents: '<i class="note-icon-picture"/> elFinder',
+                            tooltip: 'Quản lý file',
+                            click: function () {
+                                // Bấm vào nút bấm gọi hàm elfinderDialog
+                                elfinderDialog(context);
+                            }
+                        });
+                        // create jQuery object from button instance.
+                        var $elfinder = button.render();
+                        return $elfinder;
+                    });
+                    // This methods will be called when editor is destroyed by $('..').summernote('destroy');
+                    // You should remove elements on `initialize`.
+                    this.destroy = function () {
+                        this.$panel.remove();
+                        this.$panel = null;
+                    };
+                }
+
+            });
+        }));
+        function elfinderDialog(editor) {
+            var fm = $('<div/>').dialogelfinder({
+                baseUrl: "@Url.Content("~/lib/elfinder/")",
+                url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
+                lang: 'vi',
+                width: 840,
+                height: 450,
+                destroyOnClose: true,
+                getFileCallback: function (files, fm) {
+                    console.log(files);
+                    editor.invoke('editor.insertImage', files.url);
+                },
+                commandsOptions: {
+                    getfile: {
+                        oncomplete: 'close',
+                        folders: false
+                    }
+                }
+            }).dialogelfinder('instance');
+        }
+        $(document).ready(function () {
+            $('#htmlelementid').summernote({
+
+                height: 700,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['fontsize', ['fontsize']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video', 'elfinder']],
+                    ['view', ['fullscreen', 'codeview', 'help']],
+                ],
+
+            });
+        });
+        function showChuongInfo(select) {
+            var SoChuong = select.value;
+            if (SoChuong) {
+                $.ajax({
+                    url: "/Admin/Bai/GetChuongInfo",
+                    type: "GET",
+                    data: { chuongId: SoChuong },
+                    success: function (chuong) {
+                        $("#ChuongDisplay").html(chuong.tenChuong + " (Chương " + chuong.id + ")");
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log("Error: " + errorThrown);
+                    }
+                });
+            } else {
+                $("#ChuongDisplay").html("");
+            }
+        }
+    </script>
+}
+

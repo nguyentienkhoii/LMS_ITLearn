@@ -1,0 +1,135 @@
+﻿@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@model IPagedList<TaiKhoan>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="TaiKhoan" asp-action="Index">Quản lý tài khoản</a></li>
+
+</ol>
+<h1 style="text-align: center;">QUẢN LÝ TÀI KHOẢN</h1>
+<hr />
+<br />
+
+
+
+
+<!-- Static Backdrop modal -->
+<div class="d-flex justify-content-between">
+    <a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+    <div class="ml-auto">
+        <button type="button" class="btn btn-info mb-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            Import File Excel
+        </button>
+        <a asp-action="DownloadExcel" class="btn btn-danger mb-2">Down File Excel</a>
+    </div>
+</div>
+
+@await Html.PartialAsync("_PartialViewCreateList")
+<table class="table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+            <th>
+              ID Tài Khoản
+            </th>
+            <th>
+                Hình Ảnh
+            </th>
+            <th>
+                Tên Đăng Nhập
+            </th>
+            <th>
+                Họ Tên
+            </th>
+            <th>
+                Email
+            </th>
+
+            <th></th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.TaiKhoanId
+                </td>
+                <td>
+                    <div class="avatar">
+                        @if (!string.IsNullOrEmpty(item.HoTen))
+                        {
+                            var firstName = "";
+                            var lastName = item.HoTen.Trim();
+
+                            var lastSpaceIndex = lastName.LastIndexOf(' ');
+                            if (lastSpaceIndex >= 0 && lastSpaceIndex < lastName.Length - 1)
+                            {
+                                firstName = lastName.Substring(lastSpaceIndex + 1, 1);
+                            }
+                            else
+                            {
+                                firstName = lastName.Substring(0, 1);
+                            }
+
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64px" height="64px" viewBox="0 0 64 64" version="1.1">
+                                <circle fill="#0098a6" width="64" height="64" cx="32" cy="32" r="32" />
+                                <text x="50%" y="50%" style="color: #ffffff;line-height: 1;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;" alignment-baseline="middle" text-anchor="middle" font-size="26" font-weight="400" dy=".1em" dominant-baseline="middle" fill="#ffffff">
+                                    @Html.Raw(firstName)
+                                </text>
+                            </svg>
+                        }
+                    </div>
+                </td>
+
+                <td>
+                    @item.MSSV
+                </td>
+
+                <td>
+                    @item.HoTen
+                </td>
+                <td>
+                    @item.Email
+                </td>
+
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.TaiKhoanId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
+                    <a asp-action="Edit" asp-route-id="@item.TaiKhoanId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.TaiKhoanId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Pagination with icons -->
+<div class="row">
+
+    <div class="row ">
+
+        <ul class="pagination justify-content-end ">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new {page = page}), new PagedListRenderOptions()
+            {
+            ActiveLiElementClass = "active",
+            PageClasses = new[]{ "page-link"},
+            LiElementClasses=new[] { "page-item" },
+            UlElementClasses = new[] { "pagination","justify-content-center", "mt-3" },
+            LinkToNextPageFormat = "Sau",
+            LinkToPreviousPageFormat = "Trước",
+            MaximumPageNumbersToDisplay = 3,
+            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+            DisplayLinkToNextPage = PagedListDisplayMode.Always
+            })
+        </ul>
+
+    </div>
+
+</div>
+<!-- End Right/End Aligned Pagination -->

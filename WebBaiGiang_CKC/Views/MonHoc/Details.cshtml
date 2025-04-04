@@ -1,0 +1,20 @@
+﻿@model WebBaiGiang_CKC.Models.MonHoc
+
+<h2>@Model.TenMonHoc</h2>
+<p>@Model.MoTa</p>
+
+<h3>Danh sách chương:</h3>
+<ul>
+    @foreach (var chuong in Model.Chuongs)
+    {
+        <li>
+            <strong>Chương @chuong.ChuongId:</strong> @chuong.TenChuong
+            <ul>
+                @foreach (var bai in chuong.Bais)
+                {
+                    <li>Bài @bai.SoBai: @bai.TenBai</li>
+                }
+            </ul>
+        </li>
+    }
+</ul>

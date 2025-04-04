@@ -1,0 +1,83 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.GiaoVien>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="GiaoVien" asp-action="Index">Quản lý tài khoản</a></li>
+
+</ol>
+<h1 style="text-align: center;">QUẢN LÝ GIÁO VIÊN </h1>
+<hr />
+<br />
+
+<a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+
+<table class="table table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+
+            <th>
+                @Html.DisplayNameFor(model => model.AnhDaiDien)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TenDangNhap)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.HoTen)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.IsGiaoVien)
+            </th>
+
+            <th></th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    <img src="/contents/Images/GiaoVien/@item.AnhDaiDien" style="width: 100px; height: 100px; border-radius: 50%;" alt="">
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenDangNhap)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.HoTen)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Email)
+                </td>
+
+                <td>
+                    @if (item.IsGiaoVien)
+                    {
+                        <span>Giáo viên @item.HoTen</span>
+                    }
+                    else
+                    {
+                        <span>Admin</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

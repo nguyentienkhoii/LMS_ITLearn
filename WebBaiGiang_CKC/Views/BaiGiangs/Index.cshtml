@@ -1,0 +1,44 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.Bai>
+
+@{
+    var lstMon = ViewBag.lstSubject as List<MonHoc>;
+
+}
+
+<main>
+
+
+    <div class="menu-toggle"> <a href="#">Menu</a> </div>
+    <div class="wrapper">
+    @await Html.PartialAsync("~/Views/PartialView/_Menu.cshtml")
+
+    <div id="" class="noidung">
+        <ul>
+
+            @if (lstMon != null && lstMon.Count() > 0)
+            {
+                @foreach (var monhoc in lstMon)
+                {
+
+                    <li>
+                        <h2>
+                            @monhoc.TenMonHoc
+                        </h2>
+                        <hr />
+                    </li>
+
+                    <li>
+                        <p>
+                            @Html.Raw(  @monhoc.MoTa)
+                        </p>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+    </div>
+</main>
+@section Scripts{
+    <script src="~/assets/js/menu_.js">
+    </script>
+    }

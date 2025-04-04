@@ -1,0 +1,343 @@
+﻿@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<WebBaiGiang_CKC.Models.MonHoc>
+@using X.PagedList;
+@using X.PagedList.Web.Common;
+
+@{
+    ViewData["Title"] = "Danh sách môn học";
+}
+
+<main>
+    <div class="menu-toggle">
+        <a href="#">Menu</a>
+    </div>
+    <div class="wrapper">
+        <!-- Menu bên trái -->
+        <!-- Menu bên trái -->
+        <div class="thanh">
+            <nav>
+                <ul class="menu">
+
+
+                    @if (User.Identity.IsAuthenticated) // Kiểm tra nếu người dùng đã đăng nhập
+                    {
+                        <li><div class="close-btn"><i class="fas fa-times"></i></div></li>
+                        <li class="menu-item">
+                            <a href="#"><i class="fas fa-book" style="margin-right: 8px;"></i>Môn học của tôi</a>
+                        </li>
+                        @if (ViewBag.MonHocDangKy != null && ((List<WebBaiGiang_CKC.Models.MonHoc>)ViewBag.MonHocDangKy).Any())
+                        {
+                            foreach (var mon in (List<WebBaiGiang_CKC.Models.MonHoc>)ViewBag.MonHocDangKy)
+                            {
+                                <li class="menu-item">
+                                    <a asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
+                                        <i class="fas fa-book" style="margin-right: 8px;"></i> @mon.TenMonHoc
+                                    </a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="menu-item"><span>Không có môn học nào đã đăng ký</span></li>
+                        }
+
+                        <li class="menu-item">
+                            <a asp-controller="BaiGiangs" asp-action="KyThi">
+                                <i class="fas fa-calendar-day" style="margin-right: 8px;"></i>Kỳ thi
+                            </a>
+                        </li>
+
+                    }
+                    else // Nếu chưa đăng nhập
+                    {
+                        <li class="menu-item">
+                            <a asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home" style="margin-right: 8px;"></i>Trang chủ
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a asp-controller="BaiGiangs" asp-action="KyThi">
+                                <i class="fas fa-calendar-day" style="margin-right: 8px;"></i>Kỳ thi
+                            </a>
+                        </li>
+
+                    }
+                </ul>
+            </nav>
+        </div>
+
+
+        <!-- Nội dung bên phải -->
+        <div class="noidung">
+            <h2>Danh sách môn học</h2>
+            <p>Chọn một môn học để xem nội dung</p>
+
+            <!-- Thanh tìm kiếm -->
+            <form asp-action="SearchMonHoc" method="get" class="search-form">
+                <input type="text" name="keyword" placeholder="Tìm kiếm môn học..." value="@ViewData["SearchKeyword"]" />
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+
+            <!-- Danh sách môn học -->
+            <div class="course-grid">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var mon in Model)
+                    {
+                        <div class="course-card">
+                            <a class="course-link" asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
+                                <div class="course-thumbnail">
+                                    @if (!string.IsNullOrEmpty(mon.AnhDaiDien))
+                                    {
+                                        <!-- Nếu có ảnh môn học -->
+                                        <img src="@Url.Content("/contents/Images/MonHoc/" + mon.AnhDaiDien)" alt="@mon.TenMonHoc">
+                                    }
+                                    else
+                                    {
+                                        <!-- Nếu không có ảnh môn học, hiển thị ảnh mặc định từ thư mục -->
+                                        <img src="@Url.Content("/contents/Images/MonHoc/macdinhnew.png")" alt="Ảnh mặc định">
+                                    }
+
+                                </div>
+                                <div class="course-content">
+                                    <h4 class="course-title">@mon.TenMonHoc</h4>
+                                    <p class="course-teacher">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                        Giảng viên: @(mon.GiaoVien != null ? mon.GiaoVien.HoTen : "Chưa phân công")
+                                    </p>
+                                    <div class="course-meta">
+                                        <div class="meta-item">
+                                            <i class="fas fa-users"></i>
+                                            <span>@mon.SoLuongDangKy đã đăng ký</span>
+                                        </div>
+
+                                        <div class="meta-item">
+                                            <i class="fas fa-play-circle"></i>
+                                            <span>
+                                                @(mon.TongSoBai > 0 ? $"{mon.TongSoBai} bài" : "Chưa bắt đầu")
+                                            </span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+
+                }
+                else
+                {
+                    <p>Không có môn học nào.</p>
+                }
+            </div>
+
+
+            <!-- Phân trang -->
+            <div class="pagination-container">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+                         new PagedListRenderOptions
+                {
+                    LinkToPreviousPageFormat = "«",
+                    LinkToNextPageFormat = "»",
+                    MaximumPageNumbersToDisplay = 3,
+                    ContainerDivClasses = new[] { "pagination" },
+                    UlElementClasses = new[] { "pagination-list" },
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" }
+                })
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="~/assets/js/menu_.js"></script>
+}
+
+<style>
+    /* Nội dung chính */
+    .noidung {
+        padding: 20px;
+        flex-grow: 1;
+    }
+
+    /* Thanh tìm kiếm */
+    .search-form {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 400px;
+        margin: 15px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: hidden;
+        background-color: white;
+    }
+
+        .search-form input {
+            flex-grow: 1;
+            padding: 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .search-form button {
+            background-color: #126f9a;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: white;
+        }
+
+            .search-form button i {
+                font-size: 16px;
+            }
+
+    /* Menu */
+    .menu-item a i {
+        margin-right: 8px;
+        font-size: 18px;
+        color: #42A5F5;
+    }
+
+    .menu-item a {
+        font-size: 20px;
+    }
+
+    /* Grid layout for courses */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Chỉnh lại để có 4 môn học trong 1 dòng */
+        gap: 20px;
+        margin-top: 20px;
+    }
+    /* Course card styles */
+    .course-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .course-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    /* Khi hover, vẫn không có gạch chân */
+    .course-link:hover {
+            text-decoration: none; /* Bỏ gạch chân */
+    }
+
+    .course-thumbnail {
+        height: 160px;
+        overflow: hidden;
+    }
+
+        .course-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+    .course-card:hover .course-thumbnail img {
+        transform: scale(1.05);
+    }
+
+    .course-content {
+        padding: 15px;
+    }
+
+    .course-title {
+        margin: 0 0 15px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        min-height: auto;
+    }
+
+    .course-teacher {
+        font-size: 14px !important; /* Làm chữ giảng viên nhỏ hơn */
+        color: #666 !important; /* Chỉnh màu sắc cho phù hợp */
+    }
+
+
+    .course-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .meta-item i {
+            color: #126f9a;
+            font-size: 14px;
+        }
+
+    /* Phân trang */
+    .pagination-container {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-item {
+        display: inline-block;
+    }
+
+    .page-link {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        color: #126f9a;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+        .page-link:hover {
+            background-color: #126f9a;
+            color: white;
+        }
+
+    .page-item.active .page-link {
+        background-color: #0b5f80;
+        color: white;
+        border-color: #0b5f80;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .course-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .course-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

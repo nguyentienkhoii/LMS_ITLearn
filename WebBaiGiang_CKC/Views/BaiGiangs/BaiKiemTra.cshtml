@@ -1,0 +1,310 @@
+﻿@section Scripts{
+
+    <link rel="stylesheet" href="~/assets/css/BaiKiemTra.css" />
+    <script src="~/assets/js/BaiKiemTra.js"></script>
+}
+@{
+    var tg_tim = ViewBag.TimThoigian;
+    var cauhoi_baiLam = ViewBag.cauhoi_de_mssv as List<CauHoi_BaiLam>;
+    var tenkykiemtra = ViewBag.TenKiKiemTra;
+    var mssvClaim = User.Claims.SingleOrDefault(c => c.Type == "MSSV");
+    var mssv_ = "";
+    if (mssvClaim != null) { mssv_ = mssvClaim.Value; }
+    var idkykiemtra = ViewBag.IdKiKiemTra;
+}
+<form id="myForm" asp-controller="BaiGiangs" asp-action="NopBai" asp-route-id="@idkykiemtra">
+    <div class="menu" id="menu">
+        <div class="btn-dong" id="btn-dong">
+            <i class="fas fa-times"> </i>
+        </div>
+        <h4>Câu Hỏi</h4>
+        <ul>
+            @for (int i = 0; i < cauhoi_baiLam.Count; i++)
+            {
+                <li>
+                    <a class="question-link" data-question="@i">
+                        @{
+                            int a = i + 1;
+                        }@a
+                        <span> </span>
+                    </a>
+                </li>
+            }
+        </ul>
+        <hr>
+        <div class="text-center">
+            <button type="button" class="nopbaibtn" data-toggle="modal" data-target="#confirm-dialog">Nộp Bài</button>
+        </div>
+    </div>
+    <div class="content" id="content">
+        <div class="container1">
+            @if (@ViewBag.kiemtrasv_id == mssv_)
+            {
+                <div style=" overflow:hidden;">
+                    <div id="rectangle">
+                        <h1> @tenkykiemtra  </h1> <p>Trắc nghiệm <i class="fa-solid fa-check"></i></p>
+                    </div>
+                    <div id="triangle_left"></div>
+                </div>
+                <div class="kiemtracs">
+                    <div style="overflow:hidden ; ">
+                        <p class="tieudethe">  Thời gian bắt đầu:  </p> <p> @ViewBag.tg_batdau </p>
+
+                    </div>
+                    <div style="overflow:hidden ; ">
+                        <p class="tieudethe"> Thời gian kết thúc :  </p>  <p>  @ViewBag.tg_ketthuc</p>
+
+                    </div>
+                    <div style="overflow:hidden ; ">
+                        <p class="tieudethe">  Họ và tên : </p> <p name="@mssv_"> @User.Identity.Name</p>
+                    </div>
+                    <div style="overflow:hidden ; ">
+                        <p class="tieudethe"> MSSV </p><p name="@mssv_"> @mssv_ </p>
+                    </div>
+                </div>
+                <div id="quiz">
+                    @foreach (var cauhoi_kt in cauhoi_baiLam)
+                    {
+                        <a id="@cauhoi_kt.CauHoi_DeId" name="@cauhoi_kt.CauHoi_DeId"> </a>
+                        <div class="question-container">
+                            @{
+                                int socau = cauhoi_baiLam.IndexOf(cauhoi_kt);
+                            }
+                            <div class="question" data-question="@socau">
+                                <h3>
+                                    Câu @(cauhoi_baiLam.IndexOf(cauhoi_kt) + 1) :  @Html.Raw(@cauhoi_kt.CauHoi_De.CauHoi.NoiDung)
+                                </h3>
+
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnA))
+                                {
+                                    @*  @(cauhoi_kt.CauHoi_De.CauHoi.DapAnA.Length > 40 ? "long-answer" : cauhoi_kt.CauHoi_De.CauHoi.DapAnA.Length > 20 ? "medium-answer" : "short-answer")*@
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="A" onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label" onclick="$(this).prev().prop('checked', true); handleAnswerChange();luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'A');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnA
+                                        </label>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnB))
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="B" onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label" onclick="$(this).prev().prop('checked', true); handleAnswerChange();luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'B');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnB
+                                        </label>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnC))
+                                {
+                                    <div class="form-check ">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="C" onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label" onclick="$(this).prev().prop('checked', true); handleAnswerChange();luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'C');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnC
+                                        </label>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnD))
+                                {
+                                    <div class="form-check ">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="D" onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label" onclick="$(this).prev().prop('checked', true); handleAnswerChange();luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'D');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnD
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                            @if (cauhoi_baiLam.Count - 1 == socau)
+                            {
+                                <div class="text-center">
+                                    <button type="button" class="nopbaibtn" data-toggle="modal" data-target="#confirm-dialog">Nộp Bài</button>
+                                </div>
+
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="nutchuyen">
+                    <button type="button" id="prevButton"><i class="fa fa-chevron-left"></i>  </button>
+
+                    <button type="button" id="nextButton">  <i class="fa fa-chevron-right"></i></button>
+                </div>
+            }
+        </div>
+    </div>
+</form>
+<div class="modal" tabindex="-1" role="dialog" id="confirm-dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận nộp bài</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn nộp bài không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Không</button>
+                <button type="submit" class="btn btn-primary" form="myForm" id="confirm-btn-yes">Có</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="toggle-menu" id="toggle-menu">
+    <i class="fa-solid fa-chevron-left"></i>
+
+</div>
+<style>
+    .question-link.selected span {
+        background-color: #AAAAAA;
+    }
+</style>
+<script>
+    function submitForm() {
+        localStorage.clear(); // Xóa hết dữ liệu đã lưu trữ trong localStorage
+        document.getElementById("myForm").submit();
+    }
+
+    document.getElementById("myForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        submitForm();
+    });
+    setTimeout(function () {
+        submitForm();
+    }, @(((int)tg_tim.TotalMilliseconds)));
+    var timee = @(((int)tg_tim.TotalMilliseconds));
+    window.addEventListener("load", function () {
+        if (timee <= 0) {
+            submitForm();
+        }
+    });
+    function luuTruDapAn(cauHoiId, dapAn) {
+        var mssv = '@mssv_';
+        localStorage.setItem(mssv + '_' + cauHoiId, dapAn);
+    }
+    function hiendapan(cauHoiId) {
+        var mssv = '@mssv_';
+        var dapAn = localStorage.getItem(mssv + '_' + cauHoiId);
+        if (dapAn !== null) {
+
+            document.querySelector('input[name="' + cauHoiId + '"][value="' + dapAn.toUpperCase() + '"]').checked = true;
+        }
+    }
+
+    document.querySelectorAll('input[type=radio]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            luuTruDapAn(this.name, this.value);
+        });
+    });
+    window.onload = function () {
+        document.querySelectorAll('input[type=radio]').forEach(function (radio) {
+            hiendapan(radio.name);
+        });
+
+
+    };
+
+    /// cau hoi next + bool cờ
+    const questionContainers = document.querySelectorAll('.question-container');
+    const prevButton = document.querySelector('#prevButton');
+    const nextButton = document.querySelector('#nextButton');
+    const questionLinks = document.querySelectorAll('.question-link');
+
+    let currentQuestion = 0;
+
+    function showQuestion(index) {
+        questionContainers.forEach((container, i) => {
+            if (i === index) {
+                container.style.display = "block";
+            } else {
+                container.style.display = "none";
+            }
+        });
+        if (index === 0) { // hide prevButton when on first question
+            prevButton.style.display = 'none';
+        } else {
+            prevButton.style.display = 'block';
+        }
+        if (index === questionContainers.length - 1) {
+            nextButton.style.display = 'none'; // hide nextButton when on last question
+        } else {
+            nextButton.style.display = 'block';
+        }
+    }
+
+    function showNextQuestion() {
+        currentQuestion++;
+        if (currentQuestion >= questionContainers.length) {
+            currentQuestion = 0;
+        }
+        showQuestion(currentQuestion);
+    }
+
+    function showPreviousQuestion() {
+        currentQuestion--;
+        if (currentQuestion < 0) {
+            currentQuestion = questionContainers.length - 1;
+        }
+        showQuestion(currentQuestion);
+    }
+
+    function showQuestionByLink(event) {
+        event.preventDefault();
+        const questionIndex = parseInt(this.dataset.question);
+        console.log(`Showing question ${questionIndex}`);
+        console.log(`Question container: ${questionContainers[questionIndex]}`);
+        currentQuestion = questionIndex;
+        showQuestion(currentQuestion);
+    }
+
+    function handleAnswerChange() {
+        const currentAnswers = document.querySelectorAll(`.question-container:nth-of-type(${currentQuestion + 1}) input[type=radio]:checked`);
+        if (currentAnswers.length > 0) {
+            const selectedQuestionLink = questionLinks[currentQuestion];
+            selectedQuestionLink.classList.add('selected');
+            localStorage.setItem(`question_${currentQuestion}`, true);
+        } else {
+            questionLinks[currentQuestion].classList.remove('selected');
+            localStorage.removeItem(`question_${currentQuestion}`);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        questionLinks.forEach((link, index) => {
+            if (localStorage.getItem(`question_${index}`) === 'true') {
+                link.classList.add('selected');
+            }
+        });
+    });
+    const answerInputs = document.querySelectorAll('input[type=radio]');
+    answerInputs.forEach(input => input.addEventListener('change', handleAnswerChange));
+
+    questionLinks.forEach(link => link.addEventListener('click', showQuestionByLink));
+    nextButton.addEventListener('click', showNextQuestion);
+    prevButton.addEventListener('click', showPreviousQuestion);
+
+    showQuestion(currentQuestion);
+
+
+
+
+   $('#confirm-dialog').on('shown.bs.modal', function () {
+        $('#confirm-btn-yes').focus();
+    });
+
+    function confirmSubmit() {
+        $('#confirm-dialog').modal('show');
+
+        $('#confirm-btn-yes').on('click', function() {
+            return true;
+        });
+
+        $('#confirm-dialog').on('hidden.bs.modal', function () {
+            return false;
+        });
+
+        return false;
+    }
+</script>

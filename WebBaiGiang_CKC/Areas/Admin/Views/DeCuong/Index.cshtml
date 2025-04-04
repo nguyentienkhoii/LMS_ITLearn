@@ -1,0 +1,120 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.DeCuong>
+@{
+    ViewData["Title"] = "Quản lý Đề Cương";
+}
+
+<h2 class="mb-4">Quản lý Đề Cương</h2>
+
+<!-- Form thêm đề cương -->
+<div class="card mb-4">
+    <div class="card-header">Thêm Đề Cương</div>
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label for="MonHocId" class="form-label">Môn Học</label>
+                <select id="MonHocId" name="MonHocId" class="form-control" asp-items="ViewBag.MonHocId"></select>
+            </div>
+            <div class="mb-3">
+                <label for="TieuDe" class="form-label">Tiêu Đề</label>
+                <input type="text" id="TieuDe" name="TieuDe" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="NoiDung" class="form-label">Nội Dung</label>
+                <textarea id="NoiDung" name="NoiDung" class="form-control summernote" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Thêm mới</button>
+        </form>
+    </div>
+</div>
+
+<!-- Bảng danh sách đề cương -->
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Môn Học</th>
+            <th>Tiêu Đề</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MonHoc.TenMonHoc</td>
+                <td>@item.TieuDe</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editDeCuong(@item.DeCuongId)">Sửa</button>
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@item.DeCuongId" />
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?');">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa Đề Cương</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" asp-action="Edit" method="post">
+                    <input type="hidden" id="editDeCuongId" name="DeCuongId">
+                    <div class="mb-3">
+                        <label class="form-label">Môn Học</label>
+                        <select id="editMonHocId" name="MonHocId" class="form-control" asp-items="ViewBag.MonHocId"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu Đề</label>
+                        <input type="text" id="editTieuDe" name="TieuDe" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội Dung</label>
+                        <textarea id="editNoiDung" name="NoiDung" class="form-control summernote" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Summernote CSS & JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs5.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo Summernote
+            $('.summernote').summernote({
+                height: 300,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['fontsize', 'fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview']],
+                ]
+            });
+        });
+
+        // Xử lý chỉnh sửa đề cương
+        function editDeCuong(id) {
+            $.get("/Admin/DeCuong/GetDetail/" + id, function (data) {
+                var deCuong = JSON.parse(data);
+                $('#editDeCuongId').val(id);
+                $('#editTieuDe').val(deCuong.tieuDe);
+                $('#editNoiDung').summernote('code', deCuong.noiDung); // Load nội dung vào Summernote
+                $('#editMonHocId').val(deCuong.monHocId);
+                $('#editModal').modal('show');
+            });
+        }
+    </script>
+}

@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html>
+@section Scripts{
+    <link rel="stylesheet" href="~/assets/css/HoSo.css" />
+}
+@{
+    var mssvClaim = User.Claims.FirstOrDefault(c => c.Type == "MSSV");
+    var emailClaim = User.Claims.FirstOrDefault(c => c.Type == "Email");
+    var mssv_ = "";
+    var email = "";
+    if (mssvClaim != null && email != null)
+    {
+        mssv_ = mssvClaim.Value;
+        email = emailClaim.Value;
+    }
+    var kiemtraviews = ViewBag.kiemtra as List<DanhSachThi>;
+}
+<body>
+    <div class="container">
+        <h1 class="title">HỒ SƠ SINH VIÊN </h1>
+        <div style="overflow:hidden">
+            <div style=" float:left;margin-right:50px;" class="container-dn" id="container-dn">
+
+
+                @if (!string.IsNullOrEmpty(User.Identity.Name))
+                {
+                    var firstName = "";
+                    var lastName = User.Identity.Name.Trim();
+
+                    var lastSpaceIndex = lastName.LastIndexOf(' ');
+                    if (lastSpaceIndex >= 0 && lastSpaceIndex < lastName.Length - 1)
+                    {
+                        firstName = lastName.Substring(lastSpaceIndex + 1, 1);
+                    }
+                    else
+                    {
+                        firstName = lastName.Substring(0, 1);
+                    }
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="170px" height="170px" viewBox="0 0 64 64" version="1.1">
+                        <circle fill="#0098a6" width="35" height="35" cx="32" cy="32" r="32" />
+                        <text x="50%" y="50%" style="color: #ffffff;line-height: 1;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;" alignment-baseline="middle" text-anchor="middle" font-size="26" font-weight="400" dy=".1em" dominant-baseline="middle" fill="#ffffff">
+                            @Html.Raw(firstName)
+                        </text>
+                    </svg>
+                }
+            </div>
+            <section class="personal-information">
+                <h2>Thông tin cá nhân</h2>
+                <ul>
+                    <li><strong>Họ tên:</strong> @User.Identity.Name</li>
+                    <li><strong>MSSV:</strong> @mssv_</li>
+                    <li><strong>Email:</strong> @email</li>
+                </ul>
+                <button type="button"style="margin-left:50px;" class="btn btn-info btn-round" data-toggle="modal" data-target="#resetModal">
+                    Đổi mật khẩu
+                </button>
+                <div class="modal fade" id="resetModal" tabindex="-1" role="dialog"
+                     aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header border-bottom-0">
+                                <button style="color:black" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-title text-center">
+                                    <h3 style="color:black">Đổi mật khẩu</h3>
+                                </div>
+                                <div class="d-flex flex-column text-center" ng-app="myDoiMatKhauApp" ng-controller="doimatkhaujs">
+                                    <form ng-submit="doimatkhau()">
+                                        <div class="form-group">
+                                            <input type="password" class="form-control" ng-model="currentPassword" placeholder="Mật khẩu">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" class="form-control" ng-model="newPassword" placeholder="Mật khẩu mới">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" class="form-control" ng-model="confirmPassword" placeholder="Xác nhận mật khẩu">
+                                        </div>
+                                        <button type="button" class="btn btn-info btn-block btn-round"ng-click="doimatkhau(); showModal = false;" data-dismiss="modal">Đổi mật khẩu</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+          
+        </div>
+
+        <section class="education">
+            <h2>CÁC BÀI KIỂM TRA</h2>
+            <hr />
+            @foreach (var item in kiemtraviews)
+            {
+                @if (item.TaiKhoan.MSSV == mssv_ && item.TrangThai == true)
+                {
+                    <div style="padding-bottom:20px;">
+                        <div style=" border-radius: 10px 10px 10px 10px;padding: 8px;overflow:hidden;">
+                            <div style="float:left;padding-right:250px; overflow:hidden">
+                                <h2>@item.KyKiemTra.TenKyKiemTra </h2>
+                                <p class="tieudethe">
+                                    Bắt đầu vào lúc: @item.KyKiemTra.ThoiGianBatDau
+                                </p>
+                                <p class="tieudethe">
+                                    Kết thúc lúc: @item.KyKiemTra.ThoiGianKetThuc
+                                </p>
+                                <p class="tieudethe">
+                                    Thời gian làm bài: @item.KyKiemTra.ThoiGianLamBai Phút
+                                </p>
+                            </div>
+                            <div style="float:left;padding-top:30px;padding-right:70px;">
+                                <p>Trạng thái: Đã làm </p>
+                                <p>Số câu đúng : @item.KyKiemTra.De.FirstOrDefault().CauHoi_DeThi.FirstOrDefault().CauHoi_BaiLam.FirstOrDefault(x=>x.BaiLam.MSSV == mssv_  ).BaiLam.SoCauDung/@item.KyKiemTra.De.First().SoCauHoi </p>
+                                <p class="tieudethe">
+                                    Điểm: @item.KyKiemTra.De.FirstOrDefault().CauHoi_DeThi.FirstOrDefault().CauHoi_BaiLam.FirstOrDefault(x=>x.BaiLam.MSSV == mssv_  ).BaiLam.Diem
+                                </p>
+                            </div>
+                            <form asp-controller="BaiGiangs" asp-action="XemLaiBaiThi" method="post">
+                                <div style="padding-top:50px;padding-left:800px;">
+                                    <input type="hidden" name="id" value="@item.KyKiemTra.KyKiemTraId" />
+                                    <button type="submit" class="btn btn-info btn-round"> Xem làm bài</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <hr />
+                }
+            }
+        </section>
+    </div>
+    <script>
+        angular.module('myDoiMatKhauApp', [])
+            .factory('notyf', function () {
+                return new Notyf({
+                    duration: 3000,
+                    position: {
+                        x: 'right',
+                        y: 'top',
+                    },
+                    types: [
+                        {
+                            type: 'success',
+                            background: '#00b300',
+                            icon: {
+                                className: 'material-icons',
+                                tagName: 'i',
+                                text: 'check_circle',
+                                color: 'white',
+                            },
+                        },
+                        {
+                            type: 'error',
+                            background: '#ff4d4d',
+                            icon: {
+                                className: 'material-icons',
+                                tagName: 'i',
+                                text: 'cancel',
+                                color: 'white',
+                            },
+                        },
+
+                    ],
+                });
+            })
+            .controller('doimatkhaujs', function ($scope, $http, notyf) {
+                $scope.showModal = true;
+                $scope.doimatkhau = function () {
+                    var currentPassword = $scope.currentPassword;
+                    var newPassword = $scope.newPassword;
+                    var confirmPassword = $scope.confirmPassword;
+
+                    if (currentPassword && newPassword && confirmPassword) {
+                        if (newPassword !== confirmPassword) {
+                            notyf.error('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+                            return;
+                        }
+
+                        if (newPassword.length < 6) {
+                            notyf.error('Mật khẩu mới phải có ít nhất 6 ký tự.');
+                            return;
+                        }
+
+                        // thực hiện kiểm tra các yêu cầu bảo mật khác cho mật khẩu mới ở đây (ví dụ: chứa ký tự đặc biệt, chữ hoa, chữ thường, số, ...)
+
+                        var data = {
+                            currentPassword: currentPassword,
+                            newPassword: newPassword, confirmPassword: confirmPassword
+                        };
+
+                        $http({
+                            method: 'POST',
+                            url: '/api/authentication/changepassword',
+                            data: data,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            withCredentials: true  // sử dụng withCredentials để đảm bảo sử dụng HTTPS (truy cập cookie được cấp cho trang web)
+                        })
+                            .then(function (response) {
+                                notyf.success(response.data);
+                                $scope.currentPassword = '';
+                                $scope.newPassword = '';
+                                $scope.confirmPassword = '';
+                                $scope.showModal = false;
+
+                            })
+                            .catch(function (error) {
+                                notyf.error(error.data);
+                                console.log('Request error', error); // thêm vào để ghi lại thông tin
+                            });
+                    } else {
+                        notyf.error('Vui lòng nhập đầy đủ thông tin mật khẩu');
+                    }
+                };
+            });
+    </script>
+</body>
+</html>

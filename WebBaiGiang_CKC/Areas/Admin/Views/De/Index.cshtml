@@ -1,0 +1,61 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.De>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="De" asp-action="Index">Quản lý đề </a></li>
+
+</ol>
+<h1 style="text-align: center;">QUẢN LÝ ĐỀ THI</h1>
+<hr />
+<br />
+
+<a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+
+<table class="table table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+            <th>
+                @Html.DisplayNameFor(model => model.KyKiemTra.TenKyKiemTra)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SoCauHoi)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoKhoDe)
+            </th>
+          
+            <th></th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.KyKiemTra.TenKyKiemTra)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SoCauHoi)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DoKhoDe)
+                </td>
+               
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.DeId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
+                    <a asp-action="Edit" asp-route-id="@item.DeId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.DeId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                    <a href="@Url.Action("PdfDeViewer", new { deId = @item.DeId })" class="btn btn-info">Xuất đề thi</a>
+
+                    <a href="@Url.Action("PdfDapAnViewer", new { deId = @item.DeId })" class="btn btn-danger">Xuất đáp án</a>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,69 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.MonHoc>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="MonHoc" asp-action="Index">Quản lý môn học</a></li>
+</ol>
+<br />
+<h1 style="text-align: center;">QUẢN LÝ MÔN HỌC</h1>
+<hr />
+<br />
+<p>
+    <a class="btn btn-success" asp-action="Create">Thêm mới</a>
+</p>
+
+<table class="table table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+            <th>
+                @Html.DisplayNameFor(model => model.MaMonHoc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TenMonHoc)
+            </th>
+            <th>
+                Giáo viên phụ trách
+            </th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MaMonHoc)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenMonHoc)
+                </td>
+                <td>
+                    @if (item.GiaoVien != null)
+                    {
+                        @item.GiaoVien.HoTen
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa phân công</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.MonHocId" class="action-icon">
+                        <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@item.MonHocId" class="action-icon">
+                        <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.MonHocId" class="action-icon">
+                        <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

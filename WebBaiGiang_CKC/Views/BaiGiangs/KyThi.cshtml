@@ -1,0 +1,115 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.KyKiemTra>
+
+@{
+    var lstMon = ViewBag.lstSubject as List<MonHoc>;
+
+}
+@section Scripts{
+    <script src="~/assets/js/menu_.js">
+    </script>
+}
+@{
+    var mssvClaim = User.Claims.FirstOrDefault(c => c.Type == "MSSV");
+    var mssv_ = "";
+    if (mssvClaim != null)
+    {
+        mssv_ = mssvClaim.Value;
+    }
+
+    var kiemtraviews = ViewBag.kiemtra as List<DanhSachThi>;
+    var dk_can = ViewBag.DKCan ;
+}
+<main>
+    <div class="menu-toggle"> <a href="#">Menu</a> </div>
+    <div class="wrapper">
+        @await Html.PartialAsync("~/Views/PartialView/_Menu0.cshtml")
+        <div class="noidung">
+            <h2>
+                Kỳ kiểm tra
+            </h2>
+            <hr />
+   @{
+             var count = 0;
+    }
+            @foreach (var item in kiemtraviews)
+            {
+                @if (item.KyKiemTra?.De?.FirstOrDefault()?.CauHoi_DeThi?.FirstOrDefault()?.CauHoi_BaiLam?.FirstOrDefault(x => x.BaiLam.MSSV == mssv_)?.BaiLam?.ThoiGianDenHan == null)
+                {
+                    @if (item.TaiKhoan.MSSV == mssv_ && item.TrangThai == false && DateTime.UtcNow.AddHours(7) >= item.KyKiemTra.ThoiGianBatDau &&
+                    DateTime.UtcNow.AddHours(7) < item.KyKiemTra.ThoiGianKetThuc )
+                    {
+                        <div style="padding-bottom:20px;">
+                            <div style="border: 2px solid #696969 ; border-radius: 10px 10px 10px 10px;padding: 8px;overflow:hidden;">
+                                <div style="float:left;padding-right:250px; overflow:hidden">
+                                    <h2>@item.KyKiemTra.TenKyKiemTra </h2>
+                                    <p class="tieudethe">
+                                        Bắt đầu : @item.KyKiemTra.ThoiGianBatDau
+                                    </p>
+                                    <p class="tieudethe">
+                                        Kết thúc : @item.KyKiemTra.ThoiGianKetThuc
+                                    </p>
+                                    <p class="tieudethe">
+                                        Thời gian làm bài: @item.KyKiemTra.ThoiGianLamBai Phút
+                                    </p>
+                                </div>
+                                <div style="float:left;padding-top:20px;padding-right:70px;">
+                                    <p>Trạng thái: Chưa làm </p>
+                                </div>
+                                <form asp-controller="BaiGiangs" asp-action="BaiKiemTra" method="post">
+                                    <div style="padding-top:20px;">
+                                        <input type="hidden" name="id" value="@item.KyKiemTra.KyKiemTraId" />
+                                        <button type="submit" class="btn btn-success mb-2"> Bắt đầu làm bài</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        count++;
+                    }
+                }
+                else
+                {
+                    @if (item.TaiKhoan.MSSV == mssv_ && item.TrangThai == false && DateTime.UtcNow.AddHours(7) >= item.KyKiemTra.ThoiGianBatDau
+                   && DateTime.UtcNow.AddHours(7) < item.KyKiemTra.ThoiGianKetThuc && item.KyKiemTra?.De?.FirstOrDefault()?.CauHoi_DeThi?.FirstOrDefault()?.CauHoi_BaiLam?.FirstOrDefault(x => x.BaiLam.MSSV == mssv_)?.BaiLam?.ThoiGianDenHan > DateTime.UtcNow.AddHours(7))
+                   {
+                        <div style="padding-bottom:20px;">
+                            <div style="border: 2px solid #696969 ; border-radius: 10px 10px 10px 10px;padding: 8px;overflow:hidden;">
+                                <div style="float:left;padding-right:250px; overflow:hidden">
+                                    <h2>@item.KyKiemTra.TenKyKiemTra </h2>
+                                    <p class="tieudethe">
+                                        Bắt đầu : @item.KyKiemTra.ThoiGianBatDau
+                                    </p>
+                                    <p class="tieudethe">
+                                        Kết thúc : @item.KyKiemTra.ThoiGianKetThuc
+                                    </p>
+                                    <p class="tieudethe">
+                                        Thời gian làm bài: @item.KyKiemTra.ThoiGianLamBai Phút
+                                    </p>
+                                </div>
+                                <div style="float:left;padding-top:20px;padding-right:70px;">
+                                    <p>Trạng thái: Chưa làm </p>
+                                </div>
+                                <form asp-controller="BaiGiangs" asp-action="BaiKiemTra" method="post">
+                                    <div style="padding-top:20px;">
+                                        <input type="hidden" name="id" value="@item.KyKiemTra.KyKiemTraId" />
+                                        <button type="submit" class="btn btn-success mb-2"> Bắt đầu làm bài</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        count++;
+                    }
+                }
+               
+            }
+            @if (count == 0)
+            {
+                <div class="empty-state">
+                  
+                    <img src="/contents/GioiThieu/12312312312.png" alt="">
+                    <p style="text-align:center">Hiện tại không có kỳ kiểm tra nào.</p>
+                    <p style="text-align:center">Bạn có thể học tập thêm trước kỳ thi tại trang chủ</p>
+                </div>
+            }
+        </div>
+    </div>
+</main>

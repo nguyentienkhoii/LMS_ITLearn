@@ -1,0 +1,52 @@
+﻿@{
+    var selectedMonHoc = ViewBag.SelectedMonHoc as MonHoc; // Môn học đã chọn
+}
+
+<div class="thanh">
+    <nav>
+        <ul class="menu">
+            <li>
+                <div class="close-btn"><i class="fas fa-times"></i></div>
+            </li>
+
+            @* @if (selectedMonHoc != null)
+            {
+                <!-- Hiển thị môn học đã chọn lên đầu -->
+                <li class="menu-item selected-subject">
+                    <a asp-controller="Home" asp-action="MonHoc" asp-route-id="@selectedMonHoc.MonHocId">
+                        @selectedMonHoc.TenMonHoc
+                    </a>
+                </li>
+            } *@
+
+            <li class="menu-item">
+                @if (selectedMonHoc != null)
+            {
+                <a id="menu-item-1" asp-controller="Home" asp-action="MonHoc" asp-route-id="@selectedMonHoc.MonHocId">
+                        @selectedMonHoc.TenMonHoc
+                    </a>
+            }
+            </li>
+            <li class="menu-item">
+                <a id="menu-item-2" asp-controller="BaiGiangs" asp-action="DeCuong" asp-route-monHocId="@selectedMonHoc?.MonHocId">
+                    Đề cương
+                </a>
+            </li>
+            <li class="menu-item">
+                @if (selectedMonHoc != null)
+                {
+                    <a id="menu-item-3" asp-controller="Home" asp-action="MonHoc" asp-route-id="@selectedMonHoc.MonHocId">
+                        Bài giảng
+                    </a>
+                }
+
+            <li class="menu-item">
+                <a id="menu-item-4" asp-controller="BaiGiangs" asp-action="BaiTap" asp-route-monHocId="@(selectedMonHoc?.MonHocId ?? 0)">
+                    Bài tập
+                </a>
+            </li>
+
+            
+        </ul>
+    </nav>
+</div>

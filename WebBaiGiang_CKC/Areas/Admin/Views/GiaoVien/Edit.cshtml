@@ -1,0 +1,79 @@
+﻿@model WebBaiGiang_CKC.Models.GiaoVien
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="GiaoVien" asp-action="Index">Quản lý tài khoản</a></li>
+    <li class="breadcrumb-item"><a asp-controller="GiaoVien" asp-action="Edit">Sửa</a></li>
+</ol>
+<h1 style="text-align: center;">CHỈNH SỬA TÀI KHOẢN GIÁO VIÊN</h1>
+<hr />
+<br />
+<div class="row">
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="TenDangNhap" class="control-label"></label>
+            <input asp-for="TenDangNhap" class="form-control" />
+            <span asp-validation-for="TenDangNhap" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="HoTen" class="control-label"></label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <label asp-for="Email" class="control-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group  flex-grow-1 mx-4">
+            <img src="@Url.Content("~/contents/Images/GiaoVien/" + @Model.AnhDaiDien)" style="width: 200px; height: 200px; border-radius: 20px;" alt="" id="output">
+            <label asp-for="AnhDaiDien" class="control-label"></label>
+            <input type="file" name="fAvatar" asp-for="AnhDaiDien" class="form-control-file" onchange="loadFile(event)" />
+            <span asp-validation-for="AnhDaiDien" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group form-check  flex-grow-1 mx-4">
+            <label class="form-check-label">
+                <input class="form-check-input" asp-for="IsGiaoVien" /> @Html.DisplayNameFor(model => model.IsGiaoVien)
+            </label>
+        </div>
+        <br />
+        <div class="form-group form-check  flex-grow-1 mx-4">
+            <label class="form-check-label">
+                <input class="form-check-input" asp-for="TrangThai" /> @Html.DisplayNameFor(model => model.TrangThai)
+            </label>
+        </div>
+
+        <br>
+        <div class="form-group  flex-grow-1 mx-4">
+            <a asp-action="Index" class="btn btn-outline-secondary" style="margin-right:20px;"> Trở về</a>
+            <input type="submit" value="Lưu" class="btn btn-primary" />
+        </div>
+    </form>
+
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        var loadFile = function (event) {
+            var image = document.getElementById("output");
+            image.src = URL.createObjectURL(event.target.files[0]);
+        };
+    </script>
+}
