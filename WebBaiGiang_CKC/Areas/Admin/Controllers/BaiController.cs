@@ -55,6 +55,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             }
             return Json(new { });
         }
+        /////////
         // GET: Admin/Bai/Create
         public IActionResult Create()
         {
