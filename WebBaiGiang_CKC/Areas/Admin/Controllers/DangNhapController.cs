@@ -103,7 +103,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             }
 
             // Nếu có lỗi xảy ra, hiển thị thông báo lỗi bằng NotyfService
-            _notyfService.Warning("Tên đăng nhập hoặc mật khẩu không đúng");
+            _notyfService.Warning("Tên đăng nhập hoặc mật khẩu không đúng");    
 
             // Chuyển hướng đến trang Login
             return View("Login", "Home");
@@ -155,7 +155,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                     };
                     using var smtp = new SmtpClient();
                     smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                    smtp.Authenticate("0306201451@caothang.edu.vn", "12345qwertKHANG");
+                    smtp.Authenticate("baigiangtructuyen2025@gmail.com", "kryx fkgc pxht wfsf");
                     smtp.Send(email);
                     smtp.Disconnect(true);
 

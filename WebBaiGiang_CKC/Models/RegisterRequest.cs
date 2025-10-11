@@ -1,11 +1,11 @@
 ﻿namespace WebBaiGiang_CKC.Models
 {
     public class RegisterRequest
-    {   
-        public string FullName { get; set; }
-        public string Mssv { get; set; }
+    {
+        public string MSSV { get; set; }
+        public string MatKhau { get; set; }
         public string Email { get; set; }
-        public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
+        public string HoTen { get; set; }
     }
+
 }

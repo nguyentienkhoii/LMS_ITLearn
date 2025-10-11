@@ -8,7 +8,7 @@
             <h2>
                 E - LEARNING
             </h2>
-            
+
             <div>
                 <div class="menu-heder1">
                     <i class="fas fa-bars">
@@ -83,7 +83,7 @@
                                         <li>
                                             <a asp-controller="BaiGiangs" asp-action="HoSo"> <i class="fas fa-user"></i>&nbsp Hồ sơ</a>
                                         </li>
-                                        <li >
+                                        <li>
                                             <a asp-controller="DangNhap" asp-action="Logout"><i class="fas fa-sign-out-alt"></i>&nbsp Đăng xuất </a>
                                         </li>
                                     </ul>
@@ -113,18 +113,25 @@
                         else
                         {
                             <li>
-                               
-                                    <button type="button" class="btn btn-info btn-round" data-toggle="modal" data-target="#loginModal">
-                                        Đăng nhập
-                                    </button>
+
+                                <button type="button" class="btn btn-info btn-round" data-toggle="modal" data-target="#loginModal">
+                                    Đăng nhập
+                                </button>
                                 @await Html.PartialAsync("~/Views/PartialView/_DangNhap.cshtml")
+                            </li>
+
+                            <li style="display: inline-block;">
+                                <button type="button" class="btn btn-success btn-round" data-toggle="modal" data-target="#registerModal">
+                                    Đăng ký
+                                </button>
+                                @await Html.PartialAsync("~/Views/PartialView/_DangKy.cshtml")
                             </li>
                         }
                     </ul>
                 </nav>
             </div>
         </div>
-   
+
         <!-- Modal -->
         <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -134,7 +141,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form asp-action="QuenMatKhau" method="post">
+                        <form asp-controller="DangNhap" asp-action="QuenMatKhau" method="post">
                             <div class="form-group">
                                 <label for="Email">Email</label>
                                 <input type="email" class="form-control" id="Email" name="Email" placeholder="Nhập địa chỉ email của bạn" required>
@@ -195,4 +202,3 @@
         position: relative;
     }
 </style>
-

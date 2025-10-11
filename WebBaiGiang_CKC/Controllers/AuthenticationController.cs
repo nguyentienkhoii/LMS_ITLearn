@@ -1,4 +1,5 @@
-﻿using AspNetCoreHero.ToastNotification.Abstractions;
+﻿using System.Globalization;
+using AspNetCoreHero.ToastNotification.Abstractions;
 using BaiGiang.Models;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -85,7 +86,49 @@ namespace WebBaiGiang_CKC.Controllers
             _notyfService.Success("Đăng nhập thành công");
             return Ok(new { message = "Đăng nhập thành công" });
         }
+        //-----------------------------------------------------------------
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            // Kiểm tra rỗng
+            if (string.IsNullOrWhiteSpace(request.MSSV) ||
+                string.IsNullOrWhiteSpace(request.MatKhau) ||
+                string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.HoTen))
+            {
+                return BadRequest("Vui lòng nhập đầy đủ thông tin.");
+            }
 
+            // Kiểm tra độ dài
+            if (request.MSSV.Length < 6 || request.MSSV.Length > 20)
+                return BadRequest("MSSV phải từ 6 đến 20 ký tự.");
+            if (request.MatKhau.Length < 6 || request.MatKhau.Length > 50)
+                return BadRequest("Mật khẩu phải từ 6 đến 50 ký tự.");
+
+            // Kiểm tra MSSV/Email đã tồn tại
+            if (_context.TaiKhoan.Any(x => x.MSSV == request.MSSV))
+                return BadRequest("MSSV đã tồn tại.");
+            if (_context.TaiKhoan.Any(x => x.Email == request.Email))
+                return BadRequest("Email đã được sử dụng.");
+
+            // Tạo tài khoản mới
+            var newUser = new TaiKhoan
+            {
+                MSSV = request.MSSV,
+                MatKhau = request.MatKhau.ToMD5(),
+                Email = request.Email,
+                HoTen = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.HoTen),
+                TrangThai = true
+            };
+
+            _context.TaiKhoan.Add(newUser);
+            await _context.SaveChangesAsync();
+
+            _notyfService.Success("Đăng ký thành công");
+            return Ok(new { message = "Đăng ký thành công" });
+        }
+        //-----------------------------------------------------
         [HttpPost]
         [Route("logout")]
         public async Task<IActionResult> Logout()
@@ -98,33 +141,33 @@ namespace WebBaiGiang_CKC.Controllers
         [Route("changepassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
-           
-                var mssvClaim = User.Claims.SingleOrDefault(c => c.Type == "MSSV");
-                var mssv_ = "";
-                if (mssvClaim != null) { mssv_ = mssvClaim.Value; }
-                var password = request.CurrentPassword.ToMD5();
-                var user = await _context.TaiKhoan.FirstOrDefaultAsync(u => u.MSSV == mssv_);
-                if (user.MatKhau != password)
-                {
-                    return BadRequest("Mật khẩu cũ không chính xác");
-                }
-                if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
-                {
-                    return BadRequest("Mật khẩu mới phải trên 6 ký tự và nhỏ hơn 100 ký tự");
-                }
-                if (request.NewPassword != request.ConfirmPassword)
-                {
-                    return BadRequest("Mật khẩu mới không đúng với mật khẩu xác nhận");
-                }
-                user.MatKhau = request.NewPassword.ToMD5();
-                _context.TaiKhoan.Update(user);
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Đổi mật khẩu thành công" });
-           
+
+            var mssvClaim = User.Claims.SingleOrDefault(c => c.Type == "MSSV");
+            var mssv_ = "";
+            if (mssvClaim != null) { mssv_ = mssvClaim.Value; }
+            var password = request.CurrentPassword.ToMD5();
+            var user = await _context.TaiKhoan.FirstOrDefaultAsync(u => u.MSSV == mssv_);
+            if (user.MatKhau != password)
+            {
+                return BadRequest("Mật khẩu cũ không chính xác");
+            }
+            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
+            {
+                return BadRequest("Mật khẩu mới phải trên 6 ký tự và nhỏ hơn 100 ký tự");
+            }
+            if (request.NewPassword != request.ConfirmPassword)
+            {
+                return BadRequest("Mật khẩu mới không đúng với mật khẩu xác nhận");
+            }
+            user.MatKhau = request.NewPassword.ToMD5();
+            _context.TaiKhoan.Update(user);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đổi mật khẩu thành công" });
+
         }
 
         [HttpPost]
-      
+
         [Route("forgotpassword")]
         public IActionResult ForgotPassword([FromBody] ForgotPasswordModel model)
         {
@@ -133,13 +176,13 @@ namespace WebBaiGiang_CKC.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user =  _context.TaiKhoan.FirstOrDefault(u => u.Email == model.Email);
+            var user = _context.TaiKhoan.FirstOrDefault(u => u.Email == model.Email);
             if (user != null)
             {
                 var token = Guid.NewGuid().ToString();
                 user.ResetToken = token;
                 user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(10);
-                 _context.SaveChangesAsync();
+                _context.SaveChangesAsync();
 
                 HttpContext.Session.SetString("ResetToken", token);
                 HttpContext.Session.SetString("Email", model.Email);
@@ -171,23 +214,23 @@ namespace WebBaiGiang_CKC.Controllers
         [HttpPost("resetpassword")]
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-        
-                var resetToken = HttpContext.Session.GetString("ResetToken");
-                var resetTokenExpiry = HttpContext.Session.GetString("ResetTokenExpiry");
-                var email = HttpContext.Session.GetString("Email");
-                var user = await _context.TaiKhoan.FirstOrDefaultAsync(u => u.Email == email);
-                if (user != null && resetToken == model.Token)
-                {
-                    if (model.Password != model.ConfirmPassword)
-                    {
-                        return BadRequest("Mật khẩu mới và mật khẩu xác nhận không khớp.");
-                    }
 
-                    user.MatKhau = (model.Password).ToMD5();
-                    await _context.SaveChangesAsync();
+            var resetToken = HttpContext.Session.GetString("ResetToken");
+            var resetTokenExpiry = HttpContext.Session.GetString("ResetTokenExpiry");
+            var email = HttpContext.Session.GetString("Email");
+            var user = await _context.TaiKhoan.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null && resetToken == model.Token)
+            {
+                if (model.Password != model.ConfirmPassword)
+                {
+                    return BadRequest("Mật khẩu mới và mật khẩu xác nhận không khớp.");
+                }
+
+                user.MatKhau = (model.Password).ToMD5();
+                await _context.SaveChangesAsync();
                 _notyfService.Success("Mật khẩu của bạn đã được đặt lại thành công.");
                 return Ok("Mật khẩu của bạn đã được đặt lại thành công.");
-                }
+            }
 
 
             return BadRequest("Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
@@ -246,7 +289,7 @@ namespace WebBaiGiang_CKC.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity)
             );
-            
+
             return Ok(new { message = "Đăng nhập thành công" });
         }
 
@@ -337,7 +380,7 @@ namespace WebBaiGiang_CKC.Controllers
             }
             if (user != null && resetToken == model.Token)
             {
-               
+
 
                 user.MatKhau = (model.Password).ToMD5();
                 await _context.SaveChangesAsync();

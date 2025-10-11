@@ -485,7 +485,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 <div style=' overflow: hidden;'>
 
                   <div class='hedert'>
-                    <p> TRƯỜNG CAO ĐẲNG KỸ THUẬT CAO THẮNG</p>
+                    <p> TRƯỜNG ĐH MỞ HÀ NỘI</p>
                     <h4> KHOA CÔNG NGHỆ THÔNG TIN</h4>
                   </div>
 
@@ -500,8 +500,8 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
 
                 <div >
-                  <h2>Môn: LẬP TRÌNH ỨNG DỤNG ASP.NET CORE</h2>
-                  <h3 style='text-align: center;'>Hệ/Khóa: CĐTH ............. </h3>
+                  <h2>Môn: ASP.NET CORE</h2>
+                  <h3 style='text-align: center;'>Lớp: ............. </h3>
 
 
                 </div>
@@ -688,7 +688,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                    <div style=' overflow: hidden;'>
 
                       <div class='hedert'>
-                        <p> TRƯỜNG CAO ĐẲNG KỸ THUẬT CAO THẮNG</p>
+                        <p> TRƯỜNG ĐH MỞ HN</p>
                         <h4> KHOA CÔNG NGHỆ THÔNG TIN</h4>
                       </div>
 
@@ -701,8 +701,8 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
 
                     <div>
-                      <h2>Môn: LẬP TRÌNH ỨNG DỤNG ASP.NET CORE</h2>
-                      <h3 style='text-align: center;'>Hệ/Khóa: CĐTH ............. </h3>
+                      <h2>Môn: ASP.NET CORE</h2>
+                      <h3 style='text-align: center;'>Lớp: </h3>
 
 
                     </div>

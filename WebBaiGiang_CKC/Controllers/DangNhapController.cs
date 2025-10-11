@@ -181,7 +181,7 @@ namespace WebBaiGiang_CKC.Controllers
         //            };
         //            using var smtp = new SmtpClient();
         //            smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-        //            smtp.Authenticate("0306201451@caothang.edu.vn", "12345qwertKHANG");
+        //            smtp.Authenticate("baigiangtructuyen2025@gmail.com", "kryx fkgc pxht wfsf");
         //            smtp.Send(email);
         //            smtp.Disconnect(true);
 
