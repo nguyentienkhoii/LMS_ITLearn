@@ -485,7 +485,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 <div style=' overflow: hidden;'>
 
                   <div class='hedert'>
-                    <p> TRƯỜNG ĐH MỞ HÀ NỘI</p>
+                    <p> TRƯỜNG ĐẠI HỌC MỞ HÀ NỘI</p>
                     <h4> KHOA CÔNG NGHỆ THÔNG TIN</h4>
                   </div>
 
