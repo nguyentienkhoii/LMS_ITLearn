@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<WebBaiGiang_CKC.Models.Bai>
 
 @{
-    var lstMon = ViewBag.lstSubject as List<MonHoc>;
+    var lstMon = ViewBag.lstSubject as List<LopHoc>;
 
 }
 
@@ -10,7 +10,8 @@
 
     <div class="menu-toggle"> <a href="#">Menu</a> </div>
     <div class="wrapper">
-    @await Html.PartialAsync("~/Views/PartialView/_Menu.cshtml")
+    @* @await Html.PartialAsync("~/Views/PartialView/_Menu.cshtml") *@
+        @await Html.PartialAsync("_SidebarMenu")
 
     <div id="" class="noidung">
         <ul>
@@ -22,7 +23,7 @@
 
                     <li>
                         <h2>
-                            @monhoc.TenMonHoc
+                            @monhoc.TenLopHoc
                         </h2>
                         <hr />
                     </li>

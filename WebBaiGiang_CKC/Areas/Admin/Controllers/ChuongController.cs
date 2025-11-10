@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AspNetCoreHero.ToastNotification.Abstractions;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -21,42 +20,44 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
     {
         private readonly WebBaiGiangContext _context;
         public INotyfService _notyfService { get; }
+
         public ChuongController(WebBaiGiangContext context, INotyfService notyfService)
         {
             _context = context;
             _notyfService = notyfService;
         }
 
-        // GET: Admin/Chuong
+        // GET: Admin/ChuongNew
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
             {
-                ViewBag.MonHocId = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc");
-                var chuong = new Chuong()
+                ViewBag.MaLopHoc = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc");
+                var chuong = new ChuongNew()
                 {
                     TenChuong = "",
-                    ChuongId = 0,
-                    MonHocId = 1,
-                };
-                var viewModel = new ChuongViewModel
-                {
-                    ListChuong = await _context.Chuong.Include(c => c.MonHoc).ToListAsync(),
-                    Detail = chuong
+                    MaChuong = 0,
+                    MaLopHoc = 1,
                 };
 
+                var viewModel = new ChuongViewModel
+                {
+                    ListChuong = await _context.ChuongNews.Include(c => c.LopHoc).ToListAsync(),
+                    Detail = chuong
+                };
 
                 return View(viewModel);
             }
             else
             {
-                ViewBag.MonHocId = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc");
-                List<Chuong> DsChuong = await _context.Chuong.Include(c => c.MonHoc).ToListAsync();
-                var chuong = new Chuong()
+                ViewBag.LopHocId = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc");
+                List<ChuongNew> DsChuong = await _context.ChuongNews.Include(c => c.LopHoc).ToListAsync();
+
+                var chuong = new ChuongNew()
                 {
-                    TenChuong = DsChuong.FirstOrDefault(c => c.ChuongId == id).TenChuong,
-                    ChuongId = DsChuong.FirstOrDefault(c => c.ChuongId == id).ChuongId,
-                    MonHocId = 1,
+                    TenChuong = DsChuong.FirstOrDefault(c => c.MaChuong == id)?.TenChuong ?? "",
+                    MaChuong = DsChuong.FirstOrDefault(c => c.MaChuong == id)?.MaChuong ?? 0,
+                    MaLopHoc = 1,
                 };
                 var viewModel = new ChuongViewModel
                 {
@@ -64,17 +65,15 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                     Detail = chuong
                 };
 
-
                 return View(viewModel);
             }
-
         }
 
         public IActionResult GetDetail(int id)
         {
-            var chuong = _context.Chuong
-                .Include(c => c.MonHoc)
-                .SingleOrDefault(c => c.ChuongId == id);
+            var chuong = _context.ChuongNews
+                .Include(c => c.LopHoc)
+                .SingleOrDefault(c => c.MaChuong == id);
 
             if (chuong == null)
             {
@@ -83,9 +82,9 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             var data = new
             {
-                monHoc = new { tenMonHoc = chuong.MonHoc.TenMonHoc },
+                lopHoc = new { tenLopHoc = chuong.LopHoc.TenLopHoc },
                 tenChuong = chuong.TenChuong,
-                chuongId = chuong.ChuongId
+                chuongId = chuong.MaChuong
             };
 
             try
@@ -95,7 +94,6 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             }
             catch (Exception)
             {
-                // log lỗi serialize JSON vào đây
                 return BadRequest();
             }
         }
@@ -106,51 +104,40 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existingChuong = await _context.Chuong.FirstOrDefaultAsync(c => c.ChuongId == chuong.Detail.ChuongId || c.TenChuong.Trim() == chuong.Detail.TenChuong.Trim() && c.MonHocId == chuong.Detail.MonHocId);
+                var existingChuong = await _context.ChuongNews
+                    .FirstOrDefaultAsync(c =>
+                        c.MaChuong == chuong.Detail.MaChuong ||
+                        (c.TenChuong.Trim() == chuong.Detail.TenChuong.Trim() && c.MaLopHoc == chuong.Detail.MaLopHoc)
+                    );
 
                 if (existingChuong != null)
                 {
-                    if (existingChuong.ChuongId == chuong.Detail.ChuongId)
+                    if (existingChuong.MaChuong == chuong.Detail.MaChuong)
                     {
-                        ViewData["MonHocId"] = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc", chuong.Detail.MonHocId);
-
-                        var model = new ChuongViewModel
-                        {
-                            Detail = chuong.Detail,
-                            ListChuong = await _context.Chuong.ToListAsync()
-                        };
+                        ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
                         _notyfService.Error("Số chương đã tồn tại");
                         return RedirectToAction(nameof(Index));
                     }
                     else
                     {
-
-
-                        ViewData["MonHocId"] = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc", chuong.Detail.MonHocId);
-
-                        var model = new ChuongViewModel
-                        {
-                            Detail = chuong.Detail,
-                            ListChuong = await _context.Chuong.ToListAsync()
-                        }; _notyfService.Error("Tên chương đã tồn tại");
-                      
+                        ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
+                        _notyfService.Error("Tên chương đã tồn tại");
                         return RedirectToAction(nameof(Index));
                     }
                 }
+
                 _context.Add(chuong.Detail);
-                _notyfService.Success("Thêm Thành Công");
+                _notyfService.Success("Thêm thành công");
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["MonHocId"] = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc", chuong.Detail.MonHocId);
-
+            ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
             var viewModel = new ChuongViewModel
             {
                 Detail = chuong.Detail,
-                ListChuong = await _context.Chuong.ToListAsync() // Cập nhật lại danh sách chương để hiển thị trên view
+                ListChuong = await _context.ChuongNews.ToListAsync()
             };
-
             return View("Index", viewModel);
         }
 
@@ -158,7 +145,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ChuongViewModel chuong)
         {
-            if (id != chuong.Detail.ChuongId)
+            if (id != chuong.Detail.MaChuong)
             {
                 return NotFound();
             }
@@ -167,30 +154,23 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             {
                 try
                 {
-                    var existingChuong = await _context.Chuong.FirstOrDefaultAsync(c => c.TenChuong.Trim() == chuong.Detail.TenChuong.Trim() && c.MonHocId == chuong.Detail.MonHocId);
+                    var existingChuong = await _context.ChuongNews
+                        .FirstOrDefaultAsync(c => c.TenChuong.Trim() == chuong.Detail.TenChuong.Trim() && c.MaLopHoc == chuong.Detail.MaLopHoc);
 
                     if (existingChuong != null)
                     {
-                       
-
-                            ViewData["MonHocId"] = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc", chuong.Detail.MonHocId);
-
-                            var model = new ChuongViewModel
-                            {
-                                Detail = chuong.Detail,
-                                ListChuong = await _context.Chuong.ToListAsync()
-                            }; _notyfService.Error("Tên chương đã tồn tại");
-
-                            return RedirectToAction(nameof(Index));
-                        
+                        ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
+                        _notyfService.Error("Tên chương đã tồn tại");
+                        return RedirectToAction(nameof(Index));
                     }
+
                     _context.Update(chuong.Detail);
-                    _notyfService.Success("Cập Nhật Thành Công");
+                    _notyfService.Success("Cập nhật thành công");
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ChuongExists(chuong.Detail.ChuongId))
+                    if (!ChuongExists(chuong.Detail.MaChuong))
                     {
                         return NotFound();
                     }
@@ -201,58 +181,38 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MonHocId"] = new SelectList(_context.MonHoc, "MonHocId", "TenMonHoc", chuong.Detail.MonHocId);
 
+            ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
             var viewModel = new ChuongViewModel
             {
                 Detail = chuong.Detail,
-                ListChuong = await _context.Chuong.ToListAsync() // Cập nhật lại danh sách chương để hiển thị trên view
+                ListChuong = await _context.ChuongNews.ToListAsync()
             };
-
             return View("Index", viewModel);
         }
 
-        // GET: Admin/Chuong/Delete/5
-        //public async Task<IActionResult> Delete(int? id)
-        //{
-        //    if (id == null || _context.Chuong == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var chuong = await _context.Chuong
-        //        .Include(c => c.MonHoc)
-        //        .FirstOrDefaultAsync(m => m.ChuongId == id);
-        //    if (chuong == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(chuong);
-        //}
-
-        // POST: Admin/Chuong/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            if (_context.Chuong == null)
+            if (_context.ChuongNews == null)
             {
-                return Problem("Entity set 'WebBaiGiangContext.Chuong'  is null.");
+                return Problem("Entity set 'WebBaiGiangContext.ChuongNew' is null.");
             }
-            var chuong = await _context.Chuong.FindAsync(id);
+
+            var chuong = await _context.ChuongNews.FindAsync(id);
             if (chuong != null)
             {
-                _context.Chuong.Remove(chuong);
+                _context.ChuongNews.Remove(chuong);
             }
-            _notyfService.Success("Xóa Thành Công");
+            _notyfService.Success("Xóa thành công");
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ChuongExists(int id)
         {
-            return _context.Chuong.Any(e => e.ChuongId == id);
+            return _context.ChuongNews.Any(e => e.MaChuong == id);
         }
     }
 }

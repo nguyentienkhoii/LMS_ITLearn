@@ -1,0 +1,181 @@
+﻿@model WebBaiGiang_CKC.Models.BaiTap
+
+@{
+    ViewData["Title"] = "Nộp bài tập";
+}
+
+<main>
+    <div class="menu-toggle">
+        <a href="#">Menu</a>
+    </div>
+
+    <div class="wrapper">
+        <!-- Sidebar trái -->
+        @await Html.PartialAsync("_SidebarMenu")
+
+        <!-- Nội dung chính -->
+        <div class="noidung">
+            <h2 class="lesson-title">Nộp bài: @ViewBag.TenBaiTap</h2>
+            <hr />
+
+            <!-- Mô tả bài tập -->
+            <div class="lesson-desc">
+                @Html.Raw(ViewBag.MoTa)
+            </div>
+
+
+            <form asp-action="NopBai" asp-route-baiTapId="@ViewBag.BaiTapId"
+                  method="post" enctype="multipart/form-data">
+                <div class="lesson-toc">
+                    <p class="toc-header mb-3">
+                        <span>File nộp bài tập</span>
+                    </p>
+
+                    <!-- Hộp tải tệp -->
+                    <div id="dropzone" class="dropzone text-center"
+                         onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" name="files" multiple
+                               accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar"
+                               onchange="handleFiles(this.files)" hidden />
+                        <i class="fa fa-upload upload-icon"></i>
+                        <p class="mt-2">Kéo & thả hoặc nhấn để chọn tệp</p>
+                    </div>
+
+                    <ul id="fileList" class="file-list mt-3"></ul>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fa fa-save me-2"></i> Lưu những thay đổi
+                        </button>
+                        <a href="@Url.Action("ChiTiet", "BaiTap", new { baiTapId = ViewBag.BaiTapId })"
+                           class="btn btn-secondary ms-2">
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="~/assets/js/menu_.js"></script>
+    <script>
+        // Hiển thị danh sách file đã chọn
+        function handleFiles(files) {
+            const list = document.getElementById("fileList");
+            list.innerHTML = "";
+            for (let i = 0; i < files.length; i++) {
+                const li = document.createElement("li");
+                li.textContent = files[i].name + " (" + (files[i].size / 1024 / 1024).toFixed(2) + " MB)";
+                list.appendChild(li);
+            }
+        }
+
+        // Xử lý drag-drop
+        const dropzone = document.getElementById("dropzone");
+        dropzone.addEventListener("dragover", e => {
+            e.preventDefault();
+            dropzone.classList.add("dragover");
+        });
+        dropzone.addEventListener("dragleave", e => {
+            dropzone.classList.remove("dragover");
+        });
+        dropzone.addEventListener("drop", e => {
+            e.preventDefault();
+            dropzone.classList.remove("dragover");
+            document.getElementById("fileInput").files = e.dataTransfer.files;
+            handleFiles(e.dataTransfer.files);
+        });
+    </script>
+}
+
+<style>
+
+    .lesson-title {
+        color: #1e3a8a;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .lesson-desc {
+        color: #374151;
+        line-height: 1.6;
+    }
+
+    /* ====== Hộp nộp bài ====== */
+    .lesson-toc {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .toc-header {
+        font-weight: 600;
+        color: #111827;
+        font-size: 1rem;
+        border-left: 4px solid #2563eb;
+        padding-left: 0.5rem;
+    }
+
+    .dropzone {
+        border: 2px dashed #93c5fd;
+        border-radius: 10px;
+        padding: 2.5rem 1rem;
+        background: #f9fafb;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+        .dropzone:hover {
+            background: #eef2ff;
+            border-color: #2563eb;
+        }
+
+        .dropzone.dragover {
+            background: #e0f2fe;
+            border-color: #1d4ed8;
+        }
+
+    .upload-icon {
+        font-size: 2rem;
+        color: #2563eb;
+    }
+
+    .file-list {
+        list-style: none;
+        padding: 0;
+        color: #374151;
+        font-size: 0.95rem;
+    }
+
+        .file-list li {
+            background: #f3f4f6;
+            margin: 5px 0;
+            padding: 8px 10px;
+            border-radius: 6px;
+        }
+
+    .btn-primary {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        border-radius: 8px;
+    }
+
+        .btn-primary:hover {
+            background-color: #1e40af;
+        }
+
+    .btn-secondary {
+        background-color: #9ca3af;
+        border-color: #9ca3af;
+        border-radius: 8px;
+    }
+
+        .btn-secondary:hover {
+            background-color: #6b7280;
+        }
+</style>

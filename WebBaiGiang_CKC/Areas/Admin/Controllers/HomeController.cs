@@ -11,147 +11,139 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
     public class HomeController : Controller
     {
         private readonly WebBaiGiangContext _context;
+
         public HomeController(WebBaiGiangContext context)
         {
             _context = context;
-
         }
-       
+
         public IActionResult Index(int kyKiemTraId)
         {
-            var monHocCount = GetMonHocCount(); // Đếm số lượng môn học
-            ViewBag.MonHocCount = monHocCount;
-            var cauHoiCount = GetCauHoiCount();
-            ViewBag.CauHoiCount = cauHoiCount;
-            var chuongCount = GetChuongCount();
-            ViewBag.ChuongCount = chuongCount;
-            var mucCount = GetMucCount();
-            ViewBag.MucCount = mucCount;
-            var kyKiemTraCount = GetKyKiemTraCount();
-            ViewBag.KyKiemTraCount = kyKiemTraCount;
-            var baiLamList = _context.BaiLam
-               .Include(x => x.CauHoi_BaiLam).ThenInclude(x => x.CauHoi_De.De.KyKiemTra)
-               .Where(x => x.CauHoi_BaiLam.Any() && x.CauHoi_BaiLam.First().CauHoi_De.De.KyKiemTraId == kyKiemTraId)
-               .ToList();
+            // Thống kê tổng quan
+            ViewBag.MonHocCount = _context.LopHocs.Count();
+            ViewBag.CauHoiCount = _context.CauHoi.Count();
+            ViewBag.ChuongCount = _context.ChuongNews.Count();
+            ViewBag.MucCount = _context.Muc.Count();
+            ViewBag.KyKiemTraCount = _context.KyKiemTra.Count();
 
-            var (percent0to5, percent5to7, percent7to8, percent8to10, totalParticipants, count0to5, count5to7, count7to8, count8to10, count10)
-                = CalculateStatistics(baiLamList);
-            var tinhtiletraloidungtungcauhoi = TinhTiLeTraLoiDungTungCauHoi(kyKiemTraId);
-            ViewBag.tinhtiletraloidungtungcauhoi = tinhtiletraloidungtungcauhoi;
-            var countChuaLamBai = CountSinhVienChuaLamBai(kyKiemTraId);
-            ViewBag.CountChuaLamBai = countChuaLamBai;
-            ViewBag.Percent0to5 = percent0to5;
-            ViewBag.Percent5to7 = percent5to7;
-            ViewBag.Percent7to8 = percent7to8;
-            ViewBag.Percent8to10 = percent8to10;
-            ViewBag.TotalParticipants = totalParticipants;
-            ViewBag.Diem0to5 = count0to5;
-            ViewBag.Diem5to7 = count5to7;
-            ViewBag.Diem7to8 = count7to8;
-            ViewBag.Diem8to10 = count8to10;
-            ViewBag.Diem10 = count10;
-            var kyKiemTraList = _context.KyKiemTra.ToList();
-            ViewBag.KyKiemTraList = kyKiemTraList;
-            var tenkykiemtra = _context.KyKiemTra.FirstOrDefault(k => k.KyKiemTraId == kyKiemTraId)?.TenKyKiemTra;
-            ViewBag.KyKiemTraName = tenkykiemtra;
+            // Lấy danh sách bài làm có liên quan đến kỳ kiểm tra
+            var baiLamList = _context.BaiLam
+                .Include(x => x.CauHoi_BaiLam)
+                    .ThenInclude(cb => cb.CauHoi_De)
+                        .ThenInclude(cd => cd.De)
+                            .ThenInclude(d => d.KyKiemTra)
+                .Where(x => x.CauHoi_BaiLam.Any(cb => cb.CauHoi_De.De.KyKiemTraId == kyKiemTraId))
+                .AsNoTracking()
+                .ToList();
+
+            // Tính toán thống kê điểm
+            var stats = CalculateStatistics(baiLamList);
+            ViewBag.Percent0to5 = stats.percent0to5;
+            ViewBag.Percent5to7 = stats.percent5to7;
+            ViewBag.Percent7to8 = stats.percent7to8;
+            ViewBag.Percent8to10 = stats.percent8to10;
+            ViewBag.TotalParticipants = stats.totalParticipants;
+            ViewBag.Diem0to5 = stats.count0to5;
+            ViewBag.Diem5to7 = stats.count5to7;
+            ViewBag.Diem7to8 = stats.count7to8;
+            ViewBag.Diem8to10 = stats.count8to10;
+            ViewBag.Diem10 = stats.count10;
+
+            // Tính tỷ lệ trả lời đúng từng câu hỏi
+            var tiLeDung = TinhTiLeTraLoiDungTungCauHoi(kyKiemTraId);
+            ViewBag.TiLeTraLoiDungTungCauHoi = tiLeDung;
+
+            // Số lượng sinh viên chưa làm bài
+            ViewBag.CountChuaLamBai = CountHocVienChuaLamBai(kyKiemTraId);
+
+            // Danh sách kỳ kiểm tra
+            ViewBag.KyKiemTraList = _context.KyKiemTra.AsNoTracking().ToList();
+
+            var tenKy = _context.KyKiemTra.FirstOrDefault(k => k.KyKiemTraId == kyKiemTraId)?.TenKyKiemTra;
+            ViewBag.KyKiemTraName = tenKy;
             ViewBag.KyKiemTraId = kyKiemTraId;
+
             return View(baiLamList);
         }
 
-        private (double, double, double, double, int, int, int, int, int,int) CalculateStatistics(List<BaiLam> baiLamList)
+        private (double percent0to5, double percent5to7, double percent7to8, double percent8to10,
+                 int totalParticipants, int count0to5, int count5to7, int count7to8, int count8to10, int count10)
+            CalculateStatistics(List<BaiLam> baiLamList)
         {
-            
+            if (!baiLamList.Any())
+                return (0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
             var totalParticipants = baiLamList
-                .Select(x => x.MSSV)
+                .Select(x => x.MaHocVien)
                 .Distinct()
                 .Count();
-            var count0to5 = baiLamList.Count(s => s.Diem >= 0 && s.Diem < 5);
-            var count5to7 = baiLamList.Count(s => s.Diem >= 5 && s.Diem < 7);
-            var count7to8 = baiLamList.Count(s => s.Diem >= 7 && s.Diem < 8);
-            var count8to10 = baiLamList.Count(s => s.Diem >= 8 && s.Diem <= 10);
-            var total = baiLamList.Count();
-            var percent0to5 = Math.Round((double)count0to5 / total * 100, 2);
-            var percent5to7 = Math.Round((double)count5to7 / total * 100, 2);
-            var percent7to8 = Math.Round((double)count7to8 / total * 100, 2);
-            var percent8to10 = Math.Round((double)count8to10 / total * 100, 2);
-            var count10 = baiLamList.Count(s => s.Diem ==10);
-            return (percent0to5, percent5to7, percent7to8, percent8to10, totalParticipants, count0to5, count5to7, count7to8, count8to10, count10);
+
+            int count0to5 = baiLamList.Count(s => s.Diem >= 0 && s.Diem < 5);
+            int count5to7 = baiLamList.Count(s => s.Diem >= 5 && s.Diem < 7);
+            int count7to8 = baiLamList.Count(s => s.Diem >= 7 && s.Diem < 8);
+            int count8to10 = baiLamList.Count(s => s.Diem >= 8 && s.Diem < 10);
+            int count10 = baiLamList.Count(s => s.Diem == 10);
+
+            int total = baiLamList.Count;
+            double percent0to5 = Math.Round((double)count0to5 / total * 100, 2);
+            double percent5to7 = Math.Round((double)count5to7 / total * 100, 2);
+            double percent7to8 = Math.Round((double)count7to8 / total * 100, 2);
+            double percent8to10 = Math.Round((double)count8to10 / total * 100, 2);
+
+            return (percent0to5, percent5to7, percent7to8, percent8to10,
+                    totalParticipants, count0to5, count5to7, count7to8, count8to10, count10);
         }
+
         private Dictionary<int, double> TinhTiLeTraLoiDungTungCauHoi(int kyKiemTraId, int? deThiId = null)
         {
-            // Lấy số sinh viên từ database
-            var soSinhVien = _context.BaiLam
-                .Where(b => deThiId == null || b.CauHoi_BaiLam.Any(c => c.CauHoi_De.DeId == deThiId))
-                .Select(b => b.MSSV)
+            var soHocVien = _context.BaiLam
+                .Where(b => b.CauHoi_BaiLam.Any(cb => cb.CauHoi_De.De.KyKiemTraId == kyKiemTraId))
+                .Select(b => b.MaHocVien)
                 .Distinct()
                 .Count();
 
-            // Lấy các câu hỏi và đáp án đúng
             var dapAnDungList = _context.CauHoi_De
-                  .Include(cd => cd.CauHoi)
-                  .Where(cd => cd.De.KyKiemTraId == kyKiemTraId)
-                  .Select(cd => new { cd.CauHoiId, cd.CauHoi.DapAnDung })
-                  .ToList();
-
-            // Lấy bài làm của sinh viên
-            var baiLamList = _context.CauHoi_BaiLam
-                .Include(cb => cb.CauHoi_De).ThenInclude(cd => cd.De)
-                .Where(cb => cb.CauHoi_De.De.KyKiemTraId == kyKiemTraId && (deThiId == null || cb.CauHoi_De.DeId == deThiId))
-                .Select(cb => new { cb.BaiLam.MSSV, cb.CauHoi_De.CauHoiId, cb.DapAnSVChon })
+                .Include(cd => cd.CauHoi)
+                .Where(cd => cd.De.KyKiemTraId == kyKiemTraId)
+                .Select(cd => new { cd.CauHoiId, cd.CauHoi.DapAnDung })
+                .AsNoTracking()
                 .ToList();
 
-            // Tính tỷ lệ trả lời đúng của từng câu hỏi
-            var tiLeTraLoiDungTungCauHoi = dapAnDungList
+            var baiLamList = _context.CauHoi_BaiLam
+                .Include(cb => cb.CauHoi_De).ThenInclude(cd => cd.De)
+                .Where(cb => cb.CauHoi_De.De.KyKiemTraId == kyKiemTraId)
+                .Select(cb => new { cb.BaiLam.MaHocVien, cb.CauHoi_De.CauHoiId, cb.DapAnSVChon })
+                .AsNoTracking()
+                .ToList();
+
+            var tiLeTraLoiDung = dapAnDungList
                 .GroupJoin(
                     baiLamList,
                     dapAn => dapAn.CauHoiId,
                     baiLam => baiLam.CauHoiId,
-                    (dapAn, baiLamGroup) => new { dapAn.CauHoiId, dapAn.DapAnDung, BaiLamGroup = baiLamGroup }
-                )
-                .SelectMany(
-                    x => x.BaiLamGroup.DefaultIfEmpty(),
-                    (x, baiLam) => new { x.CauHoiId, x.DapAnDung, DapAnSV = baiLam?.DapAnSVChon }
-                )
-                .GroupBy(x => x.CauHoiId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => (double)g.Count(x => x.DapAnDung == x.DapAnSV) / g.Count() * 100
-                );
+                    (dapAn, baiLamGroup) => new
+                    {
+                        dapAn.CauHoiId,
+                        dapAn.DapAnDung,
+                        BaiLamGroup = baiLamGroup
+                    })
+                .Select(x => new
+                {
+                    x.CauHoiId,
+                    TiLeDung = x.BaiLamGroup.Any()
+                        ? (double)x.BaiLamGroup.Count(bl => bl.DapAnSVChon?.ToLower() == x.DapAnDung?.ToLower()) /
+                          x.BaiLamGroup.Count() * 100
+                        : 0
+                })
+                .ToDictionary(x => x.CauHoiId, x => Math.Round(x.TiLeDung, 2));
 
-            return tiLeTraLoiDungTungCauHoi;
-        }
-        private int CountSinhVienChuaLamBai(int kykiemtraid)
-        {
-            var count = _context.DanhSachThi
-                .Where(x => x.KyKiemTraId == kykiemtraid && x.TrangThai == false)
-                .Count();
-            return count;
-        }
-        private int GetCauHoiCount()
-        {
-            var cauhoi = _context.CauHoi.Count();
-            return cauhoi;
-        }
-        private int GetMonHocCount()
-        {
-            var monhoc = _context.MonHoc.Count(); // Giả sử bạn có bảng MonHocs trong cơ sở dữ liệu
-            return monhoc;
+            return tiLeTraLoiDung;
         }
 
-        private int GetChuongCount()
+        private int CountHocVienChuaLamBai(int kyKiemTraId)
         {
-            var chuong = _context.Chuong.Count();
-            return chuong;
-        }
-        private int GetMucCount()
-        {
-            var muc = _context.Muc.Count();
-            return muc;
-        }
-        private int GetKyKiemTraCount()
-        {
-            var kykiemtra = _context.KyKiemTra.Count();
-            return kykiemtra;
+            return _context.DanhSachThi
+                .Count(x => x.KyKiemTraId == kyKiemTraId && !x.TrangThai);
         }
     }
 }

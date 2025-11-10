@@ -1,25 +1,46 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebBaiGiang_CKC.Models
 {
+    [Table("BAI")]
     public class Bai
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DisplayName("Mã bài")]
         public int BaiId { get; set; }
-        [DisplayName("Tên chương")]
+
+        // Khóa ngoại đến CHUONG_NEW
+        [Required]
+        [DisplayName("Mã chương")]
+        public int MaChuong { get; set; }
+
+        [ForeignKey("MaChuong")]
+        public ChuongNew Chuong { get; set; }   // Navigation property
+
         [Required(ErrorMessage = "{0} không được bỏ trống")]
-        public int ChuongId { get; set; }
+        [StringLength(200)]
         [DisplayName("Tên bài")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
         public string TenBai { get; set; }
-        [DisplayName("Bài số")]
+
+        [Required(ErrorMessage = "{0} không được bỏ trống")]
         [Range(1, int.MaxValue, ErrorMessage = "Số bài phải lớn hơn 0")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
+        [DisplayName("Bài số")]
         public int SoBai { get; set; }
-        [DisplayName("Mô tả")]
+
         [Required(ErrorMessage = "{0} không được bỏ trống")]
+        [Column(TypeName = "ntext")]
+        [DisplayName("Mô tả")]
         public string MoTa { get; set; }
-        public Chuong Chuong { get; set; }
-        public List<Muc> Mucs { get; set; }
+
+        // Quan hệ 1-n: 1 bài có thể có nhiều mục
+        public List<Muc>? Mucs { get; set; }
+
+        // Quan hệ 1-n: Một bài có thể có nhiều bài tập
+        public virtual ICollection<BaiTap>? BaiTaps { get; set; }
+
     }
 }

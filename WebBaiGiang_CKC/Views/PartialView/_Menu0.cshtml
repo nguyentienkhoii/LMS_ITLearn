@@ -1,55 +1,116 @@
-﻿@{
+﻿@* @{
     var lstMon = ViewData["lstSubject"] as List<MonHoc>;
 }
 
 <div class="thanh">
-    <nav>
+    <nav class="custom-menu">
         <ul class="menu">
-            <li><div class="close-btn"><i class="fas fa-times"></i></div></li>
+            <li class="menu-header">
+                <i class="fas fa-graduation-cap me-2"></i> E-LEARNING
+            </li>
+
             <li class="menu-item">
-                <a href="#">
-                    <i class="fas fa-book" style="margin-right: 8px;"></i>Môn học của tôi
+                <a asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-home"></i> Trang chủ
                 </a>
             </li>
 
+            <li class="menu-item">
+                <a href="#">
+                    <i class="fas fa-book-open"></i> Môn học của tôi
+                </a>
+            </li>
 
             @if (lstMon != null && lstMon.Count > 0)
             {
-                @foreach (var mon in lstMon)
+                foreach (var mon in lstMon)
                 {
-                    <li class="menu-item">
+                    <li class="sub-item">
                         <a asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
-                            <i class="fas fa-book" style="margin-right: 8px;"></i> @mon.TenMonHoc
-
+                            <i class="fas fa-book"></i> @mon.TenMonHoc
                         </a>
                     </li>
                 }
             }
 
-            @if (User.Identity.IsAuthenticated) // Chỉ hiện khi đã đăng nhập
+            @if (User.Identity.IsAuthenticated)
             {
                 <li class="menu-item">
                     <a asp-controller="BaiGiangs" asp-action="KyThi">
-                        <i class="fas fa-calendar-day" style="margin-right: 8px;"></i>Kỳ thi
+                        <i class="fas fa-calendar-alt"></i> Kỳ thi
                     </a>
                 </li>
             }
         </ul>
     </nav>
 </div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-
-    /* Căn chỉnh menu */
-    .default-item {
-        color: #333;
-        padding: 10px 15px;
-        font-size: 24px;
-        font-weight: normal;
-        cursor: default;
-    }
-    /* Các mục menu */
-    .menu-item a {
-        font-size: 20px;
+    /* === Cấu trúc menu cũ nhưng style mới === */
+    .thanh {
+        background: linear-gradient(180deg, #0078d7, #5eb8ff);
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 1rem 0;
+        color: white;
     }
 
+    .custom-menu .menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .menu-header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .menu-item a,
+    .sub-item a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: white;
+        padding: 10px 20px;
+        transition: all 0.25s ease;
+        font-weight: 500;
+        border-radius: 6px;
+        margin: 3px 10px;
+    }
+
+        .menu-item a:hover,
+        .sub-item a:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(4px);
+        }
+
+    .menu-item i,
+    .sub-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .sub-item a {
+        font-size: 15px;
+        padding-left: 35px;
+        opacity: 0.95;
+    }
+
+    .menu-item.active a {
+        background: rgba(255,255,255,0.35);
+        font-weight: 600;
+    }
 </style>
+ *@

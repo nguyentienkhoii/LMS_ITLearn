@@ -23,7 +23,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         // GET: Admin/Bai
         public async Task<IActionResult> Index()
         {
-            var baiGiangContext = _context.Bai.OrderBy(b => b.Chuong.ChuongId).ThenBy(b => b.SoBai).Include(b => b.Chuong);
+            var baiGiangContext = _context.Bai.OrderBy(b => b.Chuong.MaChuong).ThenBy(b => b.SoBai).Include(b => b.Chuong);
             return View(await baiGiangContext.ToListAsync());
         }
 
@@ -45,12 +45,12 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             return View(bai);
         }
-        public IActionResult GetChuongInfo(int chuongId)
+        public IActionResult GetChuongInfo(int MaChuong)
         {
-            var chuong = _context.Chuong.FirstOrDefault(c => c.ChuongId == chuongId);
+            var chuong = _context.ChuongNews.FirstOrDefault(c => c.MaChuong == MaChuong);
             if (chuong != null)
             {
-                var chuongInfo = new { id = chuong.ChuongId, tenChuong = chuong.TenChuong };
+                var chuongInfo = new { id = chuong.MaChuong, tenChuong = chuong.TenChuong };
                 return Json(chuongInfo);
             }
             return Json(new { });
@@ -59,7 +59,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         // GET: Admin/Bai/Create
         public IActionResult Create()
         {
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong");
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong");
             return View();
         }
 
@@ -68,20 +68,20 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BaiId,ChuongId,TenBai,SoBai,MoTa")] Bai bai)
+        public async Task<IActionResult> Create([Bind("BaiId,MaChuong,TenBai,SoBai,MoTa")] Bai bai)
         {
-            if (bai.ChuongId == 0)
+            if (bai.MaChuong == 0)
             {
                 _notyfService.Error("Vui lòng chọn chương học!");
             }
             else if (ModelState.IsValid)
             {
                 // Kiểm tra xem số bài đã tồn tại hay chưa
-                var existingBai = await _context.Bai.FirstOrDefaultAsync(b => b.SoBai == bai.SoBai && b.ChuongId == bai.ChuongId);
+                var existingBai = await _context.Bai.FirstOrDefaultAsync(b => b.SoBai == bai.SoBai && b.MaChuong == bai.MaChuong);
                 if (existingBai != null)
                 {
                     ModelState.AddModelError("SoBai", "Số bài đã tồn tại");
-                    ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", bai.ChuongId);
+                    ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", bai.MaChuong);
                     return View(bai);
                 }
 
@@ -90,7 +90,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", bai.ChuongId);
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", bai.MaChuong);
             return View(bai);
         }
 
@@ -107,7 +107,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", bai.ChuongId);
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", bai.MaChuong);
             return View(bai);
         }
 
@@ -126,17 +126,17 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             if (ModelState.IsValid)
             {
                 // Kiểm tra xem số bài mới đã tồn tại hay chưa
-                var existingBai = await _context.Bai.FirstOrDefaultAsync(b => b.SoBai == bai.SoBai && b.ChuongId == bai.ChuongId && b.BaiId != bai.BaiId);
+                var existingBai = await _context.Bai.FirstOrDefaultAsync(b => b.SoBai == bai.SoBai && b.MaChuong == bai.MaChuong && b.BaiId != bai.BaiId);
                 if (existingBai != null)
                 {
                     ModelState.AddModelError("SoBai", "Số bài đã tồn tại");
-                    ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", bai.ChuongId);
+                    ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", bai.MaChuong);
                     return View(bai);
                 }
 
                 try
                 {
-                    if (bai.ChuongId == 0)
+                    if (bai.MaChuong == 0)
                     {
                         _notyfService.Error("Vui lòng chọn chương học!");
                     }
@@ -160,7 +160,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", bai.ChuongId);
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", bai.MaChuong);
             return View(bai);
         }
         // GET: Admin/Bai/Delete/5

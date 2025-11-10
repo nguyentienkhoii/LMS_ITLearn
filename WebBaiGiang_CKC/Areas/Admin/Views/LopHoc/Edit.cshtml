@@ -1,0 +1,59 @@
+﻿@model WebBaiGiang_CKC.Models.LopHoc
+@{
+    ViewData["Title"] = "Sửa lớp học";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb mt-3">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="LopHoc" asp-action="Index">Quản lý lớp học</a></li>
+    <li class="breadcrumb-item active">Sửa</li>
+</ol>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h4><i class="fa fa-edit"></i> Chỉnh sửa lớp học</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="MaLopHoc" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="TenLopHoc" class="form-label"></label>
+                <input asp-for="TenLopHoc" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TenVietTat" class="form-label"></label>
+                <input asp-for="TenVietTat" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MoTa" class="form-label"></label>
+                <textarea asp-for="MoTa" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TrangThai" class="form-label"></label>
+                <input asp-for="TrangThai" class="form-control" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Khóa học</label>
+                    <select asp-for="MaKhoaHoc" class="form-select" asp-items="@(new SelectList(ViewBag.KhoaHocList, "MaKhoaHoc", "TenKhoaHoc"))"></select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Giảng viên</label>
+                    <select asp-for="MaGiangVien" class="form-select" asp-items="@(new SelectList(ViewBag.GiangVienList, "MaGiangVien", "HoTen"))"></select>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-warning text-dark"><i class="fa fa-save"></i> Cập nhật</button>
+                <a asp-action="Index" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>

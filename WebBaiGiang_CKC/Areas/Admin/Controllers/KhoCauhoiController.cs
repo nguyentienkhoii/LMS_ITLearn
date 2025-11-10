@@ -12,85 +12,78 @@ using X.PagedList;
 
 namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 {
-
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
-
     public class KhoCauHoiController : Controller
     {
         private readonly WebBaiGiangContext _context;
         private readonly IConfiguration _configuration;
         public INotyfService _notyfService { get; }
+
         public KhoCauHoiController(WebBaiGiangContext context, IConfiguration configuration, INotyfService notyfService)
         {
             _context = context;
-            _notyfService = notyfService;
             _configuration = configuration;
+            _notyfService = notyfService;
         }
 
-        // GET: Admin/KhoCauHoi
+        // ====================== INDEX ======================
         public IActionResult Index(int? page)
         {
-            var baiGiangContext = _context.CauHoi.Include(k => k.Chuong);
-            var pageNo = page == null || page <= 0 ? 1 : page.Value;
-            var pageSize = 12;
-            PagedList<CauHoi> models = new PagedList<CauHoi>(baiGiangContext, pageNo, pageSize);
-
+            var list = _context.CauHoi
+                .Include(k => k.ChuongNew)
+                .ThenInclude(c => c.LopHoc)  
+                .OrderByDescending(c => c.CauHoiId);
+            int pageNo = page ?? 1;
+            int pageSize = 12;
+            PagedList<CauHoi> models = new PagedList<CauHoi>(list, pageNo, pageSize);
             return View(models);
         }
 
-        // GET: Admin/KhoCauHoi/Details/5
+        // ====================== DETAILS ======================
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.CauHoi == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var khoCauHoi = await _context.CauHoi
-                .Include(k => k.Chuong)
+            var cauHoi = await _context.CauHoi
+                .Include(k => k.ChuongNew)
                 .FirstOrDefaultAsync(m => m.CauHoiId == id);
-            if (khoCauHoi == null)
-            {
-                return NotFound();
-            }
+            if (cauHoi == null) return NotFound();
 
-            return View(khoCauHoi);
+            return View(cauHoi);
         }
 
-        // GET: Admin/KhoCauHoi/Create
+        // ====================== CREATE ======================
         public IActionResult Create()
         {
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong");
+            ViewData["LopHoc"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc");
+            ViewData["MaChuong"] = new SelectList(Enumerable.Empty<SelectListItem>()); // ban đầu trống
             return View();
         }
 
-        // POST: Admin/KhoCauHoi/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CauHoiId,ChuongId,NoiDung,DapAnA,DapAnB,DapAnC,DapAnD,DapAnDung,DoKho,SoLanLay,SoLanTraLoiDung")] CauHoi khoCauHoi)
+        public async Task<IActionResult> Create([Bind("CauHoiId,MaChuong,NoiDung,DapAnA,DapAnB,DapAnC,DapAnD,DapAnDung,DoKho,SoLanLay,SoLanTraLoiDung")] CauHoi cauHoi)
         {
-            if (khoCauHoi.ChuongId == 0)
+            if (cauHoi.MaChuong == 0)
             {
                 _notyfService.Error("Vui lòng chọn chương học!");
             }
             else if (ModelState.IsValid)
             {
-                _context.Add(khoCauHoi);
+                _context.Add(cauHoi);
                 await _context.SaveChangesAsync();
-                _notyfService.Success("Thêm Thành Công");
+                _notyfService.Success("Thêm câu hỏi thành công!");
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["LopHoc"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc");
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", cauHoi.MaChuong);
+            return View(cauHoi);
+        }
 
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", khoCauHoi.ChuongId);
-            return View(khoCauHoi);
-        }
-        public IActionResult CreateList()
-        {
-            return View();
-        }
+        // ====================== IMPORT DANH SÁCH CÂU HỎI ======================
+        public IActionResult CreateList() => View();
 
         [HttpPost]
         public IActionResult CreateList(IFormFile formFile)
@@ -98,12 +91,12 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             try
             {
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-                // Lấy danh sách các giá trị khóa ngoại từ bảng KyKiemTra
-                List<int> ChuongIds = new List<int>();
-                string ConString = _configuration.GetConnectionString("WebBaiGiang");
-                using (SqlConnection con = new SqlConnection(ConString))
+
+                List<int> maChuongList = new List<int>();
+                string conStr = _configuration.GetConnectionString("WebBaiGiang");
+                using (SqlConnection con = new SqlConnection(conStr))
                 {
-                    string query = "SELECT ChuongId FROM CHUONG";
+                    string query = "SELECT MaChuong FROM CHUONG_NEW";
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
                         con.Open();
@@ -111,20 +104,17 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                         {
                             while (reader.Read())
                             {
-                                ChuongIds.Add(reader.GetInt32(reader.GetOrdinal("ChuongId")));
+                                maChuongList.Add(reader.GetInt32(reader.GetOrdinal("MaChuong")));
                             }
                         }
                         con.Close();
                     }
                 }
-                var mainPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Files");
-                if (!Directory.Exists(mainPath))
-                {
-                    Directory.CreateDirectory(mainPath);
-                }
 
-                var filePath = Path.Combine(mainPath, $"{Guid.NewGuid()}{Path.GetExtension(formFile.FileName)}");
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Files");
+                if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
 
+                var filePath = Path.Combine(uploadDir, $"{Guid.NewGuid()}{Path.GetExtension(formFile.FileName)}");
                 using (FileStream stream = new FileStream(filePath, FileMode.Create))
                 {
                     formFile.CopyTo(stream);
@@ -135,46 +125,35 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 {
                     ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
                     DataTable dt = new DataTable();
+
                     foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
-                    {
                         dt.Columns.Add(firstRowCell.Text);
-                    }
-                    for (var rowNumber = 2; rowNumber <= worksheet.Dimension.End.Row; rowNumber++)
+
+                    for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
                     {
-                        var row = worksheet.Cells[rowNumber, 1, rowNumber, worksheet.Dimension.End.Column];
+                        var excelRow = worksheet.Cells[row, 1, row, worksheet.Dimension.End.Column];
                         var newRow = dt.Rows.Add();
-                        foreach (var cell in row)
-                        {
+                        foreach (var cell in excelRow)
                             newRow[cell.Start.Column - 1] = cell.Text;
-                        }
                     }
 
-                    // Kiểm tra giá trị khóa ngoại trước khi thêm bản ghi vào cơ sở dữ liệu
-                    bool hasInvalidChuongHoc = false;
+                    // Kiểm tra dữ liệu khóa ngoại
                     foreach (DataRow row in dt.Rows)
                     {
-                        string dapAnDung = row["DapAnDung"].ToString().ToUpper();
-                        row["DapAnDung"] = dapAnDung;
-                        if (!ChuongIds.Contains(Convert.ToInt32(row["ChuongId"])))
+                        if (!maChuongList.Contains(Convert.ToInt32(row["MaChuong"])))
                         {
-                            _notyfService.Warning("Chưa tạo chương học hoặc sai chương học !");
-                            hasInvalidChuongHoc = true;
-                            break;
+                            _notyfService.Warning("Sai mã chương hoặc chương chưa được tạo!");
+                            return RedirectToAction("Index");
                         }
+                        row["DapAnDung"] = row["DapAnDung"].ToString().ToUpper();
                     }
 
-                    if (hasInvalidChuongHoc)
-                    {
-                        return RedirectToAction("Index");
-                    }
-
-                  var  conString = _configuration.GetConnectionString("WebBaiGiang");
-                    using (SqlConnection con = new SqlConnection(conString))
+                    using (SqlConnection con = new SqlConnection(conStr))
                     {
                         using (SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(con))
                         {
-                            sqlBulkCopy.DestinationTableName = "CauHoi";
-                            sqlBulkCopy.ColumnMappings.Add("ChuongId", "ChuongId");
+                            sqlBulkCopy.DestinationTableName = "CAUHOI";
+                            sqlBulkCopy.ColumnMappings.Add("MaChuong", "MaChuong");
                             sqlBulkCopy.ColumnMappings.Add("NoiDung", "NoiDung");
                             sqlBulkCopy.ColumnMappings.Add("DapAnA", "DapAnA");
                             sqlBulkCopy.ColumnMappings.Add("DapAnB", "DapAnB");
@@ -184,133 +163,108 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                             sqlBulkCopy.ColumnMappings.Add("DoKho", "DoKho");
                             sqlBulkCopy.ColumnMappings.Add("SoLanLay", "SoLanLay");
                             sqlBulkCopy.ColumnMappings.Add("SoLanTraLoiDung", "SoLanTraLoiDung");
+
                             con.Open();
                             sqlBulkCopy.WriteToServer(dt);
                             con.Close();
                         }
                     }
-                    _notyfService.Success("Thêm Thành Công!");
+
+                    _notyfService.Success("Nhập danh sách câu hỏi thành công!");
                     return RedirectToAction("Index");
                 }
             }
             catch (Exception)
             {
-                _notyfService.Error("Thêm Thất Bại!");
+                _notyfService.Error("Có lỗi khi nhập danh sách câu hỏi!");
+                return RedirectToAction("Index");
             }
-            return RedirectToAction("Index");
         }
-        // GET: Admin/KhoCauHoi/Edit/5
+
+        // ====================== EDIT ======================
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.CauHoi == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var khoCauHoi = await _context.CauHoi.FindAsync(id);
-            if (khoCauHoi == null)
-            {
-                return NotFound();
-            }
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", khoCauHoi.ChuongId);
-            return View(khoCauHoi);
+            var cauHoi = await _context.CauHoi.FindAsync(id);
+            if (cauHoi == null) return NotFound();
+
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", cauHoi.MaChuong);
+            return View(cauHoi);
         }
 
-        // POST: Admin/KhoCauHoi/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CauHoiId,ChuongId,NoiDung,DapAnA,DapAnB,DapAnC,DapAnD,DapAnDung,DoKho,SoLanLay,SoLanTraLoiDung")] CauHoi khoCauHoi)
+        public async Task<IActionResult> Edit(int id, [Bind("CauHoiId,MaChuong,NoiDung,DapAnA,DapAnB,DapAnC,DapAnD,DapAnDung,DoKho,SoLanLay,SoLanTraLoiDung")] CauHoi cauHoi)
         {
-            if (id != khoCauHoi.CauHoiId)
-            {
+            if (id != cauHoi.CauHoiId)
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    if (khoCauHoi.ChuongId == 0)
+                    if (cauHoi.MaChuong == 0)
                     {
                         _notyfService.Error("Vui lòng chọn chương học!");
                     }
                     else
                     {
-                        _context.Update(khoCauHoi);
-                        _notyfService.Success("Cập Nhật Thành Công");
+                        _context.Update(cauHoi);
                         await _context.SaveChangesAsync();
+                        _notyfService.Success("Cập nhật thành công!");
                     }
-
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!KhoCauHoiExists(khoCauHoi.CauHoiId))
-                    {
+                    if (!_context.CauHoi.Any(e => e.CauHoiId == cauHoi.CauHoiId))
                         return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ChuongId"] = new SelectList(_context.Chuong, "ChuongId", "TenChuong", khoCauHoi.ChuongId);
-            return View(khoCauHoi);
+
+            ViewData["MaChuong"] = new SelectList(_context.ChuongNews, "MaChuong", "TenChuong", cauHoi.MaChuong);
+            return View(cauHoi);
         }
 
-        // GET: Admin/KhoCauHoi/Delete/5
+        // ====================== DELETE ======================
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.CauHoi == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var khoCauHoi = await _context.CauHoi
-                .Include(k => k.Chuong)
+            var cauHoi = await _context.CauHoi
+                .Include(k => k.ChuongNew)
                 .FirstOrDefaultAsync(m => m.CauHoiId == id);
-            if (khoCauHoi == null)
-            {
-                return NotFound();
-            }
+            if (cauHoi == null) return NotFound();
 
-            return View(khoCauHoi);
+            return View(cauHoi);
         }
 
-        // POST: Admin/KhoCauHoi/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.CauHoi == null)
+            var cauHoi = await _context.CauHoi.FindAsync(id);
+            if (cauHoi != null)
             {
-                return Problem("Entity set 'BaiGiangContext.KhoCauHoi'  is null.");
+                _context.CauHoi.Remove(cauHoi);
+                await _context.SaveChangesAsync();
+                _notyfService.Success("Xóa câu hỏi thành công!");
             }
-            var khoCauHoi = await _context.CauHoi.FindAsync(id);
-            if (khoCauHoi != null)
-            {
-                _context.CauHoi.Remove(khoCauHoi);
-            }
-
-            await _context.SaveChangesAsync();
-            _notyfService.Success("Xóa Thành Công");
             return RedirectToAction(nameof(Index));
         }
 
-        private bool DanhSachThiExists(int id)
-        {
-            return _context.DanhSachThi.Any(e => e.DanhSachThiId == id);
-        }
-        private bool KhoCauHoiExists(int id)
-        {
-            return _context.CauHoi.Any(e => e.CauHoiId == id);
-        }
+        // ====================== DOWNLOAD MẪU EXCEL ======================
         public IActionResult DownloadExcel()
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "UpLoads", "Files", "ImportCauHoi.xlsx");
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Files", "ImportCauHoi.xlsx");
+            if (!System.IO.File.Exists(filePath))
+            {
+                _notyfService.Error("Không tìm thấy file mẫu!");
+                return RedirectToAction(nameof(Index));
+            }
+
             var memory = new MemoryStream();
             using (var stream = new FileStream(filePath, FileMode.Open))
             {
@@ -319,6 +273,18 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             memory.Position = 0;
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Path.GetFileName(filePath));
         }
+
+        // API: Lấy danh sách chương theo lớp học
+        [HttpGet]
+        public JsonResult GetChuongByLop(int maLop)
+        {
+            var chuongList = _context.ChuongNews
+                .Where(c => c.MaLopHoc == maLop)
+                .Select(c => new { c.MaChuong, c.TenChuong })
+                .ToList();
+
+            return Json(chuongList);
+        }
+
     }
 }
-

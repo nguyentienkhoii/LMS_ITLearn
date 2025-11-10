@@ -1,0 +1,87 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.DanhSachThi>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var kyId = ViewBag.KyKiemTraId;
+    var tenKy = ViewBag.TenKy;
+}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4><i class="fa-solid fa-users"></i> Danh sách thi kỳ thi: - @tenKy</h4>
+        <button class="btn btn-light btn-sm" onclick="MoModalThemThiSinh(@kyId)">
+            <i class="fa fa-user-plus"></i> Thêm học viên
+        </button>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>Mã HV</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số câu đúng</th>
+                    <th>Điểm</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr class="text-center">
+                            <td>@item.MaHocVien</td>
+                            <td class="text-start">@item.HocVien?.HoTen</td>
+                            <td>@item.HocVien?.Email</td>
+                            <td>@item.SoCauDung</td>
+                            <td>@String.Format("{0:0.0}", item.Diem)</td>
+                            <td>
+                                @if (item.TrangThai == true)
+                                {
+                                    <span class="badge bg-success">Đã làm</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Chưa làm</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center text-muted">Chưa có học viên nào trong kỳ thi này.</td></tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+<!-- MODAL THÊM HỌC VIÊN -->
+<div class="modal fade" id="modalThemThiSinh" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fa fa-user-plus"></i> Thêm học viên vào kỳ thi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalContentThemThiSinh">
+                <p class="text-center p-3">Đang tải...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function MoModalThemThiSinh(kyId) {
+            $("#modalContentThemThiSinh").html('<p class="text-center p-3">Đang tải...</p>');
+            $("#modalThemThiSinh").modal('show');
+            $.get('/Admin/DanhSachThi/QuanLyThiSinh_Partial', { kyKiemTraId: kyId }, function (html) {
+                $("#modalContentThemThiSinh").html(html);
+            });
+        }
+    </script>
+}

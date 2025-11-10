@@ -1,5 +1,5 @@
 ﻿@using X.PagedList.Mvc.Core
-@model X.PagedList.IPagedList<WebBaiGiang_CKC.Models.MonHoc>
+@model X.PagedList.IPagedList<WebBaiGiang_CKC.Models.LopHoc>
 @using X.PagedList;
 @using X.PagedList.Web.Common;
 
@@ -14,115 +14,60 @@
     <div class="wrapper">
         <!-- Menu bên trái -->
         <!-- Menu bên trái -->
-        <div class="thanh">
-            <nav>
-                <ul class="menu">
-
-
-                    @if (User.Identity.IsAuthenticated) // Kiểm tra nếu người dùng đã đăng nhập
-                    {
-                        <li><div class="close-btn"><i class="fas fa-times"></i></div></li>
-                        <li class="menu-item">
-                            <a href="#"><i class="fas fa-book" style="margin-right: 8px;"></i>Môn học của tôi</a>
-                        </li>
-                        @if (ViewBag.MonHocDangKy != null && ((List<WebBaiGiang_CKC.Models.MonHoc>)ViewBag.MonHocDangKy).Any())
-                        {
-                            foreach (var mon in (List<WebBaiGiang_CKC.Models.MonHoc>)ViewBag.MonHocDangKy)
-                            {
-                                <li class="menu-item">
-                                    <a asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
-                                        <i class="fas fa-book" style="margin-right: 8px;"></i> @mon.TenMonHoc
-                                    </a>
-                                </li>
-                            }
-                        }
-                        else
-                        {
-                            <li class="menu-item"><span>Không có môn học nào đã đăng ký</span></li>
-                        }
-
-                        <li class="menu-item">
-                            <a asp-controller="BaiGiangs" asp-action="KyThi">
-                                <i class="fas fa-calendar-day" style="margin-right: 8px;"></i>Kỳ thi
-                            </a>
-                        </li>
-
-                    }
-                    else // Nếu chưa đăng nhập
-                    {
-                        <li class="menu-item">
-                            <a asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home" style="margin-right: 8px;"></i>Trang chủ
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a asp-controller="BaiGiangs" asp-action="KyThi">
-                                <i class="fas fa-calendar-day" style="margin-right: 8px;"></i>Kỳ thi
-                            </a>
-                        </li>
-
-                    }
-                </ul>
-            </nav>
-        </div>
+        <!-- Menu bên trái -->
+        @await Html.PartialAsync("_SidebarMenu")
 
 
         <!-- Nội dung bên phải -->
         <div class="noidung">
-            <h2>Danh sách môn học</h2>
+@*             <h2>Danh sách môn học</h2>
             <p>Chọn một môn học để xem nội dung</p>
 
             <!-- Thanh tìm kiếm -->
             <form asp-action="SearchMonHoc" method="get" class="search-form">
                 <input type="text" name="keyword" placeholder="Tìm kiếm môn học..." value="@ViewData["SearchKeyword"]" />
                 <button type="submit"><i class="fas fa-search"></i></button>
-            </form>
+            </form> *@
 
             <!-- Danh sách môn học -->
             <div class="course-grid">
                 @if (Model != null && Model.Any())
                 {
-                    @foreach (var mon in Model)
+                    @foreach (var lop in Model)
                     {
                         <div class="course-card">
-                            <a class="course-link" asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
+                            <a class="course-link" asp-controller="Home" asp-action="LopHoc" asp-route-id="@lop.MaLopHoc">
                                 <div class="course-thumbnail">
-                                    @if (!string.IsNullOrEmpty(mon.AnhDaiDien))
+                                    @if (!string.IsNullOrEmpty(lop.AnhLopHoc))
                                     {
-                                        <!-- Nếu có ảnh môn học -->
-                                        <img src="@Url.Content("/contents/Images/MonHoc/" + mon.AnhDaiDien)" alt="@mon.TenMonHoc">
+                                        <!-- ✅ Có ảnh lớp học -->
+                                        <img src="@Url.Content(lop.AnhLopHoc)" alt="@lop.TenLopHoc" />
                                     }
                                     else
                                     {
-                                        <!-- Nếu không có ảnh môn học, hiển thị ảnh mặc định từ thư mục -->
-                                        <img src="@Url.Content("/contents/Images/MonHoc/macdinhnew.png")" alt="Ảnh mặc định">
+                                        <!-- 🖼 Ảnh mặc định -->
+                                        <img src="@Url.Content("~/contents/Images/MonHoc/macdinhnew.png")" alt="Ảnh mặc định" />
                                     }
-
                                 </div>
+
                                 <div class="course-content">
-                                    <h4 class="course-title">@mon.TenMonHoc</h4>
+                                    <h4 class="course-title">@lop.TenLopHoc</h4>
                                     <p class="course-teacher">
                                         <i class="fas fa-chalkboard-teacher"></i>
-                                        Giảng viên: @(mon.GiaoVien != null ? mon.GiaoVien.HoTen : "Chưa phân công")
+                                        Giảng viên: @(lop.GiangVien != null ? lop.GiangVien.HoTen : "Chưa phân công")
                                     </p>
-                                    <div class="course-meta">
-                                        <div class="meta-item">
-                                            <i class="fas fa-users"></i>
-                                            <span>@mon.SoLuongDangKy đã đăng ký</span>
-                                        </div>
 
-                                        <div class="meta-item">
-                                            <i class="fas fa-play-circle"></i>
-                                            <span>
-                                                @(mon.TongSoBai > 0 ? $"{mon.TongSoBai} bài" : "Chưa bắt đầu")
-                                            </span>
-                                        </div>
+                                    <!-- ✅ Thêm trạng thái lớp học -->
+                                    <p class="course-status mt-1">
+                                        <i class="fas fa-circle me-1 @(lop.TrangThai == "Đang hoạt động" ? "text-success" : lop.TrangThai == "Hoàn thành" ? "text-primary" : "text-warning")"></i>
+                                        <span>@lop.TrangThai</span>
+                                    </p>
 
-                                    </div>
                                 </div>
                             </a>
                         </div>
                     }
+
 
                 }
                 else
@@ -155,7 +100,15 @@
     <script src="~/assets/js/menu_.js"></script>
 }
 
+<>
+    
+
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
+
+
     /* Nội dung chính */
     .noidung {
         padding: 20px;
@@ -195,16 +148,6 @@
                 font-size: 16px;
             }
 
-    /* Menu */
-    .menu-item a i {
-        margin-right: 8px;
-        font-size: 18px;
-        color: #42A5F5;
-    }
-
-    .menu-item a {
-        font-size: 20px;
-    }
 
     /* Grid layout for courses */
     .course-grid {
@@ -233,10 +176,10 @@
         display: block;
     }
 
-    /* Khi hover, vẫn không có gạch chân */
-    .course-link:hover {
+        /* Khi hover, vẫn không có gạch chân */
+        .course-link:hover {
             text-decoration: none; /* Bỏ gạch chân */
-    }
+        }
 
     .course-thumbnail {
         height: 160px;
@@ -271,25 +214,18 @@
         color: #666 !important; /* Chỉnh màu sắc cho phù hợp */
     }
 
-
-    .course-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        font-size: 14px;
-        color: #666;
+    .course-status {
+        font-size: 14px !important;
+        color: #666 !important;
     }
 
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-        .meta-item i {
-            color: #126f9a;
-            font-size: 14px;
+        .course-status i {
+            font-size: 10px;
         }
+
+
+
+
 
     /* Phân trang */
     .pagination-container {
@@ -328,6 +264,7 @@
         border-color: #0b5f80;
     }
 
+
     /* Responsive adjustments */
     @@media (max-width: 768px) {
         .course-grid {
@@ -338,6 +275,20 @@
     @@media (max-width: 480px) {
         .course-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+
+    /* Responsive (menu nhỏ gọn hơn trên mobile) */
+    @@media (max-width: 768px) {
+        .thanh {
+            min-width: 100%;
+            border-radius: 8px;
+        }
+
+        .menu-item a,
+        .sub-item a {
+            padding: 10px 16px;
         }
     }
 </style>

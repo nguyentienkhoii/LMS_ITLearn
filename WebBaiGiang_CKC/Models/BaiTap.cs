@@ -1,21 +1,34 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebBaiGiang_CKC.Models
 {
+    [Table("BAITAP")]
     public class BaiTap
     {
-        public int BaiTapId { get; set; }
+        [Key]
+        public int MaBaiTap { get; set; }
 
-        [DisplayName("Tên bài tập")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
+        [Required, StringLength(255)]
         public string TenBaiTap { get; set; }
 
-        [DisplayName("Nội dung bài tập")]
-        public string NoiDung { get; set; }
+        [StringLength(1000)]
+        public string MoTa { get; set; }
 
-        // Khóa ngoại liên kết với môn học
-        public int MonHocId { get; set; }
-        public MonHoc MonHoc { get; set; }
+        [StringLength(255)]
+        public string FileDinhKem { get; set; }
+
+        [DataType(DataType.DateTime)]
+        public DateTime? HanNop { get; set; }
+
+        // FK → Bài giảng
+        [ForeignKey("Bai")]
+        public int BaiId { get; set; }
+        public virtual Bai Bai { get; set; }
+
+        // Quan hệ 1-nhiều với BaiTapNop
+        public virtual ICollection<BaiTapNop> BaiTapNops { get; set; }
     }
 }

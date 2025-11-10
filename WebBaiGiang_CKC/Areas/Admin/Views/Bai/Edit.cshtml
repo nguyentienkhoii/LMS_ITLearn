@@ -28,11 +28,11 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="BaiId" />
             <div class="form-group flex-grow-1 mx-4">
-                <label asp-for="ChuongId" class="form-label">Chương <span id="ChuongDisplay"></span></label>
-                <select asp-for="ChuongId" asp-items="ChuongId" class="form-select w-100" onchange="showChuongInfo(this)">
+            <label asp-for="MaChuong" class="form-label">Chương <span id="ChuongDisplay"></span></label>
+            <select asp-for="MaChuong" asp-items="ChuongId" class="form-select w-100" onchange="showChuongInfo(this)">
                     <option value="">-- Chọn chương học --</option>
                 </select>
-                <span asp-validation-for="ChuongId" class="text-danger"></span>
+            <span asp-validation-for="MaChuong" class="text-danger"></span>
             </div>
 
             <br />

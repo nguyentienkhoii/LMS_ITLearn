@@ -299,38 +299,62 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             try
             {
                 var kykiemtra = _context.KyKiemTra.FirstOrDefault(k => k.KyKiemTraId == kykiemtraid);
-                var data = _context.BaiLam
-                     .Include(x => x.CauHoi_BaiLam)
-                    .ThenInclude(x => x.CauHoi_De)
-                    .ThenInclude(x => x.De)
-                       .Where(x => x.CauHoi_BaiLam.First().CauHoi_De.De.KyKiemTraId == kykiemtraid)
-                       .ToList();
-                if (data != null && data.Count() > 0)
+                if (kykiemtra == null)
                 {
-                    using (XLWorkbook wb = new XLWorkbook())
-                    {
-                        wb.Worksheets.Add(ToConvertDataTable(data.ToList()));
-
-                        using (MemoryStream stream = new MemoryStream())
-                        {
-
-                            wb.SaveAs(stream);
-                            string fileName = $"BaiThiSinhVien_{kykiemtra.TenKyKiemTra}_{DateTime.Now.ToString("dd/MM/yyyy")}.xlsx";
-                            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocuments.spreadsheetml.sheet", fileName);
-                        }
-
-                    }
-
+                    _notyfService.Error("Không tìm thấy kỳ kiểm tra!");
+                    return RedirectToAction("Index");
                 }
-                _notyfService.Error("Kỳ kiểm tra này không có điểm của sinh viên");
+
+                var data = _context.BaiLam
+                    .Include(bl => bl.CauHoi_BaiLam)
+                        .ThenInclude(cb => cb.CauHoi_De)
+                            .ThenInclude(cd => cd.De)
+                    .Include(bl => bl.HocVien)
+                        .ThenInclude(hv => hv.TaiKhoan)
+                    .Where(bl => bl.CauHoi_BaiLam
+                        .Any(cb => cb.CauHoi_De.De.KyKiemTraId == kykiemtraid))
+                    .AsNoTracking()
+                    .ToList();
+
+                if (!data.Any())
+                {
+                    _notyfService.Error("Kỳ kiểm tra này chưa có bài làm của sinh viên!");
+                    return RedirectToAction("Index");
+                }
+
+                var exportData = data.Select(b => new
+                {
+                    HoTen = b.HocVien?.TaiKhoan?.HocVien.HoTen ?? "Không rõ",
+                    SoCauDung = b.SoCauDung,
+                    Diem = b.Diem,
+                    ThoiGianBatDau = b.ThoiGianBatDau?.ToString("dd/MM/yyyy HH:mm") ?? "",
+                    ThoiGianDenHan = b.ThoiGianDenHan?.ToString("dd/MM/yyyy HH:mm") ?? ""
+                }).ToList();
+
+                using (var wb = new ClosedXML.Excel.XLWorkbook())
+                {
+                    var ws = wb.Worksheets.Add("KetQuaKyThi");
+                    ws.Cell(1, 1).InsertTable(exportData);
+
+                    using (var stream = new MemoryStream())
+                    {
+                        wb.SaveAs(stream);
+                        stream.Position = 0;
+                        string fileName = $"KetQua_{kykiemtra.TenKyKiemTra}_{DateTime.Now:ddMMyyyy}.xlsx";
+                        return File(stream.ToArray(),
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            fileName);
+                    }
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _notyfService.Error("Xuất Excel Thất Bại!");
+                _notyfService.Error($"Xuất Excel thất bại: {ex.Message}");
+                return RedirectToAction("Index");
             }
-            return RedirectToAction("Index");
         }
-       
+
+
         public DataTable ToConvertDataTable<T>(List<T> items)
         {
             DataTable dt = new DataTable(typeof(T).Name);

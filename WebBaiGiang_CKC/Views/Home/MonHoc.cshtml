@@ -1,7 +1,6 @@
-﻿@model WebBaiGiang_CKC.Models.MonHoc
+﻿@model WebBaiGiang_CKC.Models.LopHoc
 @{
-    ViewData["Title"] = Model.TenMonHoc;
-    var deCuong = ViewBag.DeCuong as WebBaiGiang_CKC.Models.DeCuong;
+    ViewData["Title"] = Model.TenLopHoc;
 }
 
 <main>
@@ -10,9 +9,9 @@
         <!-- Phần đã đăng ký (giữ nguyên menu) -->
         <div class="menu-toggle"> <a href="#">Menu</a> </div>
         <div class="wrapper">
-            @await Html.PartialAsync("~/Views/PartialView/_Menu.cshtml")
+            @await Html.PartialAsync("_SidebarMenu")
             <div class="noidung">
-                <h2>@Model.TenMonHoc</h2>
+                <h2>@Model.TenLopHoc</h2>
                 <hr />
 
                 @foreach (var chuong in Model.Chuongs)
@@ -25,8 +24,8 @@
                     {
                         <a asp-controller="BaiGiangs"
                            asp-action="Bai"
-                           asp-route-monHocId="@Model.MonHocId"
-                           asp-route-chuongId="@chuong.ChuongId"
+                           asp-route-monHocId="@Model.MaLopHoc"
+                           asp-route-chuongId="@chuong.MaChuong"
                            asp-route-baiId="@bai.BaiId">
                             <p class="bai-item">@bai.TenBai</p>
                         </a>
@@ -42,7 +41,7 @@
         <div class="wrapper-no-menu">
             <div class="noidung-with-button">
                 <div class="content-area">
-                    <h2>@Model.TenMonHoc</h2>
+                    <h2>@Model.TenLopHoc</h2>
                     <hr />
 
                     <div class="alert alert-warning">
@@ -50,24 +49,7 @@
                         <p>Vui lòng đăng ký để xem toàn bộ nội dung bài giảng.</p>
                     </div>
 
-                    <!-- Phần đề cương môn học -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h3>Giới thiệu môn học</h3>
-                        </div>
-                        <div class="card-body">
-                            @if (deCuong != null)
-                            {
-                                <div class="decuong-content">
-                                    @Html.Raw(deCuong.NoiDung)
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="alert alert-info">Chưa có đề cương cho môn học này.</p>
-                            }
-                        </div>
-                    </div>
+                    
 
                     <!-- Phần xem trước chương trình học -->
                     <div class="card mb-4">
@@ -107,7 +89,7 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <form method="post" action="/Home/RegisterMonHoc" onsubmit="return confirmRegister()">
-                            <input type="hidden" name="id" value="@Model.MonHocId" />
+                            <input type="hidden" name="id" value="@Model.MaLopHoc" />
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-book"></i> Đăng ký học

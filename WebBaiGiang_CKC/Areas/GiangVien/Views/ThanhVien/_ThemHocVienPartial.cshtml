@@ -1,0 +1,68 @@
+﻿@model List<WebBaiGiang_CKC.Areas.GiangVien.Controllers.ThanhVienController.HocVienCheckboxVM>
+
+<div style="max-height: 400px; overflow-y: auto;">
+    <table class="table table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th width="50" class="text-center">
+                    <input type="checkbox" id="checkAllHV" class="form-check-input" title="Chọn tất cả" />
+                </th>
+                <th>Họ tên</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var hv in Model)
+            {
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox"
+                               name="hocvien"
+                               class="form-check-input chkHocVien"
+                               value="@hv.MaHocVien"
+                        @(hv.DaTrongLop ? "checked" : "") />
+                    </td>
+                    <td>@hv.HoTen</td>
+                    <td>@hv.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // ✅ Đảm bảo script này chạy khi partial được load vào modal
+    (function initHocVienModal() {
+
+        // Khi bấm chọn tất cả
+        $('#checkAllHV').on('change', function () {
+            $('.chkHocVien').prop('checked', this.checked);
+        });
+
+        // Khi tick từng học viên → cập nhật lại checkbox tổng
+        $(document).on('change', '.chkHocVien', function () {
+            const allChecked = $('.chkHocVien').length === $('.chkHocVien:checked').length;
+            $('#checkAllHV').prop('checked', allChecked);
+        });
+
+        // Khởi tạo lại trạng thái chọn tất cả nếu ban đầu đã tick đủ
+        const allCheckedInit = $('.chkHocVien').length === $('.chkHocVien:checked').length;
+        $('#checkAllHV').prop('checked', allCheckedInit);
+
+    })();
+</script>
+
+<style>
+    th, td {
+        vertical-align: middle !important;
+    }
+
+    #checkAllHV {
+        cursor: pointer;
+        transform: scale(1.2);
+    }
+
+    .chkHocVien {
+        cursor: pointer;
+    }
+</style>

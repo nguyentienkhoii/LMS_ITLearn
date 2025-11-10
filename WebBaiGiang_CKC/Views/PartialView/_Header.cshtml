@@ -1,13 +1,18 @@
 ﻿@{
-    var giaovien = ViewBag.Giaovien as List<GiaoVien>;
-    var lstSubject = ViewData["lstSubject"] as List<MonHoc>;
+    var giaovien = ViewBag.Giaovien as List<GiangVien>;
+    var monHocDangKy = ViewBag.LopHocDangKy as List<WebBaiGiang_CKC.Models.LopHoc>;
+    var activeMenu = ViewBag.ActiveMenu as string;
+    var currentLopHocId = ViewBag.CurrentLopHocId as int?;
 }
 <header>
     <div class="mainheder">
         <div class="heder1">
-            <h2>
-                E - LEARNING
+            <h2 class="d-flex align-items-center">
+                <img src="~/assets/images/icon.png" alt="IT Learn Logo" style="height:36px; margin-right:8px;">
+                IT LEARN
             </h2>
+
+
 
             <div>
                 <div class="menu-heder1">
@@ -18,37 +23,37 @@
                 <nav class="mini">
 
                     <ul>
-                        <li>
-                            <!-- Phần 2: Danh sách Môn học -->
-                            <div class="dropdown" style="@(User.Identity.IsAuthenticated ? "" : "visibility: hidden;")">
-                                <a class="dropdown-toggle nav-link" id="dropdownMonHoc" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
-                                    Môn học của tôi
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMonHoc">
-                                    @if (ViewBag.MonHocDangKy != null && ViewBag.MonHocDangKy.Count > 0)
+                        <li class="nav-item dropdown" style="@(User.Identity.IsAuthenticated ? "" : "visibility: hidden;")">
+                            <a class="nav-link dropdown-toggle" id="dropdownMonHoc" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
+                                Lớp học của tôi
+                            </a>
+
+                            <div class="dropdown-menu" aria-labelledby="dropdownMonHoc">
+                                @if (monHocDangKy != null && monHocDangKy.Any())
+                                {
+                                    foreach (var lop in monHocDangKy)
                                     {
-                                        @foreach (var mon in ViewBag.MonHocDangKy)
-                                        {
-                                            <a class="dropdown-item" asp-controller="Home" asp-action="MonHoc" asp-route-id="@mon.MonHocId">
-                                                @mon.TenMonHoc
-                                            </a>
-                                        }
+                                        <a class="dropdown-item @(currentLopHocId == lop.MaLopHoc ? "active" : "")"
+                                           asp-controller="Home" asp-action="LopHoc" asp-route-id="@lop.MaLopHoc">
+                                            <i class="iconoir-book"></i> @lop.TenLopHoc
+                                        </a>
                                     }
-                                    else
-                                    {
-                                        <span class="dropdown-item">Không có môn học</span>
-                                    }
-                                </div>
+                                }
+                                else
+                                {
+                                    <span class="dropdown-item text-muted">
+                                        <i class="iconoir-info-empty"></i> Chưa đăng ký lớp
+                                    </span>
+                                }
                             </div>
-
-
                         </li>
+
                         <li>
                             <a asp-controller="Home" asp-action="Index">
                                 Trang chủ
                             </a>
                         </li>
-                        <li><a asp-controller="BaiGiangs" asp-action="GiaoVien">Giáo viên</a></li>
+                        <li><a asp-controller="BaiGiangs" asp-action="GiaoVien">Giảng viên</a></li>
                         <li><a data-toggle="modal" data-target="#lienhe">Liên hệ</a></li>
                         @if (User.Identity.IsAuthenticated)
                         {
@@ -158,7 +163,7 @@
 
         <div class="mainheder">
             <h2 style="padding-left:20px;">
-                Bài giảng trực tuyến
+                Explore IT World
 
             </h2>
         </div>
@@ -184,11 +189,7 @@
                     <h2>Thông tin liên hệ</h2>
                 </div>
                 <div class="d-flex flex-column text-center">
-                    <p><strong>Nhóm:</strong> 21</p>
-                    <p><strong>Thành viên 1:</strong> Đỗ Đăng Nguyên</p>
-                    <p><strong>Thành viên 2:</strong> Nguyễn Tiến Khởi</p>
-                    <p><strong>Thành viên 3:</strong> Trần Thanh Long</p>
-                    <p><strong>Thành viên 4:</strong> Nguyễn Tiến Khoa</p>
+                    <p><strong>Thông tin liên hệ:</strong> </p>
 
                 </div>
             </div>
@@ -198,7 +199,14 @@
 </div>
 <style>
     .heder1 {
-        overflow: visible; /* Đảm bảo nội dung bên trong không bị che */
+        overflow: visible; 
         position: relative;
     }
+
+    h2.d-flex {
+        display: flex;
+        align-items: center;
+        color: #fff; 
+    }
+
 </style>

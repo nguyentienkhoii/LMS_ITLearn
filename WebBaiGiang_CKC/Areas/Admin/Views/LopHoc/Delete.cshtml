@@ -1,0 +1,45 @@
+﻿@model WebBaiGiang_CKC.Models.LopHoc
+@{
+    ViewData["Title"] = "Xóa lớp học";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb mt-3">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="LopHoc" asp-action="Index">Quản lý lớp học</a></li>
+    <li class="breadcrumb-item active">Xóa</li>
+</ol>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-header bg-danger text-white">
+        <h4><i class="fa fa-exclamation-triangle"></i> Xác nhận xóa lớp học</h4>
+    </div>
+
+    <div class="card-body">
+        <p class="alert alert-warning"><i class="fa fa-info-circle"></i> Hành động này không thể hoàn tác!</p>
+        <dl class="row">
+            <dt class="col-sm-3">Tên lớp học</dt>
+            <dd class="col-sm-9">@Model.TenLopHoc</dd>
+
+            <dt class="col-sm-3">Tên viết tắt</dt>
+            <dd class="col-sm-9">@Model.TenVietTat</dd>
+
+            <dt class="col-sm-3">Khóa học</dt>
+            <dd class="col-sm-9">@Model.KhoaHoc?.TenKhoaHoc</dd>
+
+            <dt class="col-sm-3">Giảng viên</dt>
+            <dd class="col-sm-9">@Model.GiangVien?.HoTen</dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">@Model.TrangThai</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="MaLopHoc" />
+            <div class="text-center">
+                <button type="submit" class="btn btn-danger me-2"><i class="fa fa-trash"></i> Xóa</button>
+                <a asp-action="Index" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

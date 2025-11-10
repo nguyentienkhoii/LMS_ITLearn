@@ -1,6 +1,6 @@
-﻿@model WebBaiGiang_CKC.Models.MonHoc
+﻿@model WebBaiGiang_CKC.Models.LopHoc
 
-<h2>@Model.TenMonHoc</h2>
+<h2>@Model.TenLopHoc</h2>
 <p>@Model.MoTa</p>
 
 <h3>Danh sách chương:</h3>
@@ -8,7 +8,7 @@
     @foreach (var chuong in Model.Chuongs)
     {
         <li>
-            <strong>Chương @chuong.ChuongId:</strong> @chuong.TenChuong
+            <strong>Chương @chuong.MaChuong:</strong> @chuong.TenChuong
             <ul>
                 @foreach (var bai in chuong.Bais)
                 {

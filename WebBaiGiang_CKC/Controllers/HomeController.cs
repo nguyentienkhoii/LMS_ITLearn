@@ -1,4 +1,5 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +10,12 @@ using X.PagedList;
 
 namespace WebBaiGiang_CKC.Controllers
 {
+    [Authorize(Roles = "HocVien,GiangVien,Admin")]
     public class HomeController : Controller
     {
         protected WebBaiGiangContext _context;
-        protected readonly IWebHostEnvironment _environment;
-        public INotyfService _notyfService { get; }
+        private readonly IWebHostEnvironment _environment;
+        protected INotyfService _notyfService;
 
         public HomeController(WebBaiGiangContext context, IWebHostEnvironment environment, INotyfService notyfService)
         {
@@ -22,224 +24,206 @@ namespace WebBaiGiang_CKC.Controllers
             _notyfService = notyfService;
         }
 
-        // Trang danh sách môn học (mặc định)
-        /*public IActionResult Index(int? page)
-        {
-            var forgotPasswordSuccess = HttpContext.Request.Cookies["forgotPasswordSuccess"];
-            if (forgotPasswordSuccess != null && forgotPasswordSuccess == "true")
-            {
-                _notyfService.Success("Đổi mật khẩu thành công!");
-                HttpContext.Response.Cookies.Delete("forgotPasswordSuccess");
-            }
-
-            int pageNo = page == null || page <= 0 ? 1 : page.Value;
-            int pageSize = 8;
-
-            // Lấy tất cả môn học để hiển thị trong menu
-            var allMonHoc = _context.MonHoc.AsNoTracking().ToList();
-            ViewBag.AllMonHoc = allMonHoc; // ✅ Lưu danh sách môn học vào ViewBag
-
-            // Lấy danh sách môn học có phân trang
-            var lstMon = _context.MonHoc
-                .Include(a => a.Chuongs)
-                .ThenInclude(x => x.Bais.OrderBy(x => x.SoBai))
-                .AsNoTracking()
-                .ToPagedList(pageNo, pageSize);
-
-            ViewData["lstSubject"] = lstMon;
-            return View(lstMon);
-        }*/
-
+        // --------------------------
+        // TRANG CHỦ: Hiển thị danh sách lớp học
+        // --------------------------
         public IActionResult Index(int? page)
         {
+            ViewBag.ActiveMenu = "TrangChu";
             var forgotPasswordSuccess = HttpContext.Request.Cookies["forgotPasswordSuccess"];
-            if (forgotPasswordSuccess != null && forgotPasswordSuccess == "true")
+            if (forgotPasswordSuccess == "true")
             {
                 _notyfService.Success("Đổi mật khẩu thành công!");
                 HttpContext.Response.Cookies.Delete("forgotPasswordSuccess");
             }
 
-            int pageNo = page == null || page <= 0 ? 1 : page.Value;
+            int pageNo = page ?? 1;
             int pageSize = 8;
 
-            // Lấy tất cả môn học để hiển thị trong menu
-            var allMonHoc = _context.MonHoc
-                .AsNoTracking()
-                .ToList();
-            ViewBag.AllMonHoc = allMonHoc;
+            // ✅ Nếu là Admin → hiển thị tất cả lớp học
+            if (User.IsInRole("Admin"))
+            {
+                var allLop = _context.LopHocs
+                    .Include(l => l.GiangVien)
+                    .Include(l => l.KhoaHoc)
+                    .OrderByDescending(l => l.MaLopHoc)
+                    .AsNoTracking()
+                    .ToPagedList(pageNo, pageSize);
 
-            // Lấy danh sách môn học có phân trang, bao gồm thông tin về chương, bài và giảng viên
-            var lstMon = _context.MonHoc
-                .Include(m => m.GiaoVien) // Lấy thông tin giảng viên
-                .Include(a => a.Chuongs)
-                    .ThenInclude(c => c.Bais)
+                foreach (var lop in allLop)
+                {
+                    lop.HocVien_LopHocs = _context.HocVien_LopHoc
+                        .Where(d => d.MaLopHoc == lop.MaLopHoc)
+                        .ToList();
+                }
+
+                ViewData["lstLopHoc"] = allLop;
+                return View(allLop);
+            }
+
+            // ✅ Nếu là Học viên → chỉ hiển thị lớp đã đăng ký
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null || !int.TryParse(hocVienIdClaim.Value, out int hocVienId))
+            {
+                _notyfService.Error("Không thể xác định học viên!");
+                return RedirectToAction("Index", "Account");
+            }
+
+            var lopHocCuaToi = _context.HocVien_LopHoc
+                .Where(hv => hv.MaHocVien == hocVienId)
+                .Include(hv => hv.LopHoc)
+                    .ThenInclude(l => l.GiangVien)
+                .Include(hv => hv.LopHoc)
+                    .ThenInclude(l => l.KhoaHoc)
+                .Select(hv => hv.LopHoc)
+                .OrderByDescending(l => l.MaLopHoc)
                 .AsNoTracking()
                 .ToPagedList(pageNo, pageSize);
 
-            // Tính số lượng người đăng ký và số lượng bài học cho mỗi môn học
-            foreach (var mon in lstMon)
+            //thông báo m chưa đki lớp nào
+            /*if (!lopHocCuaToi.Any())
             {
-                mon.SoLuongDangKy = _context.DangKyMonHoc.Count(d => d.MonHocId == mon.MonHocId);
-                mon.TongSoBai = mon.Chuongs.Sum(c => c.Bais.Count); // Tính tổng số bài học từ các chương
+                _notyfService.Information("Bạn chưa đăng ký lớp học nào.");
             }
-
-            ViewData["lstSubject"] = lstMon;
-            return View(lstMon);
+*/
+            ViewData["lstLopHoc"] = lopHocCuaToi;
+            return View(lopHocCuaToi);
         }
 
-
-        // Chức năng tìm kiếm môn học
-        public IActionResult SearchMonHoc(string keyword, int? page)
+        // --------------------------
+        // TÌM KIẾM LỚP HỌC
+        // --------------------------
+        public IActionResult SearchLopHoc(string keyword, int? page)
         {
             int pageSize = 8;
-            int pageNumber = (page ?? 1);
+            int pageNumber = page ?? 1;
 
-            // Lấy toàn bộ môn học để giữ nguyên danh sách trong menu
-            var allMonHoc = _context.MonHoc.AsNoTracking().ToList();
-            ViewBag.AllMonHoc = allMonHoc; // ✅ Đảm bảo menu luôn có dữ liệu
-
-            // Lọc danh sách môn học theo từ khóa tìm kiếm
-            var filteredMonHoc = _context.MonHoc
-                .Where(m => string.IsNullOrEmpty(keyword) || m.TenMonHoc.Contains(keyword))
-                .OrderBy(m => m.TenMonHoc)
+            var filteredLopHoc = _context.LopHocs
+                .Include(l => l.GiangVien)
+                .Include(l => l.KhoaHoc)
+                .Where(l => string.IsNullOrEmpty(keyword) || l.TenLopHoc.Contains(keyword))
+                .OrderBy(l => l.TenLopHoc)
                 .AsNoTracking()
                 .ToPagedList(pageNumber, pageSize);
 
-            ViewData["SearchKeyword"] = keyword; // ✅ Giữ lại từ khóa tìm kiếm trong input
-            return View("Index", filteredMonHoc);
+            ViewBag.ActiveMenu = "TrangChu";
+            ViewData["SearchKeyword"] = keyword;
+            return View("Index", filteredLopHoc);
         }
 
-        // Hiển thị chi tiết môn học
-        // Hiển thị chi tiết môn học và kiểm tra tình trạng đăng ký
-        public IActionResult MonHoc(int id, DangKyMonHoc dkm)
+        // --------------------------
+        // CHI TIẾT LỚP HỌC
+        // --------------------------
+        public IActionResult LopHoc(int id)
         {
-            var monHoc = _context.MonHoc
-                .Include(m => m.Chuongs)
-                .ThenInclude(c => c.Bais.OrderBy(b => b.SoBai))
+            var lopHoc = _context.LopHocs
+                .Include(l => l.Chuongs)
+                    .ThenInclude(c => c.Bais.OrderBy(b => b.SoBai))
+                .Include(l => l.GiangVien)
                 .AsNoTracking()
-                .FirstOrDefault(m => m.MonHocId == id);
+                .FirstOrDefault(l => l.MaLopHoc == id);
 
-            if (monHoc == null)
-            {
+            if (lopHoc == null)
                 return NotFound();
-            }
 
-            // Lấy đề cương môn học
-            var deCuong = _context.DeCuong.FirstOrDefault(d => d.MonHocId == id);
-            ViewBag.DeCuong = deCuong;
-
-            // Kiểm tra nếu người dùng đã đăng ký môn học
-            var taiKhoanIdClaim = User.Claims.SingleOrDefault(c => c.Type == "TaiKhoanId");
-            if (taiKhoanIdClaim != null)
+            // ✅ Lấy mã học viên từ claim
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim != null && int.TryParse(hocVienIdClaim.Value, out int hocVienId))
             {
-                // Chuyển đổi từ string sang int
-                if (int.TryParse(taiKhoanIdClaim.Value, out int userTaiKhoanId))
-                {
-                    // Kiểm tra xem người dùng đã đăng ký môn học chưa
-                    var isRegistered = _context.DangKyMonHoc
-                        .Any(dkm => dkm.TaiKhoanId == userTaiKhoanId && dkm.MonHocId == id);
+                bool isRegistered = _context.HocVien_LopHoc
+                    .Any(d => d.MaHocVien == hocVienId && d.MaLopHoc == id);
 
-                    ViewBag.IsRegistered = isRegistered; // Truyền thông tin đăng ký vào ViewBag
-                }
-                else
-                {
-                    // Nếu không thể chuyển đổi TaiKhoanId, xử lý lỗi (nếu cần)
-                    ViewBag.IsRegistered = false;
-                }
+                ViewBag.IsRegistered = isRegistered;
             }
 
+            ViewBag.ActiveMenu = "TrangChu";
+            ViewBag.ActiveMenu = "LopHoc";        // xác định menu chính là lớp học
+            ViewBag.CurrentLopHocId = id;
 
-            ViewBag.SelectedMonHoc = monHoc;
-            return View(monHoc);
+            return View(lopHoc);
         }
 
+        // --------------------------
+        // ĐĂNG KÝ LỚP HỌC
+        // --------------------------
         [HttpPost]
-        public IActionResult RegisterMonHoc(int id)
+        public IActionResult RegisterLopHoc(int id)
         {
-            // Kiểm tra xem người dùng đã đăng nhập hay chưa
-            var taiKhoanIdClaim = User.Claims.SingleOrDefault(c => c.Type == "TaiKhoanId");
-            if (taiKhoanIdClaim == null)
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null)
             {
-                _notyfService.Warning("Bạn cần đăng nhập để đăng ký môn học!");
+                _notyfService.Warning("Bạn cần đăng nhập để đăng ký lớp học!");
                 return RedirectToAction("Index");
             }
 
-            // Chuyển đổi TaiKhoanId từ string sang int
-            if (!int.TryParse(taiKhoanIdClaim.Value, out int userTaiKhoanId))
+            if (!int.TryParse(hocVienIdClaim.Value, out int hocVienId))
             {
-                _notyfService.Error("Lỗi xác thực tài khoản!");
+                _notyfService.Error("Lỗi xác thực học viên!");
                 return RedirectToAction("Index");
             }
 
-            // Kiểm tra xem môn học có tồn tại không
-            var monHoc = _context.MonHoc.AsNoTracking().FirstOrDefault(m => m.MonHocId == id);
-            if (monHoc == null)
+            var lopHoc = _context.LopHocs.AsNoTracking().FirstOrDefault(l => l.MaLopHoc == id);
+            if (lopHoc == null)
             {
-                _notyfService.Error("Môn học không tồn tại!");
+                _notyfService.Error("Lớp học không tồn tại!");
                 return RedirectToAction("Index");
             }
 
-            // Kiểm tra xem người dùng đã đăng ký môn học này chưa
-            bool isAlreadyRegistered = _context.DangKyMonHoc
-                .Any(dkm => dkm.TaiKhoanId == userTaiKhoanId && dkm.MonHocId == id);
+            bool isAlreadyRegistered = _context.HocVien_LopHoc
+                .Any(d => d.MaHocVien == hocVienId && d.MaLopHoc == id);
 
             if (isAlreadyRegistered)
             {
-                _notyfService.Warning("Bạn đã đăng ký môn học này rồi!");
-                return RedirectToAction("MonHoc", new { id });
+                _notyfService.Warning("Bạn đã đăng ký lớp học này rồi!");
+                return RedirectToAction("LopHoc", new { id });
             }
 
-            // Thêm đăng ký vào bảng DangKyMonHoc
-            var newRegistration = new DangKyMonHoc
+            var newRegistration = new HocVien_LopHoc
             {
-                TaiKhoanId = userTaiKhoanId,
-                MonHocId = id
+                MaHocVien = hocVienId,
+                MaLopHoc = id
             };
 
-            _context.DangKyMonHoc.Add(newRegistration);
+            _context.HocVien_LopHoc.Add(newRegistration);
             _context.SaveChanges();
 
-            _notyfService.Success("Đăng ký môn học thành công!");
-            return RedirectToAction("MonHoc", new { id });
+            _notyfService.Success("Đăng ký lớp học thành công!");
+            return RedirectToAction("LopHoc", new { id });
         }
 
-
-        public IActionResult Privacy()
+        // --------------------------
+        // DANH SÁCH LỚP HỌC ĐÃ ĐĂNG KÝ (HEADER)
+        // --------------------------
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            return View();
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim != null && int.TryParse(hocVienIdClaim.Value, out int hocVienId))
+            {
+                var lstLopHoc = _context.HocVien_LopHoc
+                    .Where(d => d.MaHocVien == hocVienId)
+                    .Include(d => d.LopHoc)
+                        .ThenInclude(l => l.GiangVien)
+                    .Select(d => d.LopHoc)
+                    .AsNoTracking()
+                    .ToList();
+
+                ViewBag.LopHocDangKy = lstLopHoc;
+                ViewData["lstLopHoc"] = lstLopHoc;
+            }
+            else
+            {
+                ViewBag.LopHocDangKy = new List<LopHoc>();
+            }
+
+            base.OnActionExecuting(filterContext);
         }
+
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
-        {
-            var userIdClaim = User.Claims.SingleOrDefault(c => c.Type == "TaiKhoanId"); // Lấy ID tài khoản từ Claim
-            if (userIdClaim != null)
-            {
-                int taiKhoanId = int.Parse(userIdClaim.Value); // Chuyển về kiểu int
-
-                // Lấy danh sách môn học mà người dùng đã đăng ký
-                var lstMon = _context.DangKyMonHoc
-                    .Where(dkm => dkm.TaiKhoanId == taiKhoanId)
-                    .Select(dkm => dkm.MonHoc)
-                    .AsNoTracking()
-                    .ToList();
-
-                ViewBag.MonHocDangKy = lstMon;  // Để dùng trong header
-                ViewData["lstSubject"] = lstMon; // Nếu cần dùng ở nhiều view
-            }
-            else
-            {
-                ViewBag.MonHocDangKy = new List<MonHoc>(); // Nếu chưa đăng nhập, không hiển thị môn nào
-            }
-
-            base.OnActionExecuting(filterContext);
-        }
-
-
     }
 }

@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var MonHocId = @ViewBag.MonHocId;
+    var MonHocId = @ViewBag.MaLopHoc;
 }
 
 <ol class="breadcrumb">
@@ -17,12 +17,12 @@
 <hr />
 <br />
 <div class="row" id="form-container">
-    <form id="create-form" asp-action="@((Model.Detail.ChuongId == 0) ? "Create" : "Edit")" asp-route-id="@Model.Detail?.ChuongId">
+    <form id="create-form" asp-action="@((Model.Detail.MaChuong == 0) ? "Create" : "Edit")" asp-route-id="@Model.Detail?.MaChuong">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <br>
         <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="Detail.MonHocId" class="control-label"></label>
-            <select asp-for="Detail.MonHocId" class="form-control w-100" asp-items="@MonHocId"></select>
+            <label asp-for="Detail.MaLopHoc" class="control-label"></label>
+            <select asp-for="Detail.MaLopHoc" class="form-control w-100" asp-items="@MonHocId"></select>
         </div>
      
 
@@ -33,21 +33,21 @@
             <span asp-validation-for="Detail.TenChuong" class="text-danger"></span>
         </div>   
         <br />
-        @if (Model.Detail.ChuongId == 0)
+        @if (Model.Detail.MaChuong == 0)
         {
             <div class="form-group  flex-grow-1 mx-4">
-                <label asp-for="Detail.ChuongId" class="control-label"></label>
-                <input asp-for="Detail.ChuongId" class="form-control w-100" />
-                <span asp-validation-for="Detail.ChuongId" class="text-danger"></span>
+                <label asp-for="Detail.MaChuong" class="control-label"></label>
+                <input asp-for="Detail.MaChuong" class="form-control w-100" />
+                <span asp-validation-for="Detail.MaChuong" class="text-danger"></span>
             </div>
         }
         else
         {
-            <input type="hidden" asp-for="Detail.ChuongId" />
+            <input type="hidden" asp-for="Detail.MaChuong" />
         }
         <br />
         <div class="d-flex justify-content-end flex-grow-1 mx-4 mb-2">
-            <input type="submit" value="@((Model.Detail.ChuongId == 0) ? "Thêm" : "Lưu")" class="btn btn-success mb-2" />
+            <input type="submit" value="@((Model.Detail.MaChuong == 0) ? "Thêm" : "Lưu")" class="btn btn-success mb-2" />
            
            
         </div>
@@ -60,39 +60,46 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-centered w-100 dt-responsive nowrap" id="products-datatable">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="display:none"></th>
-                            <th>Tên môn học </th>
-                            <th>Tên chương</th>
-                            <th>Số chương</th>
-                            <th style="width: 120px;"></th>
-                        </tr>
-                    </thead>
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã chương</th>
+                        <th>Tên môn học</th>
+                        <th>Tên chương</th>
+                        <th>Số chương</th>
+                        <th style="width: 120px;"></th>
+                    </tr>
+                </thead>
                 <tbody>
                     @foreach (var item in Model.ListChuong)
                     {
                         <tr>
-                            <td style="display:none"></td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.MonHoc.TenMonHoc)
+                                @Html.DisplayFor(modelItem => item.MaChuong)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LopHoc.TenLopHoc)
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.TenChuong)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.ChuongId)
+                                @Html.DisplayFor(modelItem => item.MaChuong)
                             </td>
                             <td class="table-action">
-                                <a href="#" class="modal-view-button" data-chuongid="@item.ChuongId">
+                                <a href="#" class="modal-view-button" data-chuongid="@item.MaChuong">
                                     <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
                                 </a>
-                                <a asp-action="Index" asp-route-id="@item.ChuongId" class="action-icon edit-button" > <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
-                                <a href="#" class="modal-view-button-dl" data-chuongid="@item.ChuongId"><i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                                <a asp-action="Index" asp-route-id="@item.MaChuong" class="action-icon edit-button">
+                                    <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
+                                </a>
+                                <a href="#" class="modal-view-button-dl" data-chuongid="@item.MaChuong">
+                                    <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
+                                </a>
                             </td>
                         </tr>
                     }
                 </tbody>
+
             </table>
         </div>
     </div> <!-- end card-body-->
@@ -110,7 +117,7 @@
             <div class="modal-body">
                 <dl class="row">
                     <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.MonHoc.TenMonHoc)
+                        @Html.DisplayNameFor(model => model.Detail.LopHoc.TenLopHoc)
                     </dt>
                     <dd class="col-sm-10" data-monhoc></dd>
                     <dt class="col-sm-2">
@@ -118,7 +125,7 @@
                     </dt>
                     <dd class="col-sm-10" data-tenchuong></dd>
                     <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.ChuongId)
+                        @Html.DisplayNameFor(model => model.Detail.MaChuong)
                     </dt>
                    <dd class="col-sm-10" data-chuongid></dd>
                 </dl>
@@ -142,7 +149,7 @@
             <div class="modal-body">
                 <dl class="row">
                     <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.MonHoc.TenMonHoc)
+                        @Html.DisplayNameFor(model => model.Detail.LopHoc.TenLopHoc)
                     </dt>
                     <dd class="col-sm-10" data-monhoc></dd>
                     <dt class="col-sm-2">
@@ -150,7 +157,7 @@
                     </dt>
                     <dd class="col-sm-10" data-tenchuong></dd>
                     <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.ChuongId)
+                        @Html.DisplayNameFor(model => model.Detail.MaChuong)
                     </dt>
                     <dd class="col-sm-10" data-chuongid></dd>
                 </dl>

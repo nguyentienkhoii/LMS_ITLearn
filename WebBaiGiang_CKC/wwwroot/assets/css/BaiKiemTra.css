@@ -1,383 +1,288 @@
-﻿body {
+﻿/* ========== RESET & CƠ BẢN ========== */
+body {
     margin: 0;
     padding: 0;
-    transition: all 0.5s ease;
-}
-.short-answer {
-    
-    float:left;
-   width:auto;
-    height: auto;
-    padding-right:40px;
-}
-
-.medium-answer {
-    float: left;
-    width: 50%;
-}
-
-.long-answer input[type="radio"] {
-    height: auto;
-}
-
-.long-answer label {
-    display: block;
-    width: 100%;
-    height: auto;
-}
-#prevButton {
-    
-    background-color: #126f9a;
-    color: #fff;
-    font-size: 25px;
-    cursor: pointer;
-    z-index: 2;
-    height: 40px;
-    width: 40px;
-    border-radius: 20px;
-    border: 2px solid #126f9a;
-  margin-left:450px;
-  margin-right:200px;
- float:left
-    
-}
-    #prevButton:hover {
-        color: #007bff;
-        border: 2px solid #126f9a
-    }
-#nextButton {
-    background-color: #126f9a;
-    color: #fff;
-    font-size: 25px;
-    cursor: pointer;
-    z-index: 2;
-    height: 40px;
-    width: 40px;
-    border-radius: 20px;
-    border: 2px solid #126f9a;
-    text-align: center;
-    margin-left: 650px;
-}
-    #nextButton:hover {
-        color: #007bff;
-        border: 2px solid #126f9a
-    }
-    .nutchuyen {
-        text-align: center;
-        overflow:hidden;
-    }
-
-#quiz {
-    margin-bottom: 50px;
-    margin-top: 50px;
-}
-
-.container1 {
-    margin-top: 0px;
+    font-family: 'Segoe UI', sans-serif;
     background-color: #f2f6ff;
-    border-radius: 10px;
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    margin: 0 auto;
-    max-width: 1300px;
 }
 
-    .container1 h1 {
-        /*text-align: center;*/
-        font-weight: 600;
-        color: #fff;
-    }
-/*hinh khoi/*/
+/* ========== KHUNG CHÍNH ========== */
+.container1 {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    padding: 40px 50px;
+    margin: 50px auto;
+    max-width: 1200px;
+}
+
+/* ========== HEADER BÀI KIỂM TRA ========== */
 #rectangle {
     width: 100%;
     height: 140px;
     background: #126f9a;
-    float: left;
-    padding: 8px;
+    border-radius: 12px 12px 0 0;
     color: #fff;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
-#kiemtraten {
-    float: left;
-    margin-left: 550px;
-    margin-top: -90px;
-}
+    #rectangle h1 {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
 
-#triangle_left {
-    display:none;
-    margin-left: 400px;
-    width: 0;
-    height: 0;
-    border-top: 70px solid transparent;
-    border-left: 140px solid #126f9a;
-    border-bottom: 70px solid transparent;
-}
 
-.text-center {
-    text-align: center;
-}
-
+/* ========== THÔNG TIN THÍ SINH (một dòng/label + nội dung) ========== */
 .kiemtracs {
     margin-top: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
+    background-color: #e4e8ee;
     border-radius: 10px;
-    background-color: rgba(0, 0, 0, 0.1)
+    padding: 20px 25px;
+    color: #222;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+    font-size: 16px;
 }
 
-.tieudethe {
-    float: left;
-    font-weight: bold;
-    margin-right: 10px;
-}
+    /* Mỗi dòng thông tin */
+    .kiemtracs .thongtin-item {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
 
+    /* Label (in đậm) */
+    .kiemtracs .tieudethe {
+        font-weight: 600;
+        display: inline-block;
+        min-width: 180px; /* căn đều label */
+        color: #000;
+    }
+
+    /* Giá trị */
+    .kiemtracs .giatri {
+        color: #333;
+        font-weight: 500;
+    }
+
+/* ========== KHUNG CÂU HỎI ========== */
 .question {
-    overflow:hidden;
-    margin-bottom: 20px;
-    padding: 20px;
+    background-color: #f9fbff;
     border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
     .question h3 {
-        margin-bottom: 20px;
-        font-weight: bold;
         font-size: 20px;
+        font-weight: 600;
+        color: #126f9a;
+        margin-bottom: 18px;
     }
-.form-check
-{
-    margin-bottom:6px;
+
+.form-check {
+    margin-bottom: 8px;
 }
+
 .form-check-label {
-    font-weight: normal;
-    font-size: 18px;
-}
-
-.menu ul li a {
-    color: black;
-    border: 1px solid black;
-    font-size: 16px;
-    width: 49px;
-    height: 46px;
-    padding:15px;
-
-    display: inline-block;
-    
-    border-radius: 5px;
-    padding-top: 1px;
-}
-    .menu ul li a.selected {
-        background-color:none;
-    }
-    .menu ul li a span {
-        display: inline-block;
-        width: 47px;
-        height: 25px;
-       bottom:6px;
-        border-radius: 0 0 4.25px 4.25px;
-        margin-left: -15px;
-        position: relative; /* add position relative */
-    }
-        .menu ul li a span::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 47px;
-            height: 40px; /* increase height */
-        }
-    .answered {
-        background-color: #f2f2f2;
-    }
-    .menu {
-        height: 100%;
-        width: 315px;
-        background-color: #fff;
-        border-radius: 10px 0 0;
-        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        right: -315px;
-        transition: all 0.5s ease;
-        z-index: 1;
-    }
-
-.cauhoiso {
-    color: black;
-    border: 1px solid black;
-    font-size: 20px;
-    padding: 5px;
-}
-
-.menu.active {
-    right: 0;
-}
-
-.menu h4 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.menu ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    overflow: hidden;
-}
-
-.menu li {
-    display: inline-block;
-    margin-bottom: 5px;
-    font-size: 16px;
+    font-size: 17px;
     color: #333;
-    float: left;
-    margin-right: 5px;
-    cursor: pointer;
 }
 
-.btn-primary {
-    background-color: #5A8CFC;
-    border-color: #007bff;
+/* ========== NÚT CHUYỂN CÂU ========== */
+.nutchuyen {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin: 40px 0 20px;
+}
+
+#prevButton,
+#nextButton {
+    background-color: #126f9a;
     color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    border: 2px solid #126f9a;
+    transition: 0.3s ease;
+}
+
+    #prevButton:hover,
+    #nextButton:hover {
+        background: #fff;
+        color: #126f9a;
+    }
+
+/* ========== NÚT NỘP BÀI ========== */
+.nopbaibtn {
+    border-radius: 25px;
     font-size: 18px;
-    font-weight: bold;
-    padding: 10px 30px;
-    border-radius: 5px;
+    font-weight: 600;
+    width: 120px;
+    height: 45px;
+    border: none;
+    background-color: #126f9a;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-    .btn-primary:hover {
-        background-color: #0069d9;
-        border-color: #0062cc;
+    .nopbaibtn:hover {
+        background: #fff;
+        color: #126f9a;
+        border: 2px solid #126f9a;
     }
 
-.content {
-    margin-right: 0;
-    padding: 20px;
-    background-color: #f8f9fa;
+/* ========== MENU CÂU HỎI BÊN PHẢI (màu như cũ) ========== */
+.menu {
+    position: fixed;
+    top: 0;
+    right: -315px;
+    width: 300px;
+    height: 100%;
+    background-color: #fff;
+    border-radius: 10px 0 0 10px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    padding: 25px;
     transition: all 0.5s ease;
+    z-index: 10;
 }
 
-    .content.active {
-        margin-right: 300px;
+    .menu.active {
+        right: 0;
     }
 
+    .menu h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 15px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+        .menu ul li a {
+            color: black;
+            border: 1px solid black;
+            font-size: 16px;
+            width: 48px;
+            height: 46px;
+            text-align: center;
+            line-height: 44px;
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.25s ease;
+        }
+
+            .menu ul li a:hover {
+                background-color: #e4e8ee;
+            }
+
+            .menu ul li a.selected {
+                position: relative;
+                background-color: #fff; /* giữ nền trắng như cũ */
+                overflow: hidden;
+            }
+                /* tạo thanh màu xanh ở phần trên của ô */
+                .menu ul li a.selected::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 35%; /* khoảng 1/3 chiều cao */
+                    background-color: #126f9a; /* màu thương hiệu */
+                    border-radius: 6px 6px 0 0;
+                }
+
+/* ========== NÚT MỞ MENU ========== */
 .toggle-menu {
     position: fixed;
-    top: 24%;
+    top: 25%;
     right: 25px;
     cursor: pointer;
-    z-index: 2;
-    height: 40px;
-    width: 40px;
-    border-radius: 20px;
-    transition: 1s;
+    z-index: 11;
     background-color: #126f9a;
-    font-size: 25px;
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s ease;
 }
 
     .toggle-menu i {
         color: #fff;
-        padding-left: 12px;
-        padding-top: 8px;
+        font-size: 20px;
     }
 
+    .toggle-menu:hover {
+        transform: scale(1.1);
+    }
+
+/* ========== NÚT ĐÓNG MENU ========== */
 .btn-dong {
-    font-size: 25px;
-    margin-left: 90%;
-    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
     background-color: #126f9a;
-    height: 40px;
-    width: 40px;
-    border-radius: 20px;
+    height: 38px;
+    width: 38px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: none;
 }
 
     .btn-dong i {
-        padding-left: 10px;
-        padding-top: 7px;
-        color: #fff;
+        color: white;
+        font-size: 18px;
     }
 
-    .btn-dong.active {
-        margin-left: 90%;
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .container1 {
+        padding: 25px;
+        max-width: 95%;
     }
 
-.toggle-menu.active {
-    margin-right: 0px;
-    top: 20px;
-    display: none;
-}
-
-.toggle-menu span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    background-color: #333;
-    margin-bottom: 5px;
-    transition: all 0.5s ease;
-}
-
-.toggle-menu.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.toggle-menu.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.toggle-menu.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
-}
-
-
-
-/* CSS cho giao diện điện thoại */
-@media screen and (max-width: 768px) {
     .menu {
         width: 70%;
-        height: auto;
-        left: 100%;
+        right: -70%;
     }
 
-    .toggle-menu {
-        background-color: black;
-        right: 5px;
-    }
-
-        .toggle-menu.active {
-            margin-left: 50%;
+        .menu.active {
+            right: 0;
         }
 
-    .btn-dong {
-        background-color: black;
+    .toggle-menu {
+        right: 10px;
     }
 
-    .menu.active {
-        left: 30%;
+    #rectangle {
+        height: 100px;
+        padding: 15px;
     }
 
-    .content.active {
-        margin-right: 0;
-    }
-    #prevButton
-    {
-        margin-left:40px;
-    }
-    #nextButton
-    {
-        margin-left:300px;
-    }
-}
-.nopbaibtn {
-    border-radius: 30px;
-    font-size: 20px;
-    width: 130px;
-    height:50px;
-    padding: 10px;
-    border: none; /* Ẩn viền */
-    background-color: #126f9a;
-    color: white;
+        #rectangle h1 {
+            font-size: 22px;
+        }
 }

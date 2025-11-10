@@ -22,28 +22,21 @@ namespace WebBaiGiang_CKC.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("DangKyMonHoc", b =>
+            modelBuilder.Entity("HocVien_LopHoc", b =>
                 {
-                    b.Property<int>("DangKyMonHocId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<int>("MaHocVien")
+                        .HasColumnType("int")
+                        .HasColumnOrder(0);
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DangKyMonHocId"), 1L, 1);
+                    b.Property<int>("MaLopHoc")
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
 
-                    b.Property<int>("MonHocId")
-                        .HasColumnType("int");
+                    b.HasKey("MaHocVien", "MaLopHoc");
 
-                    b.Property<int>("TaiKhoanId")
-                        .HasColumnType("int");
+                    b.HasIndex("MaLopHoc");
 
-                    b.HasKey("DangKyMonHocId");
-
-                    b.HasIndex("MonHocId");
-
-                    b.HasIndex("TaiKhoanId", "MonHocId")
-                        .IsUnique();
-
-                    b.ToTable("DangKyMonHoc");
+                    b.ToTable("HOCVIEN_LOPHOC");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.Bai", b =>
@@ -54,25 +47,26 @@ namespace WebBaiGiang_CKC.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BaiId"), 1L, 1);
 
-                    b.Property<int>("ChuongId")
+                    b.Property<int>("MaChuong")
                         .HasColumnType("int");
 
                     b.Property<string>("MoTa")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("ntext");
 
                     b.Property<int>("SoBai")
                         .HasColumnType("int");
 
                     b.Property<string>("TenBai")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("BaiId");
 
-                    b.HasIndex("ChuongId");
+                    b.HasIndex("MaChuong");
 
-                    b.ToTable("Bai");
+                    b.ToTable("BAI");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiLam", b =>
@@ -86,11 +80,8 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Property<float?>("Diem")
                         .HasColumnType("real");
 
-                    b.Property<string>("HoTen")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MSSV")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("MaHocVien")
+                        .HasColumnType("int");
 
                     b.Property<int?>("SoCauDung")
                         .HasColumnType("int");
@@ -103,32 +94,90 @@ namespace WebBaiGiang_CKC.Migrations
 
                     b.HasKey("BaiLamId");
 
-                    b.ToTable("BaiLam");
+                    b.HasIndex("MaHocVien");
+
+                    b.ToTable("BAILAM");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiTap", b =>
                 {
-                    b.Property<int>("BaiTapId")
+                    b.Property<int>("MaBaiTap")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BaiTapId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaBaiTap"), 1L, 1);
 
-                    b.Property<int>("MonHocId")
+                    b.Property<int>("BaiId")
                         .HasColumnType("int");
 
-                    b.Property<string>("NoiDung")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("FileDinhKem")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("HanNop")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("TenBaiTap")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.HasKey("BaiTapId");
+                    b.HasKey("MaBaiTap");
 
-                    b.HasIndex("MonHocId");
+                    b.HasIndex("BaiId");
 
-                    b.ToTable("BaiTap");
+                    b.ToTable("BAITAP");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiTapNop", b =>
+                {
+                    b.Property<int>("MaBaiTapNop")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaBaiTapNop"), 1L, 1);
+
+                    b.Property<double?>("Diem")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FileNop")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("LanNop")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaBaiTap")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaHocVien")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("NgayCham")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayNop")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NhanXet")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TrangThai")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("MaBaiTapNop");
+
+                    b.HasIndex("MaBaiTap");
+
+                    b.HasIndex("MaHocVien");
+
+                    b.ToTable("BAITAPNOP");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.CauHoi", b =>
@@ -138,9 +187,6 @@ namespace WebBaiGiang_CKC.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CauHoiId"), 1L, 1);
-
-                    b.Property<int>("ChuongId")
-                        .HasColumnType("int");
 
                     b.Property<string>("DapAnA")
                         .HasColumnType("nvarchar(max)");
@@ -155,12 +201,17 @@ namespace WebBaiGiang_CKC.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DapAnDung")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<float>("DoKho")
                         .HasColumnType("real");
 
+                    b.Property<int>("MaChuong")
+                        .HasColumnType("int");
+
                     b.Property<string>("NoiDung")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("SoLanLay")
@@ -171,9 +222,9 @@ namespace WebBaiGiang_CKC.Migrations
 
                     b.HasKey("CauHoiId");
 
-                    b.HasIndex("ChuongId");
+                    b.HasIndex("MaChuong");
 
-                    b.ToTable("CauHoi");
+                    b.ToTable("CAUHOI");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.CauHoi_BaiLam", b =>
@@ -225,23 +276,27 @@ namespace WebBaiGiang_CKC.Migrations
                     b.ToTable("CauHoi_De");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.Chuong", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.ChuongNew", b =>
                 {
-                    b.Property<int>("ChuongId")
+                    b.Property<int>("MaChuong")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("MonHocId")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaChuong"), 1L, 1);
+
+                    b.Property<int>("MaLopHoc")
                         .HasColumnType("int");
 
                     b.Property<string>("TenChuong")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("ChuongId");
+                    b.HasKey("MaChuong");
 
-                    b.HasIndex("MonHocId");
+                    b.HasIndex("MaLopHoc");
 
-                    b.ToTable("Chuong");
+                    b.ToTable("CHUONG_NEW");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.DanhSachThi", b =>
@@ -255,7 +310,7 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Property<int>("KyKiemTraId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TaiKhoanId")
+                    b.Property<int>("MaHocVien")
                         .HasColumnType("int");
 
                     b.Property<bool>("TrangThai")
@@ -265,9 +320,9 @@ namespace WebBaiGiang_CKC.Migrations
 
                     b.HasIndex("KyKiemTraId");
 
-                    b.HasIndex("TaiKhoanId");
+                    b.HasIndex("MaHocVien");
 
-                    b.ToTable("DanhSachThi");
+                    b.ToTable("DANHSACHTHI");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.De", b =>
@@ -294,40 +349,19 @@ namespace WebBaiGiang_CKC.Migrations
                     b.ToTable("De");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.DeCuong", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.GiangVien", b =>
                 {
-                    b.Property<int>("DeCuongId")
+                    b.Property<int>("MaGiangVien")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeCuongId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaGiangVien"), 1L, 1);
 
-                    b.Property<int>("MonHocId")
-                        .HasColumnType("int");
+                    b.Property<string>("ChuyenMon")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("NoiDung")
-                        .HasColumnType("ntext");
-
-                    b.Property<string>("TieuDe")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DeCuongId");
-
-                    b.HasIndex("MonHocId");
-
-                    b.ToTable("DeCuong");
-                });
-
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.GiaoVien", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("AnhDaiDien")
+                    b.Property<string>("DiaChi")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -335,28 +369,83 @@ namespace WebBaiGiang_CKC.Migrations
 
                     b.Property<string>("HoTen")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SoDienThoai")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<bool>("IsGiaoVien")
-                        .HasColumnType("bit");
+                    b.HasKey("MaGiangVien");
 
-                    b.Property<string>("MatKhau")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.HasIndex("MaTaiKhoan")
+                        .IsUnique();
 
-                    b.Property<string>("TenDangNhap")
+                    b.ToTable("GiangViens");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.HocVien", b =>
+                {
+                    b.Property<int>("MaHocVien")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaHocVien"), 1L, 1);
+
+                    b.Property<string>("DiaChi")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HoTen")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SoDienThoai")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<bool>("TrangThai")
-                        .HasColumnType("bit");
+                    b.HasKey("MaHocVien");
 
-                    b.HasKey("Id");
+                    b.HasIndex("MaTaiKhoan")
+                        .IsUnique();
 
-                    b.ToTable("GiaoVien");
+                    b.ToTable("HocViens");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.KhoaHoc", b =>
+                {
+                    b.Property<int>("MaKhoaHoc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaKhoaHoc"), 1L, 1);
+
+                    b.Property<string>("MoTa")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenKhoaHoc")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("ThoiGianBatDau")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ThoiGianKetThuc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("MaKhoaHoc");
+
+                    b.ToTable("KHOAHOC");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.KyKiemTra", b =>
@@ -385,40 +474,48 @@ namespace WebBaiGiang_CKC.Migrations
                     b.ToTable("KyKiemTra");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.MonHoc", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.LopHoc", b =>
                 {
-                    b.Property<int>("MonHocId")
+                    b.Property<int>("MaLopHoc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MonHocId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLopHoc"), 1L, 1);
 
-                    b.Property<string>("AnhDaiDien")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("AnhLopHoc")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("GiaoVienId")
+                    b.Property<int>("MaGiangVien")
                         .HasColumnType("int");
 
-                    b.Property<string>("MaMonHoc")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("MaKhoaHoc")
+                        .HasColumnType("int");
 
                     b.Property<string>("MoTa")
-                        .IsRequired()
-                        .HasColumnType("ntext");
-
-                    b.Property<int>("SoLuongDangKy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TenMonHoc")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("MonHocId");
+                    b.Property<string>("TenLopHoc")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.HasIndex("GiaoVienId");
+                    b.Property<string>("TenVietTat")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.ToTable("MonHoc");
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("MaLopHoc");
+
+                    b.HasIndex("MaGiangVien");
+
+                    b.HasIndex("MaKhoaHoc");
+
+                    b.ToTable("LOPHOC");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.Muc", b =>
@@ -436,103 +533,151 @@ namespace WebBaiGiang_CKC.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoiDung")
-                        .IsRequired()
                         .HasColumnType("ntext");
 
                     b.Property<string>("TenMuc")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MucId");
 
                     b.HasIndex("BaiId");
 
-                    b.ToTable("Muc");
+                    b.ToTable("MUCCON");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.TaiKhoan", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.TaiKhoanNew", b =>
                 {
-                    b.Property<int>("TaiKhoanId")
+                    b.Property<int>("MaTaiKhoan")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaiKhoanId"), 1L, 1);
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HoTen")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MSSV")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaTaiKhoan"), 1L, 1);
 
                     b.Property<string>("MatKhau")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("TenDangNhap")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<bool>("TrangThai")
                         .HasColumnType("bit");
 
-                    b.HasKey("TaiKhoanId");
+                    b.Property<string>("VaiTro")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.ToTable("TaiKhoan");
+                    b.HasKey("MaTaiKhoan");
+
+                    b.ToTable("TaiKhoanNews");
                 });
 
-            modelBuilder.Entity("DangKyMonHoc", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.TaiLieu", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.MonHoc", "MonHoc")
-                        .WithMany("DangKyMonHoc")
-                        .HasForeignKey("MonHocId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.Property<int>("MaTaiLieu")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaTaiLieu"), 1L, 1);
+
+                    b.Property<string>("FileTaiLieu")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("MaMucCon")
+                        .HasColumnType("int");
+
+                    b.HasKey("MaTaiLieu");
+
+                    b.HasIndex("MaMucCon");
+
+                    b.ToTable("TAILIEU");
+                });
+
+            modelBuilder.Entity("HocVien_LopHoc", b =>
+                {
+                    b.HasOne("WebBaiGiang_CKC.Models.HocVien", "HocVien")
+                        .WithMany("HocVien_LopHocs")
+                        .HasForeignKey("MaHocVien")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebBaiGiang_CKC.Models.TaiKhoan", "TaiKhoan")
-                        .WithMany("DangKyMonHoc")
-                        .HasForeignKey("TaiKhoanId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("WebBaiGiang_CKC.Models.LopHoc", "LopHoc")
+                        .WithMany("HocVien_LopHocs")
+                        .HasForeignKey("MaLopHoc")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("MonHoc");
+                    b.Navigation("HocVien");
 
-                    b.Navigation("TaiKhoan");
+                    b.Navigation("LopHoc");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.Bai", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.Chuong", "Chuong")
+                    b.HasOne("WebBaiGiang_CKC.Models.ChuongNew", "Chuong")
                         .WithMany("Bais")
-                        .HasForeignKey("ChuongId")
+                        .HasForeignKey("MaChuong")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Chuong");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiLam", b =>
+                {
+                    b.HasOne("WebBaiGiang_CKC.Models.HocVien", "HocVien")
+                        .WithMany()
+                        .HasForeignKey("MaHocVien")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HocVien");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiTap", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.MonHoc", "MonHoc")
+                    b.HasOne("WebBaiGiang_CKC.Models.Bai", "Bai")
                         .WithMany("BaiTaps")
-                        .HasForeignKey("MonHocId")
+                        .HasForeignKey("BaiId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MonHoc");
+                    b.Navigation("Bai");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiTapNop", b =>
+                {
+                    b.HasOne("WebBaiGiang_CKC.Models.BaiTap", "BaiTap")
+                        .WithMany("BaiTapNops")
+                        .HasForeignKey("MaBaiTap")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebBaiGiang_CKC.Models.HocVien", "HocVien")
+                        .WithMany("BaiTapNops")
+                        .HasForeignKey("MaHocVien")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BaiTap");
+
+                    b.Navigation("HocVien");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.CauHoi", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.Chuong", "Chuong")
+                    b.HasOne("WebBaiGiang_CKC.Models.ChuongNew", "ChuongNew")
                         .WithMany()
-                        .HasForeignKey("ChuongId")
+                        .HasForeignKey("MaChuong")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Chuong");
+                    b.Navigation("ChuongNew");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.CauHoi_BaiLam", b =>
@@ -573,15 +718,15 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Navigation("De");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.Chuong", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.ChuongNew", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.MonHoc", "MonHoc")
+                    b.HasOne("WebBaiGiang_CKC.Models.LopHoc", "LopHoc")
                         .WithMany("Chuongs")
-                        .HasForeignKey("MonHocId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("MaLopHoc")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("MonHoc");
+                    b.Navigation("LopHoc");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.DanhSachThi", b =>
@@ -592,15 +737,15 @@ namespace WebBaiGiang_CKC.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebBaiGiang_CKC.Models.TaiKhoan", "TaiKhoan")
+                    b.HasOne("WebBaiGiang_CKC.Models.HocVien", "HocVien")
                         .WithMany()
-                        .HasForeignKey("TaiKhoanId")
+                        .HasForeignKey("MaHocVien")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("KyKiemTra");
+                    b.Navigation("HocVien");
 
-                    b.Navigation("TaiKhoan");
+                    b.Navigation("KyKiemTra");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.De", b =>
@@ -614,26 +759,45 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Navigation("KyKiemTra");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.DeCuong", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.GiangVien", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.MonHoc", "MonHoc")
-                        .WithMany("DeCuongs")
-                        .HasForeignKey("MonHocId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("WebBaiGiang_CKC.Models.TaiKhoanNew", "TaiKhoan")
+                        .WithOne("GiangVien")
+                        .HasForeignKey("WebBaiGiang_CKC.Models.GiangVien", "MaTaiKhoan")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("MonHoc");
+                    b.Navigation("TaiKhoan");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.MonHoc", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.HocVien", b =>
                 {
-                    b.HasOne("WebBaiGiang_CKC.Models.GiaoVien", "GiaoVien")
-                        .WithMany()
-                        .HasForeignKey("GiaoVienId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("WebBaiGiang_CKC.Models.TaiKhoanNew", "TaiKhoan")
+                        .WithOne("HocVien")
+                        .HasForeignKey("WebBaiGiang_CKC.Models.HocVien", "MaTaiKhoan")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("GiaoVien");
+                    b.Navigation("TaiKhoan");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.LopHoc", b =>
+                {
+                    b.HasOne("WebBaiGiang_CKC.Models.GiangVien", "GiangVien")
+                        .WithMany("LopHocs")
+                        .HasForeignKey("MaGiangVien")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebBaiGiang_CKC.Models.KhoaHoc", "KhoaHoc")
+                        .WithMany("LopHocs")
+                        .HasForeignKey("MaKhoaHoc")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GiangVien");
+
+                    b.Navigation("KhoaHoc");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.Muc", b =>
@@ -647,14 +811,32 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Navigation("Bai");
                 });
 
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.TaiLieu", b =>
+                {
+                    b.HasOne("WebBaiGiang_CKC.Models.Muc", "Muc")
+                        .WithMany("TaiLieus")
+                        .HasForeignKey("MaMucCon")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Muc");
+                });
+
             modelBuilder.Entity("WebBaiGiang_CKC.Models.Bai", b =>
                 {
+                    b.Navigation("BaiTaps");
+
                     b.Navigation("Mucs");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiLam", b =>
                 {
                     b.Navigation("CauHoi_BaiLam");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.BaiTap", b =>
+                {
+                    b.Navigation("BaiTapNops");
                 });
 
             modelBuilder.Entity("WebBaiGiang_CKC.Models.CauHoi", b =>
@@ -667,7 +849,7 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Navigation("CauHoi_BaiLam");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.Chuong", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.ChuongNew", b =>
                 {
                     b.Navigation("Bais");
                 });
@@ -677,6 +859,23 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Navigation("CauHoi_DeThi");
                 });
 
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.GiangVien", b =>
+                {
+                    b.Navigation("LopHocs");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.HocVien", b =>
+                {
+                    b.Navigation("BaiTapNops");
+
+                    b.Navigation("HocVien_LopHocs");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.KhoaHoc", b =>
+                {
+                    b.Navigation("LopHocs");
+                });
+
             modelBuilder.Entity("WebBaiGiang_CKC.Models.KyKiemTra", b =>
                 {
                     b.Navigation("DanhSachThi");
@@ -684,20 +883,23 @@ namespace WebBaiGiang_CKC.Migrations
                     b.Navigation("De");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.MonHoc", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.LopHoc", b =>
                 {
-                    b.Navigation("BaiTaps");
-
                     b.Navigation("Chuongs");
 
-                    b.Navigation("DangKyMonHoc");
-
-                    b.Navigation("DeCuongs");
+                    b.Navigation("HocVien_LopHocs");
                 });
 
-            modelBuilder.Entity("WebBaiGiang_CKC.Models.TaiKhoan", b =>
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.Muc", b =>
                 {
-                    b.Navigation("DangKyMonHoc");
+                    b.Navigation("TaiLieus");
+                });
+
+            modelBuilder.Entity("WebBaiGiang_CKC.Models.TaiKhoanNew", b =>
+                {
+                    b.Navigation("GiangVien");
+
+                    b.Navigation("HocVien");
                 });
 #pragma warning restore 612, 618
         }

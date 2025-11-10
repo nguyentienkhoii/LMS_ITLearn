@@ -1,6 +1,5 @@
-﻿using System.Globalization;
+﻿/*using System.Globalization;
 using AspNetCoreHero.ToastNotification.Abstractions;
-using BaiGiang.Models;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Authentication;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
-
 using System.Security.Claims;
 using WebBaiGiang_CKC.Data;
 using WebBaiGiang_CKC.Extension;
@@ -20,9 +18,9 @@ namespace WebBaiGiang_CKC.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        public INotyfService _notyfService { get; }
         private readonly WebBaiGiangContext _context;
         private readonly ILogger<AuthenticationController> _logger;
+        public INotyfService _notyfService { get; }
 
         public AuthenticationController(WebBaiGiangContext context, ILogger<AuthenticationController> logger, INotyfService notyfService)
         {
@@ -31,367 +29,288 @@ namespace WebBaiGiang_CKC.Controllers
             _notyfService = notyfService;
         }
 
-        [HttpPost]
-        [Route("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        #region --- Học viên ---
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var mssvClaim = User.Claims.SingleOrDefault(c => c.Type == "MSSV");
             var password = request.Password.ToMD5();
-            var user = _context.TaiKhoan.FirstOrDefault(u => u.MSSV == request.Mssv && u.MatKhau == password);
-
-            if (mssvClaim?.Value != null)
-            {
-                // Tên đăng nhập hoặc mật khẩu không đúng
-                return BadRequest("Bạn đang đăng nhập dưới tài khoản " + mssvClaim.Value);
-            }
+            var user = await _context.TaiKhoanNews
+                .Include(t => t.HocVien)
+                .FirstOrDefaultAsync(t => t.TenDangNhap == request.TenDangNhap && t.MatKhau == password && t.VaiTro == "HocVien");
 
             if (user == null)
-            {
-                // Tên đăng nhập hoặc mật khẩu không đúng
-                return BadRequest("Thông tin đăng nhập không chính xác");
-            }
-            if (user.MSSV != request.Mssv)
-            {
-                // Tài khoản không chính xác
-                return BadRequest("Tài khoản không chính xác");
-            }
+                return BadRequest("Thông tin đăng nhập không chính xác hoặc tài khoản bị khóa.");
 
-            if (user.MatKhau != password)
-            {
-                // Mật khẩu không chính xác
-                return BadRequest("Mật khẩu không chính xác");
-            }
-
-            if (user.TrangThai == false)
-            {
-                // Tài khoản bị khóa
-                return BadRequest("Tài khoản của bạn đang bị khóa, vui lòng liên hệ Admin!");
-            }
+            if (!user.TrangThai)
+                return BadRequest("Tài khoản đang bị khóa.");
 
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.HoTen),
-            new Claim("MSSV", user.MSSV),
-            new Claim("Email", user.Email),
-            new Claim("TaiKhoanId", user.TaiKhoanId.ToString()),
-        };
+            {
+                new Claim(ClaimTypes.Name, user.HocVien.HoTen),
+                new Claim("TenDangNhap", user.TenDangNhap),
+                new Claim("VaiTro", "HocVien"),
+                new Claim("MaHocVien", user.HocVien.MaHocVien.ToString())
+            };
 
-            var claimsIdentity = new ClaimsIdentity(
-                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-            HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity)
-            );
             _notyfService.Success("Đăng nhập thành công");
             return Ok(new { message = "Đăng nhập thành công" });
         }
-        //-----------------------------------------------------------------
-        [HttpPost]
-        [Route("register")]
+
+        *//*[HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // Kiểm tra rỗng
-            if (string.IsNullOrWhiteSpace(request.MSSV) ||
-                string.IsNullOrWhiteSpace(request.MatKhau) ||
-                string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.HoTen))
+            if (string.IsNullOrWhiteSpace(request.MSSV) || string.IsNullOrWhiteSpace(request.Password) ||
+                string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.HoTen))
             {
                 return BadRequest("Vui lòng nhập đầy đủ thông tin.");
             }
 
-            // Kiểm tra độ dài
-            if (request.MSSV.Length < 6 || request.MSSV.Length > 20)
-                return BadRequest("MSSV phải từ 6 đến 20 ký tự.");
-            if (request.MatKhau.Length < 6 || request.MatKhau.Length > 50)
+            if (request.Mssv.Length < 6 || request.Mssv.Length > 20)
+                return BadRequest("Tên đăng nhập phải từ 6 đến 20 ký tự.");
+            if (request.Password.Length < 6 || request.Password.Length > 50)
                 return BadRequest("Mật khẩu phải từ 6 đến 50 ký tự.");
 
-            // Kiểm tra MSSV/Email đã tồn tại
-            if (_context.TaiKhoan.Any(x => x.MSSV == request.MSSV))
-                return BadRequest("MSSV đã tồn tại.");
-            if (_context.TaiKhoan.Any(x => x.Email == request.Email))
+            if (await _context.TaiKhoanNew.AnyAsync(t => t.TenDangNhap == request.Mssv))
+                return BadRequest("Tên đăng nhập đã tồn tại.");
+            if (await _context.HocVien.AnyAsync(h => h.Email == request.Email))
                 return BadRequest("Email đã được sử dụng.");
 
-            // Tạo tài khoản mới
-            var newUser = new TaiKhoan
+            var taiKhoan = new TaiKhoanNew
             {
-                MSSV = request.MSSV,
-                MatKhau = request.MatKhau.ToMD5(),
-                Email = request.Email,
-                HoTen = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.HoTen),
+                TenDangNhap = request.Mssv,
+                MatKhau = request.Password.ToMD5(),
+                VaiTro = "HocVien",
                 TrangThai = true
             };
 
-            _context.TaiKhoan.Add(newUser);
+            var hocVien = new HocVien
+            {
+                HoTen = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.HoTen),
+                Email = request.Email,
+                MaTaiKhoan = taiKhoan.MaTaiKhoan,
+                TaiKhoan = taiKhoan
+            };
+
+            _context.TaiKhoanNew.Add(taiKhoan);
+            _context.HocVien.Add(hocVien);
             await _context.SaveChangesAsync();
 
             _notyfService.Success("Đăng ký thành công");
             return Ok(new { message = "Đăng ký thành công" });
         }
-        //-----------------------------------------------------
-        [HttpPost]
-        [Route("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("changepassword")]
+*//*
+        [HttpPost("changepassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
+            var username = User.Claims.FirstOrDefault(c => c.Type == "TenDangNhap")?.Value;
+            if (username == null) return BadRequest("Không tìm thấy tài khoản.");
 
-            var mssvClaim = User.Claims.SingleOrDefault(c => c.Type == "MSSV");
-            var mssv_ = "";
-            if (mssvClaim != null) { mssv_ = mssvClaim.Value; }
-            var password = request.CurrentPassword.ToMD5();
-            var user = await _context.TaiKhoan.FirstOrDefaultAsync(u => u.MSSV == mssv_);
-            if (user.MatKhau != password)
-            {
-                return BadRequest("Mật khẩu cũ không chính xác");
-            }
-            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
-            {
-                return BadRequest("Mật khẩu mới phải trên 6 ký tự và nhỏ hơn 100 ký tự");
-            }
+            var user = await _context.TaiKhoanNews.FirstOrDefaultAsync(t => t.TenDangNhap == username && t.VaiTro == "HocVien");
+            if (user == null) return BadRequest("Tài khoản không tồn tại.");
+
+            if (user.MatKhau != request.CurrentPassword.ToMD5())
+                return BadRequest("Mật khẩu cũ không chính xác.");
             if (request.NewPassword != request.ConfirmPassword)
-            {
-                return BadRequest("Mật khẩu mới không đúng với mật khẩu xác nhận");
-            }
+                return BadRequest("Mật khẩu mới không khớp.");
+            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
+                return BadRequest("Mật khẩu mới phải từ 6 đến 100 ký tự.");
+
             user.MatKhau = request.NewPassword.ToMD5();
-            _context.TaiKhoan.Update(user);
+            _context.TaiKhoanNews.Update(user);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Đổi mật khẩu thành công" });
 
+            return Ok(new { message = "Đổi mật khẩu thành công." });
         }
+        #endregion
 
-        [HttpPost]
-
-        [Route("forgotpassword")]
-        public IActionResult ForgotPassword([FromBody] ForgotPasswordModel model)
+        #region --- Giảng viên/Admin ---
+        [HttpPost("logingv")]
+        public async Task<IActionResult> LoginGV([FromBody] LoginRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var user = _context.TaiKhoan.FirstOrDefault(u => u.Email == model.Email);
-            if (user != null)
-            {
-                var token = Guid.NewGuid().ToString();
-                user.ResetToken = token;
-                user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(10);
-                _context.SaveChangesAsync();
-
-                HttpContext.Session.SetString("ResetToken", token);
-                HttpContext.Session.SetString("Email", model.Email);
-
-                // Gửi email chứa token đến địa chỉ email của người dùng
-                var email = new MimeMessage();
-                email.From.Add(new MailboxAddress("AdminDotnet", "admin@example.com"));
-                email.To.Add(MailboxAddress.Parse($"{model.Email}"));
-                email.Subject = "Yêu cầu đặt lại mật khẩu";
-                email.Body = new TextPart("plain")
-                {
-                    Text = $"Để đặt lại mật khẩu, vui lòng sử dụng token sau đây: {token} mã token có thời hạn là 10 phút"
-                };
-                using var smtp = new SmtpClient();
-                smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                smtp.Authenticate("baigiangtructuyen2025@gmail.com", "kryx fkgc pxht wfsf");
-                smtp.Send(email);
-                smtp.Disconnect(true);
-                _notyfService.Success("Yêu cầu đặt lại mật khẩu của bạn đã được gửi. Vui lòng kiểm tra email của bạn để tiếp tục.");
-                return Ok(new { message = "Yêu cầu đặt lại mật khẩu của bạn đã được gửi. Vui lòng kiểm tra email của bạn để tiếp tục." });
-            }
-            else
-            {
-                return BadRequest("Email không tồn tại trong hệ thống");
-            }
-        }
-
-
-        [HttpPost("resetpassword")]
-        public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
-        {
-
-            var resetToken = HttpContext.Session.GetString("ResetToken");
-            var resetTokenExpiry = HttpContext.Session.GetString("ResetTokenExpiry");
-            var email = HttpContext.Session.GetString("Email");
-            var user = await _context.TaiKhoan.FirstOrDefaultAsync(u => u.Email == email);
-            if (user != null && resetToken == model.Token)
-            {
-                if (model.Password != model.ConfirmPassword)
-                {
-                    return BadRequest("Mật khẩu mới và mật khẩu xác nhận không khớp.");
-                }
-
-                user.MatKhau = (model.Password).ToMD5();
-                await _context.SaveChangesAsync();
-                _notyfService.Success("Mật khẩu của bạn đã được đặt lại thành công.");
-                return Ok("Mật khẩu của bạn đã được đặt lại thành công.");
-            }
-
-
-            return BadRequest("Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
-        }
-
-        ////////
-        [HttpPost]
-        [Route("logingv")]
-        public IActionResult Logingv([FromBody] LoginRequest request)
-        {
-            var TenDangNhapclaim = User.Claims.SingleOrDefault(c => c.Type == "TenDangNhap");
             var password = request.Password.ToMD5();
-            var user = _context.GiaoVien.FirstOrDefault(u => u.TenDangNhap == request.Mssv && u.MatKhau == password);
-
-            if (TenDangNhapclaim?.Value != null)
-            {
-                // Tên đăng nhập hoặc mật khẩu không đúng
-                return BadRequest("Bạn đang đăng nhập dưới tài khoản " + TenDangNhapclaim.Value);
-            }
+            var user = await _context.TaiKhoanNews
+                .Include(t => t.GiangVien)
+                .FirstOrDefaultAsync(t => t.TenDangNhap == request.TenDangNhap && t.MatKhau == password && (t.VaiTro == "GiangVien" || t.VaiTro == "Admin"));
 
             if (user == null)
+                return BadRequest("Thông tin đăng nhập không chính xác hoặc tài khoản bị khóa.");
+
+            if (!user.TrangThai)
+                return BadRequest("Tài khoản đang bị khóa.");
+
+            var claims = new List<Claim>
             {
-                // Tên đăng nhập hoặc mật khẩu không đúng
-                return BadRequest("Thông tin đăng nhập không chính xác");
-            }
-            if (user.TenDangNhap != request.Mssv)
-            {
-                // Tài khoản không chính xác
-                return BadRequest("Tài khoản không chính xác");
-            }
+                new Claim(ClaimTypes.Name, user.GiangVien.HoTen),
+                new Claim("TenDangNhap", user.TenDangNhap),
+                new Claim("VaiTro", user.VaiTro)
+            };
 
-            if (user.MatKhau != password)
-            {
-                // Mật khẩu không chính xác
-                return BadRequest("Mật khẩu không chính xác");
-            }
-
-            if (user.TrangThai == false)
-            {
-                // Tài khoản bị khóa
-                return BadRequest("Tài khoản của bạn đang bị khóa, vui lòng liên hệ Admin!");
-            }
-
-            List<Claim> claims = new List<Claim>()
-                    {
-                        new Claim(ClaimTypes.Name, user.HoTen),
-                        new Claim(ClaimTypes.Role, "Admin"),
-                        new Claim("TenDangNhap" , user.TenDangNhap),
-                         new Claim("AnhDaiDien", "/contents/Images/GiaoVien/" + user.AnhDaiDien) // Thêm đường dẫn đến ảnh đại diện vào claims
-                    };
-
-            var claimsIdentity = new ClaimsIdentity(
-                claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity)
-            );
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
             return Ok(new { message = "Đăng nhập thành công" });
         }
 
-
-        [HttpPost]
-        [Route("changepasswordgv")]
-        public async Task<IActionResult> ChangePasswordgv([FromBody] ChangePasswordRequest request)
+        [HttpPost("changepasswordgv")]
+        public async Task<IActionResult> ChangePasswordGV([FromBody] ChangePasswordRequest request)
         {
+            var username = User.Claims.FirstOrDefault(c => c.Type == "TenDangNhap")?.Value;
+            if (username == null) return BadRequest("Không tìm thấy tài khoản.");
 
-            var TenDangNhapclaim = User.Claims.SingleOrDefault(c => c.Type == "TenDangNhap");
-            var tendangnhap = "";
-            if (TenDangNhapclaim != null) { tendangnhap = TenDangNhapclaim.Value; }
-            var password = request.CurrentPassword.ToMD5();
-            var user = await _context.GiaoVien.FirstOrDefaultAsync(u => u.TenDangNhap == tendangnhap);
-            if (user.MatKhau != password)
-            {
-                return BadRequest("Mật khẩu cũ không chính xác");
-            }
-            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
-            {
-                return BadRequest("Mật khẩu mới phải trên 6 ký tự và nhỏ hơn 100 ký tự");
-            }
+            var user = await _context.TaiKhoanNews.FirstOrDefaultAsync(t => t.TenDangNhap == username && (t.VaiTro == "GiangVien" || t.VaiTro == "Admin"));
+            if (user == null) return BadRequest("Tài khoản không tồn tại.");
+
+            if (user.MatKhau != request.CurrentPassword.ToMD5())
+                return BadRequest("Mật khẩu cũ không chính xác.");
             if (request.NewPassword != request.ConfirmPassword)
-            {
-                return BadRequest("Mật khẩu mới không đúng với mật khẩu xác nhận");
-            }
+                return BadRequest("Mật khẩu mới không khớp.");
+            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
+                return BadRequest("Mật khẩu mới phải từ 6 đến 100 ký tự.");
+
             user.MatKhau = request.NewPassword.ToMD5();
-            _context.GiaoVien.Update(user);
+            _context.TaiKhoanNews.Update(user);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Đổi mật khẩu thành công" });
 
+            return Ok(new { message = "Đổi mật khẩu thành công." });
         }
+        #endregion
+    }
+}
+*/
+using System.Globalization;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using WebBaiGiang_CKC.Data;
+using WebBaiGiang_CKC.Extension;
+using WebBaiGiang_CKC.Models;
 
+namespace WebBaiGiang_CKC.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthenticationController : ControllerBase
+    {
+        private readonly WebBaiGiangContext _context;
+        public INotyfService _notyfService { get; }
 
-        [HttpPost]
-
-        [Route("forgotpasswordgv")]
-        public IActionResult ForgotPasswordgv([FromBody] ForgotPasswordModel model)
+        public AuthenticationController(WebBaiGiangContext context, INotyfService notyfService)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var user = _context.GiaoVien.FirstOrDefault(u => u.Email == model.Email);
-            if (user != null)
-            {
-                var token = Guid.NewGuid().ToString();
-                user.ResetToken = token;
-                user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(10);
-                _context.SaveChangesAsync();
-                HttpContext.Session.SetString("ResetToken", token);
-                HttpContext.Session.SetString("Email", model.Email);
-                // Gửi email chứa token đến địa chỉ email của người dùng
-                var email = new MimeMessage();
-                email.From.Add(new MailboxAddress("AdminDotnet", "admin@example.com"));
-                email.To.Add(MailboxAddress.Parse($"{model.Email}"));
-                email.Subject = "Yêu cầu đặt lại mật khẩu";
-                email.Body = new TextPart("plain")
-                {
-                    Text = $"Để đặt lại mật khẩu, vui lòng sử dụng token sau đây: {token} mã token có thời hạn là 10 phút"
-                };
-                using var smtp = new SmtpClient();
-                smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                smtp.Authenticate("baigiangtructuyen2025@gmail.com", "kryx fkgc pxht wfsf");
-                smtp.Send(email);
-                smtp.Disconnect(true);
-                _notyfService.Success("Yêu cầu đặt lại mật khẩu của bạn đã được gửi. Vui lòng kiểm tra email của bạn để tiếp tục.");
-                return Ok("Yêu cầu đặt lại mật khẩu của bạn đã được gửi. Vui lòng kiểm tra email của bạn để tiếp tục.");
-            }
-            else
-            {
-                return BadRequest("Email không tồn tại trong hệ thống");
-            }
+            _context = context;
+            _notyfService = notyfService;
         }
 
-        [HttpPost("resetpasswordgv")]
-        public async Task<ActionResult> ResetPasswordgv(ResetPasswordViewModel model)
+        #region --- Login chung cho tất cả vai trò ---
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            var password = request.Password.ToMD5();
 
-            var resetToken = HttpContext.Session.GetString("ResetToken");
-            var resetTokenExpiry = HttpContext.Session.GetString("ResetTokenExpiry");
-            var email = HttpContext.Session.GetString("Email");
-            var user = await _context.GiaoVien.FirstOrDefaultAsync(u => u.Email == email);
-            if (model.Password != model.ConfirmPassword)
+            var user = await _context.TaiKhoanNews
+                .Include(t => t.HocVien)
+                .Include(t => t.GiangVien)
+                .FirstOrDefaultAsync(t => t.TenDangNhap == request.TenDangNhap && t.MatKhau == password);
+
+            if (user == null || !user.TrangThai)
+                return BadRequest(new { message = "Tên đăng nhập hoặc mật khẩu không đúng hoặc tài khoản bị khóa." });
+
+            // Tạo claims
+            var claims = new List<Claim>
             {
-                return BadRequest("Mật khẩu mới và mật khẩu xác nhận không khớp.");
-            }
-            if (user != null && resetToken == model.Token)
-            {
+                new Claim(ClaimTypes.Name, user.VaiTro == "HocVien" ? user.HocVien.HoTen : user.GiangVien.HoTen),
+                new Claim("TenDangNhap", user.TenDangNhap),
+                new Claim(ClaimTypes.Role, user.VaiTro) // <-- VaiTro = "Admin" phải chính xác
+            };
 
+            if (user.VaiTro == "HocVien")
+                claims.Add(new Claim("MaHocVien", user.HocVien.MaHocVien.ToString()));
 
-                user.MatKhau = (model.Password).ToMD5();
-                await _context.SaveChangesAsync();
-                _notyfService.Success("Mật khẩu của bạn đã được đặt lại thành công.");
-                return Ok("Mật khẩu của bạn đã được đặt lại thành công.");
-            }
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
+            // Redirect dựa vào vai trò
+            string redirectUrl = "/";
+            if (user.VaiTro == "Admin") redirectUrl = "/admin";
+            else if (user.VaiTro == "GiangVien") redirectUrl = "/giangvien";
+            else if (user.VaiTro == "HocVien") redirectUrl = "/";
 
-            return BadRequest("Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+            return Ok(new { message = "Đăng nhập thành công", redirectUrl });
         }
+        #endregion
+
+        /*#region --- Register Học viên ---
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.TenDangNhap) ||
+                string.IsNullOrWhiteSpace(request.Password) ||
+                string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.HoTen))
+            {
+                return BadRequest(new { message = "Vui lòng nhập đầy đủ thông tin." });
+            }
+
+            if (await _context.TaiKhoanNews.AnyAsync(t => t.TenDangNhap == request.TenDangNhap))
+                return BadRequest(new { message = "Tên đăng nhập đã tồn tại." });
+
+            if (await _context.HocVien.AnyAsync(h => h.Email == request.Email))
+                return BadRequest(new { message = "Email đã được sử dụng." });
+
+            var taiKhoan = new TaiKhoanNew
+            {
+                TenDangNhap = request.TenDangNhap,
+                MatKhau = request.Password.ToMD5(),
+                VaiTro = "HocVien",
+                TrangThai = true
+            };
+
+            var hocVien = new HocVien
+            {
+                HoTen = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.HoTen),
+                Email = request.Email,
+                MaTaiKhoan = taiKhoan.MaTaiKhoan,
+                TaiKhoan = taiKhoan
+            };
+
+            _context.TaiKhoanNews.Add(taiKhoan);
+            _context.HocVien.Add(hocVien);
+            await _context.SaveChangesAsync();
+
+            _notyfService.Success("Đăng ký thành công");
+            return Ok(new { message = "Đăng ký thành công", redirectUrl = "/hocvien" });
+        }
+        #endregion*/
 
 
+        #region --- ChangePassword chung ---
+        [HttpPost("changepassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var username = User.Claims.FirstOrDefault(c => c.Type == "TenDangNhap")?.Value;
+            if (username == null) return BadRequest(new { message = "Không tìm thấy tài khoản." });
+
+            var user = await _context.TaiKhoanNews.FirstOrDefaultAsync(t => t.TenDangNhap == username);
+            if (user == null) return BadRequest(new { message = "Tài khoản không tồn tại." });
+
+            if (user.MatKhau != request.CurrentPassword.ToMD5())
+                return BadRequest(new { message = "Mật khẩu cũ không chính xác." });
+            if (request.NewPassword != request.ConfirmPassword)
+                return BadRequest(new { message = "Mật khẩu mới không khớp." });
+            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 100)
+                return BadRequest(new { message = "Mật khẩu mới phải từ 6 đến 100 ký tự." });
+
+            user.MatKhau = request.NewPassword.ToMD5();
+            _context.TaiKhoanNews.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đổi mật khẩu thành công." });
+        }
+        #endregion
     }
 }

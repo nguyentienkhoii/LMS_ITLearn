@@ -1,16 +1,12 @@
 ﻿@{
-    var anhDaiDienClaim = User.Claims.FirstOrDefault(c => c.Type == "AnhDaiDien");
-    var anhDaiDien = "";
-    if (anhDaiDienClaim != null)
-    {
-        anhDaiDien = anhDaiDienClaim.Value;
-    }
+    
 }
 
 <div class="content">
-    <!-- Topbar Start -->
+    <!-- 🔹 Topbar Start -->
     <div class="navbar-custom">
         <ul class="list-unstyled topbar-menu float-end mb-0">
+            <!-- Mobile Search -->
             <li class="dropdown notification-list d-lg-none">
                 <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <i class="dripicons-search noti-icon"></i>
@@ -21,101 +17,113 @@
                     </form>
                 </div>
             </li>
+
+            <!-- Settings -->
             <li class="notification-list">
-                <a class="nav-link end-bar-toggle" href="javascript: void(0);">
+                <a class="nav-link end-bar-toggle" href="javascript:void(0);">
                     <i class="dripicons-gear noti-icon"></i>
                 </a>
             </li>
 
+            <!-- 🔹 User Dropdown -->
             <li class="dropdown notification-list">
                 <a class="nav-link dropdown-toggle nav-user arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <span class="account-user-avatar">
-                        <img src="@anhDaiDien" alt="Ảnh đại diện" class="rounded-circle">
+                        <!-- ✅ Icon người thay cho ảnh -->
+                        <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                             style="width:36px;height:36px; line-height:36px;">
+                            <i class="fa fa-user" style="font-size:16px;"></i>
+                        </div>
+
                     </span>
                     <span>
                         <span class="account-user-name">@User.Identity.Name</span>
-
                     </span>
                 </a>
+
+                <!-- Dropdown Menu -->
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated topbar-dropdown-menu profile-dropdown">
-                    <!-- item-->
-                    <div class=" dropdown-header noti-title">
-                        <h6 class="text-overflow m-0">Xin chào !</h6>
+                    <div class="dropdown-header noti-title">
+                        <h6 class="text-overflow m-0">Xin chào!</h6>
                     </div>
 
-                    <!-- item-->
+                    <!-- Đổi mật khẩu -->
                     <a href="javascript:void(0);" class="dropdown-item notify-item" data-bs-toggle="modal" data-bs-target="#signup-modal">
                         <i class="mdi mdi-account-circle me-1"></i>
                         <span>Đổi mật khẩu</span>
                     </a>
 
-                    <!-- item-->
-                    <a class="dropdown-item notify-item" asp-controller="DangNhap" asp-action="Logout">
+                    <!-- Đăng xuất -->
+                    <a class="dropdown-item notify-item" asp-controller="Account" asp-action="Logout" asp-area="">
                         <i class="mdi mdi-logout me-1"></i>
                         <span>Đăng xuất</span>
                     </a>
                 </div>
             </li>
-
         </ul>
+
         <button class="button-menu-mobile open-left">
             <i class="mdi mdi-menu"></i>
         </button>
-
     </div>
 </div>
-<!-- end Topbar -->
-<!-- Signup modal-->
-@*<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#signup-modal">Sign Up Modal</button>*@
+<!-- 🔹 End Topbar -->
+<!-- 🔹 Modal Đổi mật khẩu -->
 <div id="signup-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Đổi mật khẩu</h5>
+                <h5 class="modal-title">Đổi mật khẩu</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
             </div>
             <div class="modal-body" ng-app="DoiMatKhauApp" ng-controller="doimatkhaujs">
                 <div class="text-center mt-2 mb-4">
                     <a asp-controller="Home" asp-action="Index" class="text-success">
-                        <span><img src="~/AdminAssets/images/logo-dark.png" alt="" height="18"></span>
+                        <span><img src="~/AdminAssets/images/icon1.png" alt="" height="36"></span>
                     </a>
                 </div>
-                <form class="ps-3 pe-3" >
+                <form class="ps-3 pe-3">
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu cũ </label>
-                        <input class="form-control" type="password" ng-model="currentPassword" required="" placeholder="Mật khẩu cũ">
+                        <label class="form-label">Mật khẩu cũ</label>
+                        <input class="form-control" type="password" ng-model="currentPassword" required placeholder="Nhập mật khẩu cũ">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu mới </label>
-                        <input class="form-control" type="password" ng-model="newPassword" required="" placeholder="Mật khẩu mới ">
+                        <label class="form-label">Mật khẩu mới</label>
+                        <input class="form-control" type="password" ng-model="newPassword" required placeholder="Nhập mật khẩu mới">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Xác nhận mật khẩu</label>
-                        <input class="form-control" type="password" required="" ng-model="confirmPassword" placeholder="Xác nhận mật khẩu">
-                    </div>
-                    <div class="mb-3 text-center">
-                        <button class="btn btn-primary" type="submit" ng-click="doimatkhau(); showModal = false;" data-dismiss="modal">Đổi mật khẩu</button>
+                        <input class="form-control" type="password" ng-model="confirmPassword" required placeholder="Nhập lại mật khẩu mới">
                     </div>
 
+                    <div class="mb-3 text-center">
+                        <button class="btn btn-primary" type="submit" ng-click="doimatkhau(); showModal = false;" data-dismiss="modal">
+                            <i class="fa fa-key"></i> Đổi mật khẩu
+                        </button>
+                    </div>
                 </form>
             </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+        </div>
+    </div>
+</div>
+
+
+<!-- 🔹 AngularJS Script -->
 <script>
     var app = angular.module('DoiMatKhauApp', []);
+
     app.controller('doimatkhaujs', function ($scope, $http, notyf) {
         $scope.showModal = true;
+
         $scope.doimatkhau = function () {
             var currentPassword = $scope.currentPassword;
             var newPassword = $scope.newPassword;
             var confirmPassword = $scope.confirmPassword;
 
-
             if (newPassword !== confirmPassword) {
-                notyf.error('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+                notyf.error('Mật khẩu mới và xác nhận không khớp.');
                 return;
             }
 
@@ -124,21 +132,18 @@
                 return;
             }
 
-            // thực hiện kiểm tra các yêu cầu bảo mật khác cho mật khẩu mới ở đây (ví dụ: chứa ký tự đặc biệt, chữ hoa, chữ thường, số, ...)
-
             var data = {
                 currentPassword: currentPassword,
-                newPassword: newPassword, confirmPassword: confirmPassword
+                newPassword: newPassword,
+                confirmPassword: confirmPassword
             };
 
             $http({
                 method: 'POST',
                 url: '/api/authentication/changepasswordgv',
                 data: data,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                withCredentials: true  // sử dụng withCredentials để đảm bảo sử dụng HTTPS (truy cập cookie được cấp cho trang web)
+                headers: { 'Content-Type': 'application/json' },
+                withCredentials: true
             })
                 .then(function (response) {
                     notyf.success(response.data);
@@ -146,46 +151,30 @@
                     $scope.newPassword = '';
                     $scope.confirmPassword = '';
                     $('#signup-modal').modal('hide');
-
                 })
                 .catch(function (error) {
-                    notyf.error(error.data);
+                    notyf.error(error.data || 'Đổi mật khẩu thất bại!');
                     console.log('Request error', error);
                 });
-
         };
     });
+
     app.factory('notyf', function () {
         return new Notyf({
             duration: 3000,
-            position: {
-                x: 'right',
-                y: 'top',
-            },
+            position: { x: 'right', y: 'top' },
             types: [
                 {
                     type: 'success',
                     background: '#00b300',
-                    icon: {
-                        className: 'material-icons',
-                        tagName: 'i',
-                        text: 'check_circle',
-                        color: 'white',
-                    },
+                    icon: { className: 'material-icons', tagName: 'i', text: 'check_circle', color: 'white' },
                 },
                 {
                     type: 'error',
                     background: '#ff4d4d',
-                    icon: {
-                        className: 'material-icons',
-                        tagName: 'i',
-                        text: 'cancel',
-                        color: 'white',
-                    },
-                },
-
+                    icon: { className: 'material-icons', tagName: 'i', text: 'cancel', color: 'white' },
+                }
             ],
         });
     });
-
 </script>

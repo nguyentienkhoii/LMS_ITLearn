@@ -1,0 +1,64 @@
+﻿@model WebBaiGiang_CKC.Areas.Admin.Controllers.GiangVienTaiKhoanVM
+
+@{
+    ViewData["Title"] = "Thêm giảng viên";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="GiangVien" asp-action="Index">Quản lý giảng viên</a></li>
+    <li class="breadcrumb-item active">Thêm</li>
+</ol>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white">
+        <h4><i class="fa fa-user-plus"></i> Thêm giảng viên mới</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <h5 class="fw-bold text-primary mb-2">Thông tin tài khoản</h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <input asp-for="TenDangNhap" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Mật khẩu</label>
+                    <input asp-for="MatKhau" type="password" class="form-control" required />
+                </div>
+            </div>
+
+            <h5 class="fw-bold text-success mb-2 mt-3">Thông tin giảng viên</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="HoTen" class="form-label">Họ và tên</label>
+                    <input asp-for="HoTen" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" type="email" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+                    <input asp-for="SoDienThoai" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+                    <input asp-for="DiaChi" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ChuyenMon" class="form-label">Chuyên môn</label>
+                    <input asp-for="ChuyenMon" class="form-control" />
+                </div>
+            </div>
+
+            <div class="text-end mt-3">
+                <a asp-action="Index" class="btn btn-secondary me-2"><i class="fa fa-arrow-left"></i> Quay lại</a>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Lưu giảng viên</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -12,229 +12,137 @@ namespace WebBaiGiang_CKC.Controllers
         public BaiGiangsController(WebBaiGiangContext context, IWebHostEnvironment environment, INotyfService notyfService)
             : base(context, environment, notyfService)
         {
-
-        }
-        public IActionResult DeCuong(int monHocId)
-        {
-            // Kiểm tra xem người dùng đã đăng nhập hay chưa
-            var taiKhoanIdClaim = User.Claims.SingleOrDefault(c => c.Type == "TaiKhoanId");
-            if (taiKhoanIdClaim == null)
-            {
-                _notyfService.Warning("Bạn cần đăng nhập để xem đề cương!");
-                return RedirectToAction("Index");
-            }
-
-            // Chuyển đổi TaiKhoanId từ string sang int
-            if (!int.TryParse(taiKhoanIdClaim.Value, out int userTaiKhoanId))
-            {
-                _notyfService.Error("Lỗi xác thực tài khoản!");
-                return RedirectToAction("Index");
-            }
-
-            // Kiểm tra xem môn học có tồn tại không
-            var monHoc = _context.MonHoc.AsNoTracking().FirstOrDefault(m => m.MonHocId == monHocId);
-            if (monHoc == null)
-            {
-                _notyfService.Error("Môn học không tồn tại!");
-                return RedirectToAction("Index");
-            }
-
-            // Kiểm tra xem người dùng đã đăng ký môn học này chưa
-            bool isAlreadyRegistered = _context.DangKyMonHoc
-                .Any(dkm => dkm.TaiKhoanId == userTaiKhoanId && dkm.MonHocId == monHocId);
-
-            if (!isAlreadyRegistered)
-            {
-                _notyfService.Warning("Bạn chưa đăng ký môn học này!");
-                return RedirectToAction("Index");
-            }
-
-            var deCuong = _context.DeCuong
-                .Where(dc => dc.MonHocId == monHocId)
-                .AsNoTracking()
-                .FirstOrDefault();
-
-            ViewBag.SelectedMonHoc = monHoc;
-            ViewBag.MonHocId = monHocId;
-
-            return View(deCuong);
         }
 
+        public IActionResult NoiDungChinh() => View();
 
-
-        public IActionResult NoiDungChinh()
-        {
-            return View();
-        }
+        [Route("DanhSachGiangVien")]
         public IActionResult GiaoVien()
         {
-            var giaovien = _context.GiaoVien.ToList();
+            var giaovien = _context.GiangViens.AsNoTracking().ToList();
             ViewBag.Giaovien = giaovien;
             return View();
         }
-        [Route("MonHoc/{monHocId}/Chuong/{chuongId}/Bai/{baiId}")]
-        public IActionResult Bai(int monHocId, int chuongId, int baiId)
+
+
+        [Route("LopHoc/{lopHocId}/Chuong/{chuongId}/Bai/{baiId}")]
+        public IActionResult Bai(int lopHocId, int chuongId, int baiId)
         {
-            // Kiểm tra xem người dùng đã đăng nhập hay chưa
-            var taiKhoanIdClaim = User.Claims.SingleOrDefault(c => c.Type == "TaiKhoanId");
-            if (taiKhoanIdClaim == null)
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null || !int.TryParse(hocVienIdClaim.Value, out int hocVienId))
             {
                 _notyfService.Warning("Bạn cần đăng nhập để xem bài học!");
                 return RedirectToAction("Index", "Home");
             }
 
-            // Chuyển đổi TaiKhoanId từ string sang int
-            if (!int.TryParse(taiKhoanIdClaim.Value, out int userTaiKhoanId))
-            {
-                _notyfService.Error("Lỗi xác thực tài khoản!");
-                return RedirectToAction("Index", "Home");
-            }
+            //active menu
+            ViewBag.ActiveMenu = "LopHoc";        // xác định menu chính là lớp học
+            ViewBag.CurrentLopHocId = lopHocId;         // xác định lớp học đang mở
 
-            // Kiểm tra xem môn học có tồn tại không
-            var monHoc = _context.MonHoc
+
+
+            var lopHoc = _context.LopHocs
                 .Include(m => m.Chuongs)
                 .ThenInclude(c => c.Bais)
-                .FirstOrDefault(m => m.MonHocId == monHocId);
+                .FirstOrDefault(m => m.MaLopHoc == lopHocId);
 
-            if (monHoc == null)
+            if (lopHoc == null)
             {
-                _notyfService.Error("Môn học không tồn tại!");
+                _notyfService.Error("Lớp học không tồn tại!");
                 return RedirectToAction("Index", "Home");
             }
 
-            // Kiểm tra xem người dùng đã đăng ký môn học này chưa
-            bool isAlreadyRegistered = _context.DangKyMonHoc
-                .Any(dkm => dkm.TaiKhoanId == userTaiKhoanId && dkm.MonHocId == monHocId);
+            bool isRegistered = _context.HocVien_LopHoc
+                .Any(dkm => dkm.MaHocVien == hocVienId && dkm.MaLopHoc == lopHocId);
 
-            if (!isAlreadyRegistered)
+            if (!isRegistered)
             {
-                _notyfService.Warning("Bạn chưa đăng ký môn học này!");
+                _notyfService.Warning("Bạn chưa đăng ký lớp học này!");
                 return RedirectToAction("Index", "Home");
             }
 
+            // 🩵 Load bài và mục, kèm danh sách tài liệu (TaiLieu)
             var lstBai = _context.Bai
-                .Where(x => x.BaiId == baiId && x.ChuongId == chuongId && x.Chuong.MonHocId == monHocId)
+                .Where(x => x.BaiId == baiId && x.MaChuong == chuongId && x.Chuong.LopHoc.MaLopHoc == lopHocId)
                 .Include(a => a.Mucs)
+                    .ThenInclude(m => m.TaiLieus)
+                .Include(a => a.BaiTaps)
                 .AsNoTracking()
                 .ToList();
 
-            // Tránh lỗi nếu danh sách bài giảng không có mục nào
-            if (lstBai.Any() && lstBai.First().Mucs.Any())
+
+            if (lstBai.Any() && lstBai.First().Mucs?.Any() == true)
             {
                 lstBai = lstBai.OrderByDescending(x => x.Mucs.Min(y => y.MucSo)).ToList();
             }
 
-            if (monHoc != null)
-            {
-                ViewBag.SelectedMonHoc = monHoc; // Gán môn học để menu hiển thị
-            }
-
+            ViewBag.SelectedLopHoc = lopHoc;
             return View(lstBai);
         }
 
-
-        public IActionResult Lich()
-        {
-
-            return View();
-        }
-        [Route("MonHoc/{monHocId}/BaiTap")]
-        public IActionResult BaiTap(int monHocId)
-        {
-            // Kiểm tra xem người dùng đã đăng nhập hay chưa
-            var taiKhoanIdClaim = User.Claims.SingleOrDefault(c => c.Type == "TaiKhoanId");
-            if (taiKhoanIdClaim == null)
-            {
-                _notyfService.Warning("Bạn cần đăng nhập để xem bài tập!");
-                return RedirectToAction("Index");
-            }
-
-            // Chuyển đổi TaiKhoanId từ string sang int
-            if (!int.TryParse(taiKhoanIdClaim.Value, out int userTaiKhoanId))
-            {
-                _notyfService.Error("Lỗi xác thực tài khoản!");
-                return RedirectToAction("Index");
-            }
-
-            // Kiểm tra xem môn học có tồn tại không
-            var monHoc = _context.MonHoc.AsNoTracking().FirstOrDefault(m => m.MonHocId == monHocId);
-            if (monHoc == null)
-            {
-                _notyfService.Error("Môn học không tồn tại!");
-                return RedirectToAction("Index");
-            }
-
-            // Kiểm tra xem người dùng đã đăng ký môn học này chưa
-            bool isAlreadyRegistered = _context.DangKyMonHoc
-                .Any(dkm => dkm.TaiKhoanId == userTaiKhoanId && dkm.MonHocId == monHocId);
-
-            if (!isAlreadyRegistered)
-            {
-                _notyfService.Warning("Bạn chưa đăng ký môn học này!");
-                return RedirectToAction("Index");
-            }
-
-            var baiTaps = _context.BaiTap
-                .Where(bt => bt.MonHocId == monHocId)
-                .AsNoTracking()
-                .ToList();
-
-            ViewBag.SelectedMonHoc = monHoc;
-            ViewBag.MonHocId = monHocId;
-
-            return View(baiTaps);
-        }
-
-        [Route("BaiGiangs/DetailBaiTap/{baiTapId}")]
-        public IActionResult DetailBaiTap(int baiTapId)
-        {
-            var baiTap = _context.BaiTap
-                .Include(bt => bt.MonHoc) // Bao gồm môn học liên quan
-                .FirstOrDefault(bt => bt.BaiTapId == baiTapId); // Tìm bài tập theo id
-
-            if (baiTap == null)
-            {
-                return NotFound(); // Nếu không tìm thấy bài tập, trả về trang lỗi 404
-            }
-
-            ViewBag.SelectedMonHoc = baiTap.MonHoc; // Truyền môn học vào ViewBag
-            return View(baiTap); // Trả về View cùng với dữ liệu bài tập
-        }
-
-
-
+        public IActionResult Lich() => View();
 
         [Route("/HoSo")]
         public IActionResult HoSo()
         {
-         
-            var kikiemtra = _context.DanhSachThi.Include(t => t.TaiKhoan).Include(x => x.KyKiemTra).ThenInclude(x => x.De).ThenInclude(x => x.CauHoi_DeThi).ThenInclude(x => x.CauHoi_BaiLam).ThenInclude(x => x.BaiLam).ToList();
-            ViewBag.kiemtra = kikiemtra;
-            return View();
-        }
-        public IActionResult NopBai()
-        {
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null || !int.TryParse(hocVienIdClaim.Value, out int hocVienId))
+            {
+                _notyfService.Warning("Bạn cần đăng nhập để xem hồ sơ!");
+                return RedirectToAction("Index", "Home");
+            }
 
+            var danhSachThi = _context.DanhSachThi
+                .Where(d => d.MaHocVien == hocVienId)
+                .Include(d => d.HocVien)
+                    .ThenInclude(h => h.TaiKhoan)
+                .Include(d => d.KyKiemTra)
+                    .ThenInclude(k => k.De)
+                        .ThenInclude(de => de.CauHoi_DeThi)
+                            .ThenInclude(ch => ch.CauHoi_BaiLam)
+                                .ThenInclude(cb => cb.BaiLam)
+                .AsNoTracking()
+                .ToList();
+
+            ViewBag.kiemtra = danhSachThi;
             return View();
         }
+
+        public IActionResult NopBai() => View();
+
         public IActionResult KyThi()
         {
             if (!User.Identity.IsAuthenticated)
             {
-                _notyfService.Warning("Vui lòng đăng nhập để tham gia kỳ thi.");
+                _notyfService.Warning("Vui lòng đăng nhập để tham gia kỳ thi!");
                 return RedirectToAction("Index", "Home");
             }
 
-            var kikiemtra = _context.DanhSachThi
-                .Include(t => t.TaiKhoan)
-                .Include(x => x.KyKiemTra)
-                    .ThenInclude(x => x.De)
-                    .ThenInclude(x => x.CauHoi_DeThi)
-                    .ThenInclude(x => x.CauHoi_BaiLam)
-                    .ThenInclude(x => x.BaiLam)
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null || !int.TryParse(hocVienIdClaim.Value, out int hocVienId))
+            {
+                _notyfService.Error("Lỗi xác thực học viên!");
+                return RedirectToAction("Index", "Home");
+            }
+
+
+            ViewBag.ActiveMenu = "KyThi";         // đánh dấu tab "Kỳ thi" đang mở
+            ViewBag.CurrentLopHocId = null;
+
+
+            var danhSachThi = _context.DanhSachThi
+                .Where(d => d.MaHocVien == hocVienId)
+                .Include(d => d.HocVien)
+                    .ThenInclude(h => h.TaiKhoan)
+                .Include(d => d.KyKiemTra)
+                    .ThenInclude(k => k.De)
+                        .ThenInclude(de => de.CauHoi_DeThi)
+                            .ThenInclude(ch => ch.CauHoi_BaiLam)
+                                .ThenInclude(cb => cb.BaiLam)
+                .AsNoTracking()
                 .ToList();
 
-            ViewBag.kiemtra = kikiemtra;
+            ViewBag.kiemtra = danhSachThi;
             return View();
         }
 
@@ -242,134 +150,199 @@ namespace WebBaiGiang_CKC.Controllers
         [HttpPost]
         public async Task<IActionResult> BaiKiemTra(int id)
         {
-            var mssvclaim = User.Claims.FirstOrDefault(c => c.Type == "MSSV");
-            var mssv_ =mssvclaim.Value;
-            var kt_kikiemtra = _context.DanhSachThi.FirstOrDefault(x=>x.TaiKhoan.MSSV == mssv_ && x.KyKiemTraId == id);
-            if(kt_kikiemtra !=null)
-            { 
-                // lấu câu hỏi đã chọn và ramdom
-                Random random = new Random(DateTime.Now.Millisecond);
-                var ds_cauhoi = _context.CauHoi_De.Where(x => x.De.KyKiemTra.KyKiemTraId == id).Include(t => t.CauHoi).Include(t => t.De).ThenInclude(t => t.KyKiemTra).AsEnumerable().OrderBy(x => random.Next()).ToList();
-                // trung vấn bài làm & kiểm tra điều kiệm mssv , 
-                var kiemtrabailam = await _context.CauHoi_BaiLam.Include(x => x.BaiLam).FirstOrDefaultAsync(x => x.BaiLam.MSSV == mssv_ && x.CauHoi_De.De.KyKiemTraId == id);
-                //tìm kiếm kiều kiện để add dữ liệu tại câu trên truy vấn bảng chưa có dữ liệu
-                var thoigiandenhan = await _context.CauHoi_De.FirstOrDefaultAsync(x => x.De.KyKiemTraId == id);
-                var tenkikiem = "";
-                tenkikiem = thoigiandenhan.De.KyKiemTra.TenKyKiemTra;
-                if (kiemtrabailam == null)
-                {
-                    // Kiểm tra xem đã thêm 'BaiLam' cho 'De' này chưa
-                    DateTime currentTime = DateTime.UtcNow.AddHours(7);
-                    DateTime startDateTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, currentTime.Hour, currentTime.Minute, currentTime.Second);
-                    DateTime updatedStartDateTime = startDateTime.AddMinutes(thoigiandenhan.De.KyKiemTra.ThoiGianLamBai);
-                    var newbai = new BaiLam
-                    {
-                        MSSV = mssv_,
-                        HoTen = User.Identity.Name,
-                        ThoiGianBatDau = startDateTime,
-                        ThoiGianDenHan = (updatedStartDateTime < thoigiandenhan.De.KyKiemTra.ThoiGianKetThuc) ? updatedStartDateTime : thoigiandenhan.De.KyKiemTra.ThoiGianKetThuc,
-                    };
-                    _context.BaiLam.Add(newbai);
-                    await _context.SaveChangesAsync();
-                    // 
-                    var baiLamId = newbai.BaiLamId;
-                    // add bang cauhoi_bailam
-                    var cauHoiBaiLamListb = ds_cauhoi.Select(x => new CauHoi_BaiLam
-                    {
-                        BaiLamId = baiLamId,
-                        CauHoi_DeId = x.CauHoi_DeId
-                    }).ToList();
-                    _context.CauHoi_BaiLam.AddRange(cauHoiBaiLamListb);
-                    await _context.SaveChangesAsync();
-
-                }
-                var newexistingBaiLam = await _context.CauHoi_BaiLam.FirstOrDefaultAsync(x => x.BaiLam.MSSV == mssv_ && x.CauHoi_De.De.KyKiemTraId == id);
-                ViewBag.kiemtrasv_id = newexistingBaiLam.BaiLam.MSSV;
-                ViewBag.TenKiKiemTra = tenkikiem;
-                ViewBag.IdKiKiemTra = id;
-                // thời gian đếm ngược khi làm bài tự nộp 
-                var tgbd = DateTime.Now;
-                var tg_kt = newexistingBaiLam.BaiLam.ThoiGianDenHan;
-                TimeSpan timeSpan = (DateTime)tg_kt - (DateTime)tgbd;
-                ViewBag.TimThoigian = timeSpan;
-                ///thoi gian lam bai cua sv truy vấn ở đây chờ ở trên add dữ liệu mới có mà sài 
-                var cauhoi_de_mssv = await _context.CauHoi_BaiLam.Where(x => x.BaiLam.MSSV == mssv_ && x.CauHoi_De.De.KyKiemTraId == id).Include(x => x.BaiLam).Include(x => x.CauHoi_De).ToListAsync();
-                ViewBag.cauhoi_de_mssv = cauhoi_de_mssv;
-                DateTime? tg_batdau = newexistingBaiLam.BaiLam.ThoiGianBatDau;
-                DateTime? tg_ketthuc = newexistingBaiLam.BaiLam.ThoiGianDenHan;
-                ViewBag.tg_batdau = tg_batdau;
-                ViewBag.tg_ketthuc = tg_ketthuc;
-
-            }   
-            else {
-                _notyfService.Error("Sinh viên không có bài cho kỳ kiểm tra này");
-                return RedirectToAction("KyThi", "BaiGiangs");
+            var hocVienIdClaim = User.Claims.FirstOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null || !int.TryParse(hocVienIdClaim.Value, out int hocVienId))
+            {
+                _notyfService.Error("Không xác thực được học viên!");
+                return RedirectToAction("Index", "Home");
             }
-           
-            return View();
 
+            var dsThi = await _context.DanhSachThi
+                .Include(d => d.KyKiemTra)
+                .FirstOrDefaultAsync(x => x.MaHocVien == hocVienId && x.KyKiemTraId == id);
+
+            if (dsThi == null)
+            {
+                _notyfService.Error("Bạn không có bài cho kỳ kiểm tra này!");
+                return RedirectToAction("KyThi");
+            }
+
+            Random random = new Random();
+            var dsCauHoi = _context.CauHoi_De
+                .Where(x => x.De.KyKiemTraId == id)
+                .Include(t => t.CauHoi)
+                .Include(t => t.De)
+                    .ThenInclude(t => t.KyKiemTra)
+                .AsEnumerable()
+                .OrderBy(_ => random.Next())
+                .ToList();
+
+            var baiLamCu = await _context.CauHoi_BaiLam
+                .Include(x => x.BaiLam)
+                .FirstOrDefaultAsync(x => x.BaiLam.MaHocVien == hocVienId && x.CauHoi_De.De.KyKiemTraId == id);
+
+            var deThi = await _context.CauHoi_De
+                .Include(x => x.De)
+                    .ThenInclude(d => d.KyKiemTra)
+                .FirstOrDefaultAsync(x => x.De.KyKiemTraId == id);
+
+            string tenKy = deThi?.De?.KyKiemTra?.TenKyKiemTra ?? "Kỳ thi";
+
+            if (baiLamCu == null)
+            {
+                var now = DateTime.UtcNow.AddHours(7);
+                var endTime = now.AddMinutes(deThi.De.KyKiemTra.ThoiGianLamBai);
+
+                if (endTime > deThi.De.KyKiemTra.ThoiGianKetThuc)
+                    endTime = deThi.De.KyKiemTra.ThoiGianKetThuc;
+
+                var newBaiLam = new BaiLam
+                {
+                    MaHocVien = hocVienId,
+                    ThoiGianBatDau = now,
+                    ThoiGianDenHan = endTime
+                };
+                _context.BaiLam.Add(newBaiLam);
+                await _context.SaveChangesAsync();
+
+                var pairs = dsCauHoi.Select(x => new CauHoi_BaiLam
+                {
+                    BaiLamId = newBaiLam.BaiLamId,
+                    CauHoi_DeId = x.CauHoi_DeId
+                }).ToList();
+
+                _context.CauHoi_BaiLam.AddRange(pairs);
+                await _context.SaveChangesAsync();
+
+                baiLamCu = await _context.CauHoi_BaiLam
+                    .Include(x => x.BaiLam)
+                    .FirstOrDefaultAsync(x => x.BaiLam.MaHocVien == hocVienId && x.CauHoi_De.De.KyKiemTraId == id);
+            }
+
+            ViewBag.kiemtrasv_id = hocVienId;
+            ViewBag.TenKiKiemTra = tenKy;
+            ViewBag.IdKiKiemTra = id;
+
+            var tgKetThuc = baiLamCu.BaiLam.ThoiGianDenHan ?? DateTime.UtcNow.AddHours(7);
+            ViewBag.TimThoigian = tgKetThuc - DateTime.UtcNow.AddHours(7);
+
+            var cauHoi_HocVien = await _context.CauHoi_BaiLam
+                .Where(x => x.BaiLam.MaHocVien == hocVienId && x.CauHoi_De.De.KyKiemTraId == id)
+                .Include(x => x.CauHoi_De)
+                    .ThenInclude(cd => cd.CauHoi)
+                .Include(x => x.BaiLam)
+                .AsNoTracking()
+                .ToListAsync();
+
+            ViewBag.cauhoi_de_mssv = cauHoi_HocVien;
+            ViewBag.tg_batdau = baiLamCu.BaiLam.ThoiGianBatDau;
+            ViewBag.tg_ketthuc = baiLamCu.BaiLam.ThoiGianDenHan;
+            ViewBag.tg_lambai = baiLamCu.BaiLam.ThoiGianDenHan - baiLamCu.BaiLam.ThoiGianBatDau;
+
+            return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> NopBai(IFormCollection form, int id)
         {
-            var mssvClaim = User.Claims.SingleOrDefault(c => c.Type == "MSSV");
-            var mssv = mssvClaim?.Value;
+            var hocVienIdClaim = User.Claims.SingleOrDefault(c => c.Type == "HocVienId");
+            if (hocVienIdClaim == null || !int.TryParse(hocVienIdClaim.Value, out int maHocVien))
+            {
+                _notyfService.Error("Không xác thực được học viên!");
+                return RedirectToAction("Index", "Home");
+            }
 
-            var ds_cauhoi = _context.CauHoi_BaiLam.Where(x => x.CauHoi_De.De.KyKiemTraId == id && x.BaiLam.MSSV == mssv).Include(t => t.BaiLam).Include(t => t.CauHoi_De).ThenInclude(x => x.De).ToList();
+            // 🩵 Include sâu để có DapAnDung
+            var ds_cauhoi = _context.CauHoi_BaiLam
+                .Where(x => x.CauHoi_De.De.KyKiemTraId == id && x.BaiLam.MaHocVien == maHocVien)
+                .Include(x => x.BaiLam)
+                .Include(x => x.CauHoi_De)
+                    .ThenInclude(x => x.CauHoi)
+                .Include(x => x.CauHoi_De)
+                    .ThenInclude(x => x.De)
+                .ToList();
 
-            // lấy danh sách câu hỏi trong đề kiểm tra
-            var trangthai = _context.DanhSachThi.FirstOrDefault(x => x.TaiKhoan.MSSV == mssv && x.KyKiemTraId == id);
+            var trangthai = _context.DanhSachThi
+                .FirstOrDefault(x => x.MaHocVien == maHocVien && x.KyKiemTraId == id);
 
-            if (trangthai.TrangThai == false)
+            if (trangthai == null)
+            {
+                _notyfService.Error("Không tìm thấy thông tin kỳ thi!");
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (!trangthai.TrangThai)
             {
                 foreach (var cauhoi in ds_cauhoi)
                 {
                     var dapAnSinhVien = form[cauhoi.CauHoi_DeId.ToString()];
-                    var baiLam = await _context.CauHoi_BaiLam.Include(x => x.BaiLam).Include(x => x.CauHoi_De).ThenInclude(x => x.CauHoi)
-                        .FirstOrDefaultAsync(y => y.CauHoi_De.De.KyKiemTraId == id && y.BaiLam.MSSV == mssv && y.CauHoi_DeId == cauhoi.CauHoi_DeId);
                     cauhoi.DapAnSVChon = string.IsNullOrEmpty(dapAnSinhVien) ? "X" : dapAnSinhVien;
-                    int socaudung = cauhoi.BaiLam.CauHoi_BaiLam
-                  .Count(cd => cd.CauHoi_De.CauHoi?.DapAnDung?.ToLower() == cd.DapAnSVChon?.ToLower());
-                    cauhoi.BaiLam.SoCauDung = socaudung;
-                    cauhoi.BaiLam.Diem = socaudung > 0 ? (float)socaudung / cauhoi.CauHoi_De.De.SoCauHoi * 10 : 0;
+
+                    // ✅ So sánh trực tiếp với đáp án đúng đã Include
+                    bool dung = cauhoi.CauHoi_De.CauHoi?.DapAnDung?.Trim().ToLower() ==
+                                cauhoi.DapAnSVChon?.Trim().ToLower();
+
+                    if (dung)
+                        cauhoi.BaiLam.SoCauDung++;
+
+                    int tongCauHoi = cauhoi.CauHoi_De.De.SoCauHoi;
+                    cauhoi.BaiLam.Diem = (float)cauhoi.BaiLam.SoCauDung / tongCauHoi * 10;
                 }
+
                 trangthai.TrangThai = true;
                 await _context.SaveChangesAsync();
-                _notyfService.Success("Chúc mừng bạn nộp bài thành công!!!");
-                return RedirectToAction("Index", "Home");
+                _notyfService.Success("Chúc mừng bạn đã nộp bài thành công!");
             }
             else
             {
-                _notyfService.Warning("Chúc mừng bạn bài này đã được nộp trước đó !!!");
-                return RedirectToAction("Index", "Home");
+                _notyfService.Warning("Bài này đã được nộp trước đó!");
             }
 
+            return RedirectToAction("Index", "Home");
         }
+
+
         [Route("/HoSo/XemLaiBaiThi")]
         [HttpPost]
         public IActionResult XemLaiBaiThi(int id)
         {
-            var mssvclaim = User.Claims.FirstOrDefault(c => c.Type == "MSSV");
-            var mssv_ = "";
-            if (mssvclaim != null)
+            var hocVienClaim = User.Claims.FirstOrDefault(c => c.Type == "HocVienId");
+            if (hocVienClaim == null || !int.TryParse(hocVienClaim.Value, out int maHocVien))
             {
-                mssv_ = mssvclaim.Value;
+                _notyfService.Warning("Bạn cần đăng nhập để xem bài thi!");
+                return RedirectToAction("Index", "Home");
             }
-            var exBaiLam = _context.BaiLam.Include(x => x.CauHoi_BaiLam).ThenInclude(x => x.CauHoi_De).FirstOrDefault(x => x.MSSV == mssv_ && x.CauHoi_BaiLam.FirstOrDefault().CauHoi_De.De.KyKiemTraId == id);
-            //tìm kiếm kiều kiện để add dữ liệu 
-            var thoigiandenhan = _context.KyKiemTra.FirstOrDefault(x => x.KyKiemTraId == id);
-            var tenkikiem = "";
-            tenkikiem = thoigiandenhan.TenKyKiemTra;
-            @ViewBag.TenKiKiemTra = tenkikiem;
-            ///thoi gian lam bai cua sv 
-            @ViewBag.kiemtrasv_id = exBaiLam.MSSV;
-            var cauhoi_de_mssv = _context.CauHoi_BaiLam.Where(x => x.BaiLam.MSSV == mssv_ && x.CauHoi_De.De.KyKiemTraId == id).Include(x => x.CauHoi_De).ThenInclude(x => x.CauHoi).ThenInclude(x => x.CauHoi_De).ThenInclude(x => x.De).ToList();
-            ViewBag.cauhoi_de_mssv = cauhoi_de_mssv;
-            DateTime? tg_batdau = exBaiLam.ThoiGianBatDau;
-            DateTime? tg_ketthuc = exBaiLam.ThoiGianDenHan;
-            ViewBag.tg_batdau = tg_batdau;
-            ViewBag.tg_ketthuc = tg_ketthuc;
+
+            var exBaiLam = _context.BaiLam
+                .Include(x => x.CauHoi_BaiLam)
+                    .ThenInclude(x => x.CauHoi_De)
+                .FirstOrDefault(x => x.MaHocVien == maHocVien &&
+                    x.CauHoi_BaiLam.FirstOrDefault().CauHoi_De.De.KyKiemTraId == id);
+
+            if (exBaiLam == null)
+            {
+                _notyfService.Warning("Không tìm thấy bài làm!");
+                return RedirectToAction("HoSo");
+            }
+
+            var kyThi = _context.KyKiemTra.FirstOrDefault(x => x.KyKiemTraId == id);
+            ViewBag.TenKiKiemTra = kyThi?.TenKyKiemTra ?? "Kỳ kiểm tra";
+            ViewBag.kiemtrasv_id = exBaiLam.MaHocVien;
+
+            var cauhoi_de_hocvien = _context.CauHoi_BaiLam
+                .Where(x => x.BaiLam.MaHocVien == maHocVien && x.CauHoi_De.De.KyKiemTraId == id)
+                .Include(x => x.CauHoi_De)
+                    .ThenInclude(x => x.CauHoi)
+                .Include(x => x.CauHoi_De)
+                    .ThenInclude(x => x.De)
+                .ToList();
+
+            ViewBag.cauhoi_de_mssv = cauhoi_de_hocvien;
+            ViewBag.tg_batdau = exBaiLam.ThoiGianBatDau;
+            ViewBag.tg_ketthuc = exBaiLam.ThoiGianDenHan;
+
             return View();
         }
+
     }
 }

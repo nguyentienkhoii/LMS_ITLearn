@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Create";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var ChuongId = @ViewBag.ChuongId;
+    var MaChuong = @ViewBag.MaChuong;
 }
 
 <ol class="breadcrumb">
@@ -22,8 +22,8 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <br />
         <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="ChuongId" class="form-label">Chương <span id="ChuongDisplay"></span></label>
-            <select asp-for="ChuongId" asp-items="ChuongId" class="form-select" onchange="showChuongInfo(this)">
+            <label asp-for="MaChuong" class="form-label">Chương <span id="ChuongDisplay"></span></label>
+            <select asp-for="MaChuong" asp-items="MaChuong" class="form-select" onchange="showChuongInfo(this)">
                 <option value="">-- Chọn chương học --</option>
             </select>
         </div>

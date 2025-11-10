@@ -1,206 +1,292 @@
-﻿using AspNetCoreHero.ToastNotification.Abstractions;
+﻿/*using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System.Data.OleDb;
-using System.Data;
-using WebBaiGiang_CKC.Models;
-using X.PagedList;
 using WebBaiGiang_CKC.Data;
+using WebBaiGiang_CKC.Models;
+using WebBaiGiang_CKC.Models.ViewModels;
 
 namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 {
-
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
     public class DanhSachThiController : Controller
     {
         private readonly WebBaiGiangContext _context;
-        private readonly IConfiguration _configuration;
-        public INotyfService _notyfService { get; }
-        public DanhSachThiController(WebBaiGiangContext context, INotyfService notyfService, IConfiguration configuration)
+        private readonly INotyfService _notyfService;
+
+        public DanhSachThiController(WebBaiGiangContext context, INotyfService notyfService)
         {
             _context = context;
             _notyfService = notyfService;
-            _configuration = configuration;
         }
 
-        // GET: Admin/DanhSachThi
-
-        public IActionResult Index(int? page)
+        // ============================
+        // 📋 Danh sách thí sinh theo kỳ thi
+        // ============================
+        [HttpGet]
+        public async Task<IActionResult> DanhSachTheoKyThi(int kyKiemTraId)
         {
-            var baiGiangContext = _context.DanhSachThi.Include(d => d.TaiKhoan).Include(d => d.KyKiemTra).ThenInclude(x=>x.De).ThenInclude(x=>x.CauHoi_DeThi).ThenInclude(x=>x.CauHoi_BaiLam).ThenInclude(x=>x.BaiLam).ToList();
-            
-            var pageNo = page == null || page <= 0 ? 1 : page.Value;
-            var pageSize = 12;
-            PagedList<DanhSachThi> models = new PagedList<DanhSachThi>(baiGiangContext, pageNo, pageSize);
-            return View(models);
-        }
-       
-        // GET: Admin/DanhSachThi/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.DanhSachThi == null)
-            {
-                return NotFound();
-            }
-
-            var danhSachThi = await _context.DanhSachThi
+            var danhSach = await _context.DanhSachThi
+                .Include(d => d.HocVien)
                 .Include(d => d.KyKiemTra)
-                .Include(d => d.TaiKhoan)
-                .FirstOrDefaultAsync(m => m.DanhSachThiId == id);
-            if (danhSachThi == null)
+                .Where(d => d.KyKiemTraId == kyKiemTraId)
+                .ToListAsync();
+
+            // Lấy danh sách bài làm tương ứng
+            var baiLams = await _context.BaiLam
+                .Include(b => b.CauHoi_BaiLam)
+                    .ThenInclude(cb => cb.CauHoi_De)
+                        .ThenInclude(cd => cd.De)
+                .Where(b => b.CauHoi_BaiLam
+                    .Any(cb => cb.CauHoi_De.De.KyKiemTraId == kyKiemTraId))
+                .ToListAsync();
+
+            // Map lại: mỗi học viên lấy số câu đúng và điểm
+            foreach (var ds in danhSach)
             {
-                return NotFound();
+                var baiLam = baiLams.FirstOrDefault(b => b.MaHocVien == ds.MaHocVien);
+                ds.SoCauDung = baiLam?.SoCauDung ?? 0;
+                ds.Diem = baiLam?.Diem ?? 0;
             }
 
-            return View(danhSachThi);
+            var ky = await _context.KyKiemTra.FindAsync(kyKiemTraId);
+            ViewBag.KyKiemTraId = kyKiemTraId;
+            ViewBag.TenKy = ky?.TenKyKiemTra ?? "Không rõ";
+
+            return View(danhSach);
         }
 
-        // GET: Admin/DanhSachThi/Create
-        public IActionResult Create()
+
+        // ============================
+        // 🧩 Partial quản lý danh sách học viên (checkbox)
+        // ============================
+        [HttpGet]
+        public async Task<IActionResult> QuanLyThiSinh_Partial(int kyKiemTraId)
         {
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra");
-            ViewData["TaiKhoanId"] = new SelectList(_context.TaiKhoan, "TaiKhoanId", "HoTen");
-            return View();
+            var kyThi = await _context.KyKiemTra
+                .Include(k => k.DanhSachThi)
+                .ThenInclude(ds => ds.HocVien)
+                .FirstOrDefaultAsync(k => k.KyKiemTraId == kyKiemTraId);
+
+            if (kyThi == null)
+                return NotFound();
+
+            // 🧩 Lấy học viên + lớp học (nếu có tham gia lớp)
+            var allHocViens = await _context.HocVien_LopHoc
+                .Include(x => x.HocVien)
+                .Include(x => x.LopHoc)
+                .ToListAsync();
+
+            var model = allHocViens.Select(x => new HocVienThiCheckboxVM
+            {
+                MaHocVien = x.MaHocVien,
+                HoTen = x.HocVien.HoTen,
+                Email = x.HocVien.Email,
+                MaLopHoc = x.MaLopHoc,
+                TenLopHoc = x.LopHoc.TenLopHoc,
+                DaTrongDanhSach = kyThi.DanhSachThi.Any(ds => ds.MaHocVien == x.MaHocVien)
+            }).OrderBy(m => m.TenLopHoc).ThenBy(m => m.HoTen).ToList();
+
+            ViewBag.KyKiemTraId = kyKiemTraId;
+            return PartialView("_QuanLyThiSinhPartial", model);
         }
 
-        // POST: Admin/DanhSachThi/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        // ============================
+        // 💾 Cập nhật danh sách thi (tick/untick)
+        // ============================
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DanhSachThiId,TaiKhoanId,KyKiemTraId,TrangThai")] DanhSachThi danhSachThi)
+        public async Task<IActionResult> CapNhatDanhSachThi([FromBody] CapNhatDanhSachThiRequest req)
         {
-            var existingDanhSachThi = await _context.DanhSachThi
-                         .FirstOrDefaultAsync(d => d.TaiKhoanId == danhSachThi.TaiKhoanId && d.KyKiemTraId == danhSachThi.KyKiemTraId);
+            if (req == null)
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
 
-            if (existingDanhSachThi != null)
-            {
-                // đã có bản ghi trong CSDL, xuất thông báo lỗi và không lưu đối tượng DanhSachThi vào CSDL
-                _notyfService.Error("Sinh viên đã tham gia thi kỳ kiểm tra này.");
-                ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", danhSachThi.KyKiemTraId);
-                ViewData["TaiKhoanId"] = new SelectList(_context.TaiKhoan, "TaiKhoanId", "HoTen", danhSachThi.TaiKhoanId);
-                return View(danhSachThi);
-            }
-            if (ModelState.IsValid)
-            {
-                _context.Add(danhSachThi);
-                _notyfService.Success("Thêm Thành Công");
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", danhSachThi.KyKiemTraId);
-            ViewData["TaiKhoanId"] = new SelectList(_context.TaiKhoan, "TaiKhoanId", "HoTen", danhSachThi.TaiKhoanId);
-            return View(danhSachThi);
-        }
+            var kyThi = await _context.KyKiemTra
+                .Include(k => k.DanhSachThi)
+                .FirstOrDefaultAsync(k => k.KyKiemTraId == req.KyKiemTraId);
 
-        // GET: Admin/DanhSachThi/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.DanhSachThi == null)
-            {
-                return NotFound();
-            }
+            if (kyThi == null)
+                return Json(new { success = false, message = "Không tìm thấy kỳ thi!" });
 
-            var danhSachThi = await _context.DanhSachThi.FindAsync(id);
-            if (danhSachThi == null)
-            {
-                return NotFound();
-            }
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", danhSachThi.KyKiemTraId);
-            ViewData["TaiKhoanId"] = new SelectList(_context.TaiKhoan, "TaiKhoanId", "HoTen", danhSachThi.TaiKhoanId);
-            return View(danhSachThi);
-        }
+            var hienTai = kyThi.DanhSachThi.Select(x => x.MaHocVien).ToList();
+            var canThem = req.MaHocViens.Except(hienTai).ToList();
+            var canXoa = hienTai.Except(req.MaHocViens).ToList();
 
-        // POST: Admin/DanhSachThi/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DanhSachThiId,TaiKhoanId,KyKiemTraId,TrangThai")] DanhSachThi danhSachThi)
-        {
-            if (id != danhSachThi.DanhSachThiId)
+            // Thêm học viên mới
+            if (canThem.Any())
             {
-                return NotFound();
-            }
-            var existingDanhSachThi = await _context.DanhSachThi
-                 .FirstOrDefaultAsync(d => d.TaiKhoanId == danhSachThi.TaiKhoanId && d.KyKiemTraId == danhSachThi.KyKiemTraId && d.DanhSachThiId != danhSachThi.DanhSachThiId);
-            if (existingDanhSachThi != null)
-            {
-                // đã có bản ghi trong CSDL, xuất thông báo lỗi và không cập nhật đối tượng DanhSachThi vào CSDL
-                _notyfService.Error("Sinh viên đã tham gia thi kỳ kiểm tra này.");
-                ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", danhSachThi.KyKiemTraId);
-                ViewData["TaiKhoanId"] = new SelectList(_context.TaiKhoan, "TaiKhoanId", "HoTen", danhSachThi.TaiKhoanId);
-                return View(danhSachThi);
-            }
-            if (ModelState.IsValid)
-            {
-                try
+                var addList = canThem.Select(id => new DanhSachThi
                 {
-                    _context.Update(danhSachThi);
-                    _notyfService.Success("Cập Nhật Thành Công");
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!DanhSachThiExists(danhSachThi.DanhSachThiId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", danhSachThi.KyKiemTraId);
-            ViewData["TaiKhoanId"] = new SelectList(_context.TaiKhoan, "TaiKhoanId", "HoTen", danhSachThi.TaiKhoanId);
-            return View(danhSachThi);
-        }
-
-        // GET: Admin/DanhSachThi/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.DanhSachThi == null)
-            {
-                return NotFound();
+                    KyKiemTraId = req.KyKiemTraId,
+                    MaHocVien = id,
+                    TrangThai = false
+                });
+                _context.DanhSachThi.AddRange(addList);
             }
 
-            var danhSachThi = await _context.DanhSachThi
-                .Include(d => d.KyKiemTra)
-                .Include(d => d.TaiKhoan)
-                .FirstOrDefaultAsync(m => m.DanhSachThiId == id);
-            if (danhSachThi == null)
+            // Xóa học viên bị bỏ tick
+            if (canXoa.Any())
             {
-                return NotFound();
+                var removeList = kyThi.DanhSachThi.Where(x => canXoa.Contains(x.MaHocVien)).ToList();
+                _context.DanhSachThi.RemoveRange(removeList);
             }
 
-            return View(danhSachThi);
-        }
-
-        // POST: Admin/DanhSachThi/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.DanhSachThi == null)
-            {
-                return Problem("Entity set 'BaiGiangContext.DanhSachThi'  is null.");
-            }
-            var danhSachThi = await _context.DanhSachThi.FindAsync(id);
-            if (danhSachThi != null)
-            {
-                _context.DanhSachThi.Remove(danhSachThi);
-            }
-            _notyfService.Success("Xóa Thành Công");
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            _notyfService.Success("Đã cập nhật danh sách thi thành công!");
+
+            return Json(new { success = true, message = "Cập nhật danh sách thi thành công!" });
         }
 
+        // ============================
+        // ⚙️ Kiểm tra tồn tại
+        // ============================
+        private bool DanhSachThiExists(int id)
+        {
+            return _context.DanhSachThi.Any(e => e.DanhSachThiId == id);
+        }
+    }
+}
+*/
+
+
+using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebBaiGiang_CKC.Data;
+using WebBaiGiang_CKC.Models;
+using WebBaiGiang_CKC.Models.ViewModels;
+
+namespace WebBaiGiang_CKC.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+    public class DanhSachThiController : Controller
+    {
+        private readonly WebBaiGiangContext _context;
+        private readonly INotyfService _notyfService;
+
+        public DanhSachThiController(WebBaiGiangContext context, INotyfService notyfService)
+        {
+            _context = context;
+            _notyfService = notyfService;
+        }
+
+        // ============================
+        // 📋 Danh sách thí sinh theo kỳ thi
+        // ============================
+        [HttpGet]
+        public async Task<IActionResult> DanhSachTheoKyThi(int kyKiemTraId)
+        {
+            var danhSach = await _context.DanhSachThi
+                .Include(d => d.HocVien)
+                .Include(d => d.KyKiemTra)
+                .Where(d => d.KyKiemTraId == kyKiemTraId)
+                .ToListAsync();
+
+            // Lấy danh sách bài làm tương ứng
+            var baiLams = await _context.BaiLam
+                .Include(b => b.CauHoi_BaiLam)
+                    .ThenInclude(cb => cb.CauHoi_De)
+                        .ThenInclude(cd => cd.De)
+                .Where(b => b.CauHoi_BaiLam
+                    .Any(cb => cb.CauHoi_De.De.KyKiemTraId == kyKiemTraId))
+                .ToListAsync();
+
+            // Map lại: mỗi học viên lấy số câu đúng và điểm
+            foreach (var ds in danhSach)
+            {
+                var baiLam = baiLams.FirstOrDefault(b => b.MaHocVien == ds.MaHocVien);
+                ds.SoCauDung = baiLam?.SoCauDung ?? 0;
+                ds.Diem = baiLam?.Diem ?? 0;
+            }
+
+            var ky = await _context.KyKiemTra.FindAsync(kyKiemTraId);
+            ViewBag.KyKiemTraId = kyKiemTraId;
+            ViewBag.TenKy = ky?.TenKyKiemTra ?? "Không rõ";
+
+            return View(danhSach);
+        }
+
+        // ============================
+        // 🧩 Partial quản lý danh sách học viên (checkbox)
+        // ============================
+        [HttpGet]
+        public async Task<IActionResult> QuanLyThiSinh_Partial(int kyKiemTraId)
+        {
+            var kyThi = await _context.KyKiemTra
+                .Include(k => k.DanhSachThi)
+                .ThenInclude(ds => ds.HocVien)
+                .FirstOrDefaultAsync(k => k.KyKiemTraId == kyKiemTraId);
+
+            if (kyThi == null)
+                return NotFound();
+
+            var allHocViens = await _context.HocViens
+                .OrderBy(h => h.HoTen)
+                .ToListAsync();
+
+            var model = allHocViens.Select(hv => new HocVienThiCheckboxVM
+            {
+                MaHocVien = hv.MaHocVien,
+                HoTen = hv.HoTen,
+                Email = hv.Email,
+                DaTrongDanhSach = kyThi.DanhSachThi.Any(x => x.MaHocVien == hv.MaHocVien)
+            }).ToList();
+
+            ViewBag.KyKiemTraId = kyKiemTraId;
+            return PartialView("_QuanLyThiSinhPartial", model);
+        }
+
+        // ============================
+        // 💾 Cập nhật danh sách thi (tick/untick)
+        // ============================
+        [HttpPost]
+        public async Task<IActionResult> CapNhatDanhSachThi([FromBody] CapNhatDanhSachThiRequest req)
+        {
+            if (req == null)
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
+
+            var kyThi = await _context.KyKiemTra
+                .Include(k => k.DanhSachThi)
+                .FirstOrDefaultAsync(k => k.KyKiemTraId == req.KyKiemTraId);
+
+            if (kyThi == null)
+                return Json(new { success = false, message = "Không tìm thấy kỳ thi!" });
+
+            var hienTai = kyThi.DanhSachThi.Select(x => x.MaHocVien).ToList();
+            var canThem = req.MaHocViens.Except(hienTai).ToList();
+            var canXoa = hienTai.Except(req.MaHocViens).ToList();
+
+            // Thêm học viên mới
+            if (canThem.Any())
+            {
+                var addList = canThem.Select(id => new DanhSachThi
+                {
+                    KyKiemTraId = req.KyKiemTraId,
+                    MaHocVien = id,
+                    TrangThai = false
+                });
+                _context.DanhSachThi.AddRange(addList);
+            }
+
+            // Xóa học viên bị bỏ tick
+            if (canXoa.Any())
+            {
+                var removeList = kyThi.DanhSachThi.Where(x => canXoa.Contains(x.MaHocVien)).ToList();
+                _context.DanhSachThi.RemoveRange(removeList);
+            }
+
+            await _context.SaveChangesAsync();
+            _notyfService.Success("Đã cập nhật danh sách thi thành công!");
+
+            return Json(new { success = true, message = "Cập nhật danh sách thi thành công!" });
+        }
+
+        // ============================
+        // ⚙️ Kiểm tra tồn tại
+        // ============================
         private bool DanhSachThiExists(int id)
         {
             return _context.DanhSachThi.Any(e => e.DanhSachThiId == id);

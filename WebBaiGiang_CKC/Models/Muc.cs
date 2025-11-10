@@ -4,24 +4,33 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebBaiGiang_CKC.Models
 {
+    [Table("MUCCON")]
     public class Muc
     {
+        [Key]
         public int MucId { get; set; }
+
         [DisplayName("Tên mục")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
+        //[Required(ErrorMessage = "{0} không được bỏ trống")]
         public string TenMuc { get; set; }
-        [DisplayName("Tên bài")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
+
+        [DisplayName("Mã bài")]
+       // [Required(ErrorMessage = "{0} không được bỏ trống")]
         public int BaiId { get; set; }
+
+        [ForeignKey("BaiId")]
+        public Bai Bai { get; set; }
+
         [DisplayName("Số mục")]
-        [Range(1, int.MaxValue, ErrorMessage = "Số mục phải lớn không 0")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
+        [Range(1, int.MaxValue, ErrorMessage = "Số mục phải lớn hơn 0")]
         public int MucSo { get; set; }
+
         [DisplayName("Nội dung")]
         [Column(TypeName = "ntext")]
-        [Required(ErrorMessage = "{0} không được bỏ trống")]
+      //  [Required(ErrorMessage = "{0} không được bỏ trống")]
         public string NoiDung { get; set; }
-        public Bai Bai { get; set; }
-        
+
+        // Quan hệ 1-n: 1 mục có thể có nhiều tài liệu
+        public List<TaiLieu>? TaiLieus { get; set; }
     }
 }

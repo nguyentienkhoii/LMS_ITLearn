@@ -8,7 +8,7 @@
     <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description">
     <meta content="Coderthemes" name="author">
     <!-- App favicon -->
-    <link rel="shortcut icon" href="~/AdminAssets/images/caothang.png">
+
 
     <!-- third party css -->
     <link href="~/AdminAssets/css/vendor/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css">
@@ -43,20 +43,20 @@
             <!-- LOGO -->
             <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="logo text-center logo-light">
                 <span class="logo-lg">
-                    <img src="~/AdminAssets/images/logo.png" alt="" height="16">
+                    <img src="~/AdminAssets/images/logoto.png" alt="" height="30">
                 </span>
                 <span class="logo-sm">
-                    <img src="~/AdminAssets/images/logo_sm.png" alt="" height="16">
+                    <img src="~/AdminAssets/images/logoto.png" alt="" height="16">
                 </span>
             </a>
 
             <!-- LOGO -->
             <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="logo text-center logo-dark">
                 <span class="logo-lg">
-                    <img src="~/AdminAssets/images/logo-dark.png" alt="" height="16">
+                    <img src="~/AdminAssets/images/logoitlearn.png" alt="" height="30">
                 </span>
                 <span class="logo-sm">
-                    <img src="~/AdminAssets/images/logo_sm_dark.png" alt="" height="16">
+                    <img src="~/AdminAssets/images/logoitlearn.png" alt="" height="16">
                 </span>
             </a>
 
@@ -83,10 +83,20 @@
                         </a>
                         <div class="collapse" id="sidebarLayouts">
                             <ul class="side-nav-second-level">
-                                <li>
+                                @* <li>
 
                                     <a asp-area="Admin" asp-controller="MonHoc" asp-action="Index" class="side-nav-link">  <i class="uil-calender"></i>Môn Học </a>
+                                </li> *@
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="KhoaHoc" asp-action="Index" class="side-nav-link">  <i class="uil-calender"></i>Khóa Học </a>
                                 </li>
+
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="LopHoc" asp-action="Index" class="side-nav-link">  <i class="uil-calender"></i>Lớp Học </a>
+                                </li>
+
                                 <li>
 
                                     <a asp-area="Admin" asp-controller="Chuong" asp-action="Index" class="side-nav-link">  <i class="uil-clipboard-alt"></i>Chương </a>
@@ -142,12 +152,23 @@
                         </a>
                         <div class="collapse" id="sidebarIcons">
                             <ul class="side-nav-second-level">
-                                <li>
+                                @* <li>
                                     <a asp-area="Admin" asp-controller="GiaoVien" asp-action="Index" class="side-nav-link">   <i class="uil-box"></i>Giáo Viên</a>
                                 </li>
                                 <li>
                                     <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="Index" class="side-nav-link">   <i class="uil-box"></i>Sinh Viên</a>
+                                </li> *@
+                                <li>
+                                    <a asp-area="Admin" asp-controller="HocVien" asp-action="Index" class="side-nav-link">
+                                        <i class="uil-user-square"></i>Học Viên
+                                    </a>
                                 </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="GiangVien" asp-action="Index" class="side-nav-link">
+                                        <i class="uil-user-square"></i>Giảng Viên
+                                    </a>
+                                </li>
+
 
                             </ul>
                         </div>

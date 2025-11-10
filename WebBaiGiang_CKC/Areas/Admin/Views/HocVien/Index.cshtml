@@ -1,0 +1,203 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.HocVien>
+
+@{
+    ViewData["Title"] = "Quản lý học viên";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a>
+    </li>
+    <li class="breadcrumb-item active">Quản lý học viên</li>
+</ol>
+
+<!-- 🔹 Thanh tiêu đề và nút thao tác -->
+<div class="d-flex justify-content-between align-items-center my-3">
+    <div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa fa-plus"></i> Thêm học viên
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importHocVienModal">
+            <i class="fa fa-file-excel"></i> Import Excel
+        </button>
+        <a asp-action="DownloadExcel" class="btn btn-outline-secondary">
+            <i class="fa fa-download"></i> Tải file mẫu
+        </a>
+    </div>
+</div>
+
+<!-- 🔹 Bảng danh sách học viên -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="fw-bold mb-3 text-uppercase text-primary">
+            <i class="fa fa-users"></i> Danh sách học viên
+        </h4>
+
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 150px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int stt = 1;
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@stt</td>
+                            <td class="text-start">@item.HoTen</td>
+                            <td>@item.Email</td>
+                            <td>@item.SoDienThoai</td>
+                            <td>@item.DiaChi</td>
+                            <td>@item.TaiKhoan?.TenDangNhap</td>
+
+                            <!-- ✅ Trạng thái AJAX -->
+                            <td>
+                                <button type="button"
+                                        class="btn btn-sm px-3 py-1 toggle-status-btn
+                   @(item.TaiKhoan?.TrangThai == true ? "btn-outline-success" : "btn-outline-danger")"
+                                        data-id="@item.MaHocVien"
+                                        data-status="@(item.TaiKhoan?.TrangThai ?? false)">
+                                    @if (item.TaiKhoan?.TrangThai == true)
+                                    {
+                                        <text><i class="fa fa-unlock"></i> Hoạt động</text>
+                                    }
+                                    else
+                                    {
+                                        <text><i class="fa fa-lock"></i> Khóa</text>
+                                    }
+
+                                </button>
+                            </td>
+
+
+                            <!-- ✅ Thao tác -->
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.MaHocVien"
+                                   class="btn btn-sm btn-warning me-1" title="Sửa">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.MaHocVien"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Bạn có chắc muốn xóa học viên này không?');"
+                                   title="Xóa">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Chưa có học viên nào.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 🔹 Modal Import Học Viên -->
+<div class="modal fade" id="importHocVienModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="importHocVienLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form asp-area="Admin" asp-controller="HocVien" asp-action="ImportExcel" method="post" enctype="multipart/form-data">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="importHocVienLabel">
+                        <i class="fa fa-file-excel"></i> Import học viên từ Excel
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label class="fw-semibold">Chọn file Excel (.xlsx)</label>
+                        <input type="file" name="formFile" class="form-control" accept=".csv,.xls,.xlsx" required />
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-upload"></i> Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const buttons = document.querySelectorAll(".toggle-status-btn");
+
+            buttons.forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const id = this.getAttribute("data-id");
+                    const currentStatus = this.getAttribute("data-status") === "true";
+
+                    if (!confirm("Bạn có chắc muốn đổi trạng thái tài khoản này?")) return;
+
+                    try {
+                        const res = await fetch(`/Admin/HocVien/ToggleTrangThaiAjax?id=${id}`, {
+                            method: "POST"
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            // ✅ Cập nhật trạng thái trên giao diện
+                            this.setAttribute("data-status", data.trangThai);
+
+                            if (data.trangThai) {
+                                this.classList.remove("btn-outline-danger");
+                                this.classList.add("btn-outline-success");
+                                this.innerHTML = `<i class="fa fa-unlock"></i> Hoạt động`;
+                            } else {
+                                this.classList.remove("btn-outline-success");
+                                this.classList.add("btn-outline-danger");
+                                this.innerHTML = `<i class="fa fa-lock"></i> Khóa`;
+                            }
+
+                            // ✅ Hiển thị thông báo Toast nếu có Notyf
+                            if (window.Notyf) {
+                                new Notyf().success(data.message);
+                            } else {
+                                alert(data.message);
+                            }
+                        } else {
+                            if (window.Notyf) {
+                                new Notyf().error(data.message);
+                            } else {
+                                alert(data.message);
+                            }
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        if (window.Notyf) {
+                            new Notyf().error("Lỗi kết nối server!");
+                        } else {
+                            alert("Lỗi kết nối server!");
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

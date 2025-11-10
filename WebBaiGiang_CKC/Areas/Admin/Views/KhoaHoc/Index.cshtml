@@ -1,0 +1,47 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.KhoaHoc>
+@{
+    ViewData["Title"] = "Danh sách khóa học";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb mt-3">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item active">Quản lý khóa học</li>
+</ol>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fa-solid fa-book"></i> Danh sách khóa học</h4>
+        <a asp-action="Create" class="btn btn-light btn-sm"><i class="fa fa-plus"></i> Thêm mới</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>Mã KH</th>
+                    <th>Tên khóa học</th>
+                    <th>Thời gian</th>
+                    <th>Mô tả</th>
+                    <th style="width:120px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="text-center">@item.MaKhoaHoc</td>
+                        <td>@item.TenKhoaHoc</td>
+                        <td class="text-center">
+                            @item.ThoiGianBatDau.ToString("dd/MM/yyyy") - @item.ThoiGianKetThuc.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>@item.MoTa</td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.MaKhoaHoc" class="btn btn-sm btn-warning"><i class="fa fa-pen"></i></a>
+                            <a asp-action="Delete" asp-route-id="@item.MaKhoaHoc" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

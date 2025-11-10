@@ -1,0 +1,110 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<div class="list-group list-group-flush">
+
+    <!-- Trang chủ: luôn sáng, nhưng active thì màu xanh -->
+    <a asp-area="GiangVien"
+       asp-controller="LopHoc"
+       asp-action="NoiDung"
+       asp-route-id="@ViewBag.MaLopHoc"
+       class="list-group-item list-group-item-action always-enabled @(currentController == "LopHoc" && currentAction == "NoiDung" ? "active" : "")">
+        <i class="fa fa-home me-2"></i> Trang chủ
+    </a>
+
+    <!-- Các mục bị mờ trừ khi active -->
+    <a asp-area="GiangVien"
+       asp-controller="ThongBao"
+       asp-action="Index"
+       class="list-group-item list-group-item-action
+              @(currentController == "ThongBao" ? "active" : "disabled-link")">
+        <i class="fa fa-bullhorn me-2"></i> Thông báo
+    </a>
+
+    <a asp-area="GiangVien"
+       asp-controller="BaiTap"
+       asp-action="Index"
+       class="list-group-item list-group-item-action
+              @(currentController == "BaiTap" ? "active" : "disabled-link")">
+        <i class="fa fa-tasks me-2"></i> Bài tập
+    </a>
+
+    <a asp-area="GiangVien"
+       asp-controller="Bai"
+       asp-action="Index"
+       class="list-group-item list-group-item-action
+              @(currentController == "Bai" ? "active" : "disabled-link")">
+        <i class="fa fa-book me-2"></i> Bài giảng
+    </a>
+
+    <a asp-area="GiangVien"
+       asp-controller="Muc"
+       asp-action="Index"
+       class="list-group-item list-group-item-action
+              @(currentController == "Muc" ? "active" : "disabled-link")">
+        <i class="fa fa-list-alt me-2"></i> Mục bài giảng
+    </a>
+
+    <!-- Thành viên: luôn sáng, nhưng active thì màu xanh -->
+    <a asp-area="GiangVien"
+       asp-controller="ThanhVien"
+       asp-action="Index"
+       asp-route-id="@ViewBag.MaLopHoc"
+       class="list-group-item list-group-item-action always-enabled @(currentController == "ThanhVien" ? "active" : "")">
+        <i class="fa fa-users me-2"></i> Thành viên
+    </a>
+
+</div>
+
+<style>
+    .list-group-item {
+        border: none;
+        font-size: 15px;
+        color: #333;
+        padding: 10px 15px;
+        border-radius: 6px;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+    }
+
+        .list-group-item i {
+            width: 22px;
+            text-align: center;
+        }
+
+        /* 🔹 Mục đang active */
+        .list-group-item.active {
+            background-color: #126f9a;
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+    /* 🔹 Trang chủ + Thành viên (luôn sáng, luôn bấm được) */
+    .always-enabled {
+        opacity: 1;
+        color: #333;
+        pointer-events: auto;
+    }
+
+        .always-enabled:hover {
+            color: #126f9a;
+            transform: translateX(4px);
+        }
+
+    /* 🔸 Các mục bị mờ và không bấm được (trừ khi active) */
+    .disabled-link {
+        opacity: 0.4;
+        pointer-events: none;
+        cursor: not-allowed;
+    }
+
+    /* Khi active thì sáng trở lại */
+    .list-group-item.active.disabled-link {
+        opacity: 1;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+</style>
