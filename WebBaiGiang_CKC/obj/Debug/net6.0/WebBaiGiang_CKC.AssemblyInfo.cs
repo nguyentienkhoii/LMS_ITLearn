@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WebBaiGiang_CKC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+31420b29d2d2f85ed9c36f7780cca01bb841da8e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+32c75d87ef6141028393d68a8efc30e50b2072e9")]
 [assembly: System.Reflection.AssemblyProductAttribute("WebBaiGiang_CKC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WebBaiGiang_CKC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
