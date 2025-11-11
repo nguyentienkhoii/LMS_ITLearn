@@ -47,10 +47,15 @@
                         <h6 class="text-overflow m-0">Xin chào!</h6>
                     </div>
 
+                    <a class="dropdown-item notify-item"
+                        href="@Url.Action("HoSo", "Home", new { area = "GiangVien" })">
+                        <i class="fa-solid fa-user me-1"></i><span>Hồ sơ</span>
+
+                    </a>
                     <!-- Đổi mật khẩu -->
                     <a href="javascript:void(0);" class="dropdown-item notify-item" data-bs-toggle="modal" data-bs-target="#signup-modal">
-                        <i class="mdi mdi-account-circle me-1"></i>
-                        <span>Đổi mật khẩu</span>
+                        <i class="fa-solid fa-key me-1"></i>
+                            <span>Đổi mật khẩu</span>
                     </a>
 
                     <!-- Đăng xuất -->

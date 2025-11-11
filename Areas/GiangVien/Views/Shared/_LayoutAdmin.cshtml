@@ -17,7 +17,7 @@
     <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
     <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
     <link href="~/AdminAssets/css/app-dark.min.css" rel="stylesheet" type="text/css" id="dark-style">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Tích hợp summernote và elfinder -->
     <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/theme.css" />
     <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/jquery-ui.css" />
@@ -102,12 +102,12 @@
         <!-- ============================================================== -->
         <!-- Start Page Content here -->
         <!-- ============================================================== -->
-        @await Html.PartialAsync("~/Areas/Admin/Views/PartialView/_Header.cshtml")
+        @await Html.PartialAsync("~/Areas/GiangVien/Views/PartialView/_Header.cshtml")
         <div class="content-page">
 
             @RenderBody()
             <!-- content -->
-            @await Html.PartialAsync("~/Areas/Admin/Views/PartialView/_Footer.cshtml")
+            @await Html.PartialAsync("~/Areas/GiangVien/Views/PartialView/_Footer.cshtml")
 
         </div>
 

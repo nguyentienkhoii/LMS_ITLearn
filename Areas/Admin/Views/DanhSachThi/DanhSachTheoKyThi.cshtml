@@ -8,7 +8,7 @@
 
 <div class="card shadow-sm mt-3">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h4><i class="fa-solid fa-users"></i> Danh sách thi kỳ thi: - @tenKy</h4>
+        <h4><i class="fa-solid fa-users"></i> Danh sách thi kỳ thi: <span id="tenKyText">- @tenKy</span></h4>
         <div class="d-flex align-items-center gap-2">
             <select id="switchKy" class="form-select form-select-sm">
             <option value="">-- Chọn kỳ kiểm tra --</option>
@@ -25,9 +25,13 @@
                     }
                 }
             </select>
-            <button class="btn btn-light btn-sm" onclick="MoModalThemThiSinh(@kyId)">
-                <i class="fa fa-user-plus"></i> Thêm học viên
+            <button class="btn btn-light btn-sm"
+                    id="btnThemHocVien"
+                    data-ky="@kyId"
+                    onclick="MoModalThemThiSinh(this.dataset.ky)">
+              <i class="fa fa-user-plus"></i> Thêm học viên
             </button>
+
         </div>
     </div>
         <div class="card-body" id="dsThiBody">

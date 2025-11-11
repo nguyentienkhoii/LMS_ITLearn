@@ -8,8 +8,10 @@ using System.Globalization;
 
 namespace WebBaiGiang_CKC.Controllers
 {
+    [Authorize(Roles ="HocVien,Admin")]
     public class BaiTapController : Controller
     {
+        
         private readonly WebBaiGiangContext _context;
         private readonly INotyfService _notyf;
         private readonly IWebHostEnvironment _env;
@@ -21,7 +23,7 @@ namespace WebBaiGiang_CKC.Controllers
             _env = env;
         }
 
-        // ✅ Xem chi tiết bài tập
+        //  Xem chi tiết bài tập
         public async Task<IActionResult> ChiTiet(int baiTapId)
         {
             var hocVienClaim = User.Claims.FirstOrDefault(c => c.Type == "HocVienId");
@@ -43,26 +45,29 @@ namespace WebBaiGiang_CKC.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // 🧩 Load danh sách lớp học học viên đã đăng ký (để hiển thị sidebar)
+            // Load danh sách lớp học học viên đã đăng ký (để hiển thị sidebar)
             var lopHocDangKy = await _context.HocVien_LopHoc
-                .Include(x => x.LopHoc)
-                .Where(x => x.MaHocVien == maHocVien)
-                .Select(x => x.LopHoc)
-                .ToListAsync();
+            .AsNoTracking()
+            .Include(x => x.LopHoc)
+            .Where(x => x.MaHocVien == maHocVien)
+            .Select(x => x.LopHoc)
+            .ToListAsync();
 
             ViewBag.LopHocDangKy = lopHocDangKy;
             ViewBag.ActiveMenu = "LopHoc";
             ViewBag.CurrentLopHocId = baiTap.Bai?.Chuong?.MaLopHoc;
 
-            // 🧾 Lấy lần nộp gần nhất (nếu có)
+            // Lấy lần nộp gần nhất (nếu có)
             var baiTapNop = await _context.BaiTapNops
-                .Where(x => x.MaBaiTap == baiTapId && x.MaHocVien == maHocVien)
-                .OrderByDescending(x => x.NgayNop)
-                .FirstOrDefaultAsync();
+            .AsNoTracking()
+            .Where(x => x.MaBaiTap == baiTapId && x.MaHocVien == maHocVien)
+            .OrderByDescending(x => x.NgayNop)
+            .FirstOrDefaultAsync();
 
             ViewBag.TrangThaiNop = baiTapNop != null ? "Đã nộp" : "Chưa nộp";
             if (baiTapNop != null)
             {
+                
                 if (baiTapNop.Diem != null)
                 {
                     var trangThai = "<div class='text-success fw-semibold'>Đã chấm</div>";
@@ -83,6 +88,50 @@ namespace WebBaiGiang_CKC.Controllers
                 ViewBag.TrangThaiCham = "<span class='text-muted'>Chưa có bài nộp</span>";
             }
 
+// ====== Cảnh báo hạn nộp (hiển thị dưới bảng) ======
+            string FormatDuration(TimeSpan t)
+            {
+                t = t.Duration();
+                var parts = new List<string>();
+                if (t.Days > 0) parts.Add($"{t.Days} ngày");
+                if (t.Hours > 0) parts.Add($"{t.Hours} giờ");
+                if (t.Minutes > 0) parts.Add($"{t.Minutes} phút");
+                if (parts.Count == 0) parts.Add($"{t.Seconds} giây");
+                return string.Join(" ", parts);
+            }
+
+            // Mặc định không hiển thị alert
+            ViewBag.HasNopAlert  = false;
+            ViewBag.NopAlertCss  = null;
+            ViewBag.NopAlertIcon = null;
+            ViewBag.NopAlertText = null;
+
+            if (baiTapNop != null && baiTap.HanNop.HasValue && baiTapNop.NgayNop.HasValue)
+            {
+                var diff = baiTapNop.NgayNop.Value - baiTap.HanNop.Value; // >0 trễ, <0 sớm, ==0 đúng hạn
+
+                if (diff.TotalSeconds > 0)
+                {
+                    ViewBag.NopAlertCss = "alert-late";
+                    ViewBag.NopAlertIcon = "fa-triangle-exclamation";
+                    ViewBag.NopAlertText = $"Bài tập nộp quá hạn {FormatDuration(diff)} so với hạn chót";
+                    ViewBag.HasNopAlert = true;
+                }
+                else if (diff.TotalSeconds < 0)
+                {
+                    ViewBag.NopAlertCss = "alert-early";
+                    ViewBag.NopAlertIcon = "fa-bolt";
+                    ViewBag.NopAlertText = $"Bài tập nộp sớm {FormatDuration(diff)} so với hạn chót";
+                    ViewBag.HasNopAlert = true;
+                }
+                else
+                {
+                    ViewBag.NopAlertCss = "alert-ontime";
+                    ViewBag.NopAlertIcon = "fa-circle-check";
+                    ViewBag.NopAlertText = "Đã nộp đúng hạn";
+                    ViewBag.HasNopAlert = true;
+                }
+            }
 
             ViewBag.HanChot = baiTap.HanNop?.ToString("dddd, dd 'Tháng' MM yyyy, h:mm tt", new CultureInfo("vi-VN")) ?? "Không có hạn chót";
             ViewBag.BaiTapNop = baiTapNop;
@@ -90,8 +139,7 @@ namespace WebBaiGiang_CKC.Controllers
             return View(baiTap);
         }
 
-        // ✅ Trang nộp bài
-        // ✅ Trang nộp bài
+        //  Trang nộp bài
         public async Task<IActionResult> NopBai(int baiTapId)
         {
             var hocVienClaim = User.Claims.FirstOrDefault(c => c.Type == "HocVienId");
@@ -113,7 +161,7 @@ namespace WebBaiGiang_CKC.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // 🧩 Load danh sách lớp học học viên đã đăng ký (để hiển thị sidebar)
+            //  Load danh sách lớp học học viên đã đăng ký (để hiển thị sidebar)
             var lopHocDangKy = await _context.HocVien_LopHoc
                 .Include(x => x.LopHoc)
                 .Where(x => x.MaHocVien == maHocVien)

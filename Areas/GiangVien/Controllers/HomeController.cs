@@ -31,5 +31,42 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
             return View(lopHocs);
         }
+
+        [HttpGet]
+        [Authorize(Roles = "GiangVien")]
+        public async Task<IActionResult> HoSo()
+        {
+            var s = User.FindFirst("MaTaiKhoan")?.Value
+                    ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int? maTaiKhoan = int.TryParse(s, out var id) ? id : null;
+
+            if (maTaiKhoan == null)
+            {
+                var username = User.FindFirstValue("TenDangNhap") ?? User.Identity?.Name;
+                if (!string.IsNullOrWhiteSpace(username))
+                {
+                    var tk = await _context.TaiKhoanNews
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.TenDangNhap == username);
+                    if (tk != null) maTaiKhoan = tk.MaTaiKhoan;
+                }
+            }
+
+            if (maTaiKhoan == null) return Unauthorized("Không xác định được tài khoản.");
+
+            var giangVien = await _context.GiangViens
+                .AsNoTracking()
+                .AsSplitQuery() // tránh Cartesian explosion khi Include sâu
+                .Include(g => g.TaiKhoan)
+                .Include(g => g.LopHocs!.OrderBy(l => l.TenLopHoc))
+                    .ThenInclude(l => l.KhoaHoc)   // 🔹 quan trọng để có TenKhoaHoc
+                .FirstOrDefaultAsync(g => g.MaTaiKhoan == maTaiKhoan.Value);
+
+            if (giangVien == null)
+                return NotFound("Tài khoản chưa có hồ sơ giảng viên.");
+
+            return View(giangVien);
+        }
     }
+    
 }
