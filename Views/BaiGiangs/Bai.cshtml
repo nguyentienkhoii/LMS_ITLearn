@@ -1,0 +1,359 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.Bai>
+
+@{
+    var lstMon = ViewBag.lstSubject as List<LopHoc>;
+}
+
+<main>
+    <div class="menu-toggle">
+        <a href="#">Menu</a>
+    </div>
+
+    <div class="wrapper">
+        @await Html.PartialAsync("_SidebarMenu")
+
+        <div class="noidung">
+            @foreach (var item in Model)
+            {
+                <!-- Tiêu đề bài giảng -->
+                <h2 class="lesson-title">@item.TenBai</h2>
+                <hr />
+@*                 <p class="lesson-desc">@Html.Raw(@item.MoTa)</p>
+ *@
+                <!-- Mục lục -->
+                <div class="lesson-toc">
+                    <p class="toc-header">
+                        <span>NỘI DUNG BÀI GIẢNG</span>
+                        <a href="javascript:void(0)" class="lwptoc_toggle_label" onclick="toggleContent()">[Ẩn]</a>
+                    </p>
+
+                    <div id="mydiv" class="toc-content">
+                        <ul>
+                            @foreach (var e in item.Mucs)
+                            {
+                                <li><a href="#muc-@e.MucId"><strong>@e.TenMuc</strong></a></li>
+                            }
+
+                            @if (item.BaiTaps != null && item.BaiTaps.Any())
+                            {
+                                @foreach (var bt in item.BaiTaps)
+                                {
+                                    <li><a href="#baitap-@bt.MaBaiTap"><strong>@bt.TenBaiTap</strong></a></li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Nội dung chi tiết -->
+                @foreach (var e in item.Mucs)
+                {
+                    <a id="@($"muc-{e.MucId}")" name="@($"muc-{e.MucId}")"></a>
+                    <h2 class="section-title">@e.TenMuc</h2>
+                    <p class="section-content">@Html.Raw(@e.NoiDung)</p>
+
+                    @if (e.TaiLieus != null && e.TaiLieus.Any())
+                    {
+                        <div class="file-section modern-files">
+                            <h4><i class="fa-solid fa-folder-open text-primary me-2"></i> Tài liệu đính kèm</h4>
+                            <div class="file-list">
+                                @foreach (var f in e.TaiLieus)
+                                {
+                                    string filePath;
+                                    if (string.IsNullOrEmpty(f.FileTaiLieu))
+                                        filePath = "#";
+                                    else if (f.FileTaiLieu.StartsWith("/uploads", StringComparison.OrdinalIgnoreCase))
+                                        filePath = Url.Content(f.FileTaiLieu);
+                                    else
+                                        filePath = Url.Content($"~/uploads/tailieu/{f.FileTaiLieu}");
+
+                                    var fileName = System.IO.Path.GetFileNameWithoutExtension(f.FileTaiLieu);
+                                    var extension = System.IO.Path.GetExtension(f.FileTaiLieu).ToLower();
+                                    string iconClass = "fa-solid fa-file";
+                                    string iconColor = "#6b7280";
+                                    string bgColor = "#f3f4f6";
+
+                                    switch (extension)
+                                    {
+                                        case ".pdf":
+                                            iconClass = "fa-solid fa-file-pdf"; iconColor = "#e11d48"; bgColor = "#fee2e2"; break;
+                                        case ".doc":
+                                        case ".docx":
+                                            iconClass = "fa-solid fa-file-word"; iconColor = "#2563eb"; bgColor = "#dbeafe"; break;
+                                        case ".ppt":
+                                        case ".pptx":
+                                            iconClass = "fa-solid fa-file-powerpoint"; iconColor = "#f97316"; bgColor = "#ffedd5"; break;
+                                        case ".xls":
+                                        case ".xlsx":
+                                            iconClass = "fa-solid fa-file-excel"; iconColor = "#059669"; bgColor = "#d1fae5"; break;
+                                        case ".zip":
+                                        case ".rar":
+                                            iconClass = "fa-solid fa-file-archive"; iconColor = "#6b7280"; bgColor = "#e5e7eb"; break;
+                                    }
+
+                                    <a href="@filePath" download class="file-info text-decoration-none d-flex align-items-center gap-2">
+                                        <div class="file-icon-circle" style="background:@bgColor;">
+                                            <i class="@iconClass" style="color:@iconColor;"></i>
+                                        </div>
+                                        <span>@fileName</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+
+                <!-- 🧩 DANH SÁCH BÀI TẬP -->
+                @if (item.BaiTaps != null && item.BaiTaps.Any())
+                {
+                    <!-- Tiêu đề đồng bộ như tài liệu -->
+                    <a id="baitap-section" name="baitap-section"></a>
+                    <h2 class="section-title">Bài tập</h2>
+
+                    <div class="assignment-section mt-3">
+                        <div class="assignment-list">
+                            @foreach (var bt in item.BaiTaps)
+                            {
+                                <a id="baitap-@bt.MaBaiTap" name="baitap-@bt.MaBaiTap"></a>
+                                <div class="assignment-card">
+                                    <a href="@Url.Action("ChiTiet", "BaiTap", new { baiTapId = bt.MaBaiTap })"
+                                       class="assignment-link d-flex align-items-center">
+                                        <div class="assignment-icon-circle">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </div>
+                                        <span class="assignment-title">@bt.TenBaiTap</span>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="~/assets/js/menu_.js"></script>
+    <script>
+        function toggleContent() {
+            const toc = document.getElementById("mydiv");
+            const toggleLink = document.querySelector(".lwptoc_toggle_label");
+            if (toc.style.display === "none") {
+                toc.style.display = "block";
+                toggleLink.innerText = "[Ẩn]";
+            } else {
+                toc.style.display = "none";
+                toggleLink.innerText = "[Hiện]";
+            }
+        }
+    </script>
+}
+
+<style>
+
+    .lesson-title {
+        color: #1e3a8a;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .lesson-desc {
+        color: #374151;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .lesson-toc {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .toc-header {
+        font-weight: 600;
+        color: #111827;
+        font-size: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .toc-header a {
+            text-decoration: none;
+            font-size: 0.9rem;
+            color: #2563eb;
+        }
+
+            .toc-header a:hover {
+                text-decoration: underline;
+            }
+
+    .toc-content ul {
+        margin-top: 0.75rem;
+        padding-left: 1rem;
+    }
+
+    .toc-content li {
+        list-style: none;
+        margin-bottom: 0.5rem;
+    }
+
+    .toc-content a {
+        color: #1e40af;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+        .toc-content a:hover {
+            color: #4338ca;
+            text-decoration: underline;
+        }
+
+    .section-title {
+        margin-top: 2rem;
+        color: #111827;
+        font-size: 1.4rem;
+        font-weight: 600;
+        border-left: 4px solid #2563eb;
+        padding-left: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-content {
+        margin-top: 0.5rem;
+        line-height: 1.7;
+        color: #374151;
+    }
+
+    /* 📂 File đính kèm */
+    .modern-files {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+        .modern-files h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .file-info {
+        background: #f9fafb;
+        border-radius: 8px;
+        color: #1f2937;
+        transition: background 0.2s ease-in-out;
+        padding: 0.5rem 0.75rem;
+        gap: 10px;
+    }
+
+        .file-info:hover {
+            background: #e0f2fe;
+            text-decoration: none;
+        }
+
+    .file-icon-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+
+    .file-info:hover .file-icon-circle {
+        transform: scale(1.1);
+    }
+
+    /* 📘 DANH SÁCH BÀI TẬP */
+    .assignment-section {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .assignment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .assignment-card {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.25s ease-in-out;
+    }
+
+        .assignment-card:hover {
+            background: #eef2ff;
+            transform: translateY(-2px);
+        }
+
+    .assignment-link {
+        text-decoration: none;
+        color: #1e3a8a;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .assignment-icon-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #dbeafe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+
+        .assignment-icon-circle i {
+            color: #2563eb;
+            font-size: 1rem;
+        }
+
+    .assignment-card:hover .assignment-icon-circle {
+        transform: scale(1.1);
+    }
+
+    .assignment-title {
+        font-size: 1rem;
+        color: #1e3a8a;
+    }
+
+    @@media (max-width: 768px) {
+        .file-card, .assignment-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>

@@ -1,0 +1,213 @@
+﻿@* @model IEnumerable<WebBaiGiang_CKC.Models.LopHoc>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Trang chủ giảng viên";
+}
+
+<div class="container mt-4">
+    <h3 class="fw-bold text-primary mb-4">
+        <i class="fa fa-chalkboard-teacher"></i> Lớp học của tôi
+    </h3>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var lop in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100 border-0 hover-card">
+                        <div class="card-body">
+                            <h5 class="card-title text-dark fw-bold">@lop.TenLopHoc</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="fa fa-layer-group me-1"></i> Khóa học: @lop.KhoaHoc?.TenKhoaHoc
+                            </p>
+                            <p class="small text-secondary">@lop.MoTa</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge bg-info text-dark px-3 py-2">
+                                    <i class="fa fa-users me-1"></i> @lop.SoLuongDangKy học viên
+                                </span>
+                                <a href="@Url.Action("NoiDung", "LopHoc", new { area = "GiangVien", id = lop.MaLopHoc })"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fa fa-door-open"></i> Vào lớp
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="fa fa-exclamation-circle"></i> Bạn chưa được phân công lớp nào.
+        </div>
+    }
+</div>
+
+<style>
+    .hover-card {
+        transition: 0.3s;
+    }
+
+        .hover-card:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-3px);
+        }
+</style>
+ *@
+
+
+@model IEnumerable<WebBaiGiang_CKC.Models.LopHoc>
+@{
+    Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Trang chủ giảng viên";
+}
+
+<div class="container-fluid py-4 px-3">
+    <!-- dùng container-fluid để sát menu -->
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var lop in Model)
+            {
+                var bg = !string.IsNullOrEmpty(lop.AnhLopHoc)
+                ? Url.Content(lop.AnhLopHoc)
+                : Url.Content("~/contents/Images/MonHoc/macdinhnew.png");
+                var link = Url.Action("NoiDung", "LopHoc", new { area = "GiangVien", id = lop.MaLopHoc });
+
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                    <div class="card shadow-sm border-0 rounded-4 overflow-hidden hover-card">
+
+                        <!-- Header -->
+                        <div class="class-header position-relative text-white p-3"
+                             style="background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.6)),
+                                    url('@bg') center/cover no-repeat;">
+                            <h5 class="fw-bold mb-1 text-uppercase">
+                                <a href="@link" class="text-white text-decoration-none hover-title">
+                                    @lop.TenLopHoc
+                                </a>
+                            </h5>
+                            <p class="small mb-0">@lop.KhoaHoc?.TenKhoaHoc</p>
+
+                            <!-- Avatar -->
+                            <div class="position-absolute top-50 end-0 translate-middle-y me-3">
+                                <div class="avatar-circle bg-success text-white fw-bold">
+                                    @lop.GiangVien?.HoTen?.FirstOrDefault()
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="card-body bg-white" style="min-height: 90px;">
+                            <p class="text-secondary small mb-0">@lop.MoTa</p>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-3">
+                                <button class="btn btn-link text-secondary p-0 border-0">
+                                    <i class="fa fa-camera"></i>
+                                </button>
+                                <button class="btn btn-link text-secondary p-0 border-0">
+                                    <i class="fa fa-folder"></i>
+                                </button>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm text-secondary border-0" data-bs-toggle="dropdown">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="@link">
+                                            <i class="fa fa-door-open me-2"></i> Vào lớp
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item text-danger" href="#">Xóa lớp</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">
+            <i class="fa fa-exclamation-circle me-2"></i>Bạn chưa được phân công lớp nào.
+        </div>
+    }
+</div>
+
+<style>
+    /* Card tổng thể */
+    .hover-card {
+        transition: 0.35s ease-in-out;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+        }
+
+    /* Header có ảnh */
+    .class-header {
+        height: 120px;
+        border-top-left-radius: 0.8rem;
+        border-top-right-radius: 0.8rem;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    /* Avatar */
+    .avatar-circle {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 0 0 3px white;
+    }
+
+    /* Khi hover vào tên lớp */
+    .hover-title:hover {
+        text-decoration: underline;
+        color: #dbeafe !important;
+    }
+
+    .card-footer {
+        border-top: none;
+    }
+
+    /* Căn sát menu (bỏ lề container mặc định) */
+    .container-fluid {
+        margin-left: 0;
+        padding-left: 1rem;
+        max-width: 100%;
+    }
+
+    .card-footer i {
+        transition: 0.2s;
+    }
+
+        .card-footer i:hover {
+            color: #007bff;
+        }
+
+    button.btn-link:hover i {
+        color: #007bff;
+    }
+</style>
+
+
+
+
+
+

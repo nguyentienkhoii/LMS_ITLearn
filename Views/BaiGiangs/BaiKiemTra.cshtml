@@ -1,0 +1,328 @@
+﻿@section Scripts {
+    <link rel="stylesheet" href="~/assets/css/BaiKiemTra.css" />
+    <script src="~/assets/js/BaiKiemTra.js"></script>
+}
+@{
+    var tg_tim = ViewBag.TimThoigian;
+    var cauhoi_baiLam = ViewBag.cauhoi_de_mssv as List<CauHoi_BaiLam>;
+    var tenkykiemtra = ViewBag.TenKiKiemTra;
+    var hocVienId = ViewBag.kiemtrasv_id;   
+    var idkykiemtra = ViewBag.IdKiKiemTra;
+}
+<form id="myForm" asp-controller="BaiGiangs" asp-action="NopBai" asp-route-id="@idkykiemtra">
+    <div class="menu" id="menu">
+        <div class="btn-dong" id="btn-dong">
+            <i class="fas fa-times"> </i>
+        </div>
+        <h4>Câu Hỏi</h4>
+        <ul>
+            @for (int i = 0; i < cauhoi_baiLam.Count; i++)
+            {
+                <li>
+                    <a class="question-link" data-question="@i">
+                        @(i + 1)
+                        <span> </span>
+                    </a>
+                </li>
+            }
+        </ul>
+        <hr>
+        <div class="text-center">
+            <button type="button" class="nopbaibtn" data-toggle="modal" data-target="#confirm-dialog">Nộp Bài</button>
+        </div>
+    </div>
+    <div class="content" id="content">
+        <div class="container1">
+            @if (@ViewBag.kiemtrasv_id == hocVienId)
+            {
+                <div style="overflow:hidden;">
+                    <div id="rectangle">
+                        <h1>@tenkykiemtra</h1>
+                        <p>Trắc nghiệm <i class="fa-solid fa-check"></i></p>
+                    </div>
+                    <div id="triangle_left"></div>
+                </div>
+                <div class="kiemtracs">
+                    <div class="thongtin-item">
+                        <span class="tieudethe">Thời gian bắt đầu:</span>
+                        <span class="giatri">@ViewBag.tg_batdau</span>
+                    </div>
+                    <div class="thongtin-item">
+                        <span class="tieudethe">Học viên:</span>
+                        <span class="giatri">@User.Identity.Name (@hocVienId)</span>
+                    </div>
+                    <div class="thongtin-item">
+                        <span class="tieudethe">Thời gian còn lại:</span>
+                        <span class="giatri" id="thoigian-con-lai">@ViewBag.tg_lambai</span>
+                    </div>
+
+                </div>
+
+                <div id="quiz">
+                    @foreach (var cauhoi_kt in cauhoi_baiLam)
+                    {
+                        <a id="@cauhoi_kt.CauHoi_DeId" name="@cauhoi_kt.CauHoi_DeId"></a>
+                        <div class="question-container">
+                            @{
+                                int socau = cauhoi_baiLam.IndexOf(cauhoi_kt);
+                            }
+                            <div class="question" data-question="@socau">
+                                <h3>
+                                    Câu @(socau + 1): @Html.Raw(cauhoi_kt.CauHoi_De.CauHoi.NoiDung)
+                                </h3>
+
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnA))
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="A"
+                                               onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label"
+                                               onclick="$(this).prev().prop('checked', true); handleAnswerChange(); luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'A');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnA
+                                        </label>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnB))
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="B"
+                                               onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label"
+                                               onclick="$(this).prev().prop('checked', true); handleAnswerChange(); luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'B');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnB
+                                        </label>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnC))
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="C"
+                                               onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label"
+                                               onclick="$(this).prev().prop('checked', true); handleAnswerChange(); luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'C');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnC
+                                        </label>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnD))
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="D"
+                                               onchange="luuTruDapAn('@cauhoi_kt.CauHoi_DeId', this.value.toLowerCase())">
+                                        <label class="form-check-label"
+                                               onclick="$(this).prev().prop('checked', true); handleAnswerChange(); luuTruDapAn('@cauhoi_kt.CauHoi_DeId', 'D');">
+                                            @cauhoi_kt.CauHoi_De.CauHoi.DapAnD
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                            @if (cauhoi_baiLam.Count - 1 == socau)
+                            {
+                                <div class="text-center">
+                                    <button type="button" class="nopbaibtn" data-toggle="modal" data-target="#confirm-dialog">Nộp Bài</button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="nutchuyen">
+                    <button type="button" id="prevButton"><i class="fa fa-chevron-left"></i></button>
+                    <button type="button" id="nextButton"><i class="fa fa-chevron-right"></i></button>
+                </div>
+            }
+        </div>
+    </div>
+</form>
+
+<div class="modal" tabindex="-1" role="dialog" id="confirm-dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận nộp bài</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn nộp bài không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Không</button>
+                <button type="submit" class="btn btn-primary" form="myForm" id="confirm-btn-yes">Có</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toggle-menu" id="toggle-menu">
+    <i class="fa-solid fa-chevron-left"></i>
+</div>
+
+<style>
+    .question-link.selected span {
+        background-color: #AAAAAA;
+    }
+</style>
+
+<script>
+    var hocVienId = '@hocVienId';
+
+    function submitForm() {
+        localStorage.clear();
+        document.getElementById("myForm").submit();
+    }
+
+    document.getElementById("myForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        submitForm();
+    });
+
+    setTimeout(function () {
+        submitForm();
+    }, @(((int)tg_tim.TotalMilliseconds)));
+
+    var timee = @(((int)tg_tim.TotalMilliseconds));
+    window.addEventListener("load", function () {
+        if (timee <= 0) {
+            submitForm();
+        }
+    });
+
+    function luuTruDapAn(cauHoiId, dapAn) {
+        localStorage.setItem(hocVienId + '_' + cauHoiId, dapAn);
+    }
+
+    function hiendapan(cauHoiId) {
+        var dapAn = localStorage.getItem(hocVienId + '_' + cauHoiId);
+        if (dapAn !== null) {
+            document.querySelector('input[name="' + cauHoiId + '"][value="' + dapAn.toUpperCase() + '"]').checked = true;
+        }
+    }
+
+    document.querySelectorAll('input[type=radio]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            luuTruDapAn(this.name, this.value);
+        });
+    });
+
+    window.onload = function () {
+        document.querySelectorAll('input[type=radio]').forEach(function (radio) {
+            hiendapan(radio.name);
+        });
+    };
+
+    // Giữ nguyên logic chuyển câu hỏi
+    const questionContainers = document.querySelectorAll('.question-container');
+    const prevButton = document.querySelector('#prevButton');
+    const nextButton = document.querySelector('#nextButton');
+    const questionLinks = document.querySelectorAll('.question-link');
+    let currentQuestion = 0;
+
+    function showQuestion(index) {
+        questionContainers.forEach((container, i) => {
+            container.style.display = (i === index) ? "block" : "none";
+        });
+        prevButton.style.display = (index === 0) ? 'none' : 'block';
+        nextButton.style.display = (index === questionContainers.length - 1) ? 'none' : 'block';
+    }
+
+    function showNextQuestion() {
+        currentQuestion++;
+        if (currentQuestion >= questionContainers.length) currentQuestion = 0;
+        showQuestion(currentQuestion);
+    }
+
+    function showPreviousQuestion() {
+        currentQuestion--;
+        if (currentQuestion < 0) currentQuestion = questionContainers.length - 1;
+        showQuestion(currentQuestion);
+    }
+
+    function showQuestionByLink(event) {
+        event.preventDefault();
+        const questionIndex = parseInt(this.dataset.question);
+        currentQuestion = questionIndex;
+        showQuestion(currentQuestion);
+    }
+
+    function handleAnswerChange() {
+        const currentAnswers = document.querySelectorAll(`.question-container:nth-of-type(${currentQuestion + 1}) input[type=radio]:checked`);
+        const selectedQuestionLink = questionLinks[currentQuestion];
+        if (currentAnswers.length > 0) {
+            selectedQuestionLink.classList.add('selected');
+            localStorage.setItem(`question_${currentQuestion}`, true);
+        } else {
+            selectedQuestionLink.classList.remove('selected');
+            localStorage.removeItem(`question_${currentQuestion}`);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        questionLinks.forEach((link, index) => {
+            if (localStorage.getItem(`question_${index}`) === 'true') {
+                link.classList.add('selected');
+            }
+        });
+    });
+
+    const answerInputs = document.querySelectorAll('input[type=radio]');
+    answerInputs.forEach(input => input.addEventListener('change', handleAnswerChange));
+    questionLinks.forEach(link => link.addEventListener('click', showQuestionByLink));
+    nextButton.addEventListener('click', showNextQuestion);
+    prevButton.addEventListener('click', showPreviousQuestion);
+    showQuestion(currentQuestion);
+
+    $('#confirm-dialog').on('shown.bs.modal', function () {
+        $('#confirm-btn-yes').focus();
+    });
+
+    // ✅ Thêm lại hàm confirmSubmit gốc
+    function confirmSubmit() {
+        $('#confirm-dialog').modal('show');
+
+        $('#confirm-btn-yes').on('click', function () {
+            return true;
+        });
+
+        $('#confirm-dialog').on('hidden.bs.modal', function () {
+            return false;
+        });
+
+        return false;
+    }
+
+    // ================== Hiển thị đồng hồ đếm ngược dạng text ==================
+    (function () {
+        // Lấy tổng thời gian làm bài (TimeSpan -> milliseconds)
+        var totalMs = @(((int)tg_tim.TotalMilliseconds));
+        var countdownEl = document.getElementById("thoigian-con-lai");
+
+        function updateCountdown() {
+            if (totalMs <= 0) {
+                countdownEl.innerText = "00:00:00";
+                clearInterval(timer);
+                return;
+            }
+
+            totalMs -= 1000; // Giảm 1 giây
+
+            var hours = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
+            var minutes = Math.floor((totalMs / (1000 * 60)) % 60);
+            var seconds = Math.floor((totalMs / 1000) % 60);
+
+            countdownEl.innerText =
+                `${hours.toString().padStart(2, '0')}:` +
+                `${minutes.toString().padStart(2, '0')}:` +
+                `${seconds.toString().padStart(2, '0')}`;
+        }
+
+        updateCountdown(); // Hiển thị ngay ban đầu
+        var timer = setInterval(updateCountdown, 1000);
+    })();
+
+
+
+</script>

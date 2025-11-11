@@ -1,0 +1,147 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.BaiTapNop>
+@{
+    Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Danh sách bài nộp";
+    var baiTap = ViewBag.BaiTap as WebBaiGiang_CKC.Models.BaiTap;
+    var lopHoc = ViewBag.LopHoc as WebBaiGiang_CKC.Models.LopHoc;
+}
+
+<div class="row">
+    <!-- 📚 Sidebar trái -->
+    <div class="col-md-2 border-end bg-white">
+        @await Html.PartialAsync("~/Areas/GiangVien/Views/Shared/_SidebarGiangVien.cshtml")
+    </div>
+
+    <!-- 📄 Nội dung chính -->
+    <div class="col-md-10">
+        <div class="container mt-4">
+            <h4 class="fw-bold text-primary mb-4">
+                <i class="fa fa-file-alt"></i> Danh sách bài nộp
+            </h4>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-semibold text-secondary mb-0">
+                                <i class="fa fa-clipboard-list me-2"></i>Bài tập:
+                                <span class="text-dark">@baiTap?.TenBaiTap</span>
+                            </h5>
+                            <small class="text-muted">Lớp: @lopHoc?.TenLopHoc</small>
+                        </div>
+
+                        <a href="@Url.Action("NoiDung", "LopHoc", new { area = "GiangVien", id = lopHoc?.MaLopHoc })"
+                           class="btn btn-secondary btn-sm">
+                            <i class="fa fa-arrow-left me-1"></i> Quay lại lớp học
+                        </a>
+                    </div>
+
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50" class="text-center">#</th>
+                                <th>Học viên</th>
+                                <th width="180">File nộp</th>
+                                <th width="160" class="text-center">Ngày nộp</th>
+                                <th width="100" class="text-center">Lần nộp</th>
+                                <th width="100" class="text-center">Điểm</th>
+                                <th>Nhận xét</th>
+                                <th width="130" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Any())
+                            {
+                                int i = 1;
+                                foreach (var n in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center fw-semibold">@i</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:38px;height:38px;">
+                                                    @n.HocVien?.HoTen?.FirstOrDefault()
+                                                </div>
+                                                <div>
+                                                    <strong>@n.HocVien?.HoTen</strong><br />
+                                                    <small class="text-muted">@n.HocVien?.Email</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(n.FileNop))
+                                            {
+                                                <a href="@n.FileNop" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                                    <i class="fa fa-download me-1"></i> Tải xuống
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted fst-italic">Chưa nộp</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @n.NgayNop?.ToString("dd/MM/yyyy HH:mm")
+                                        </td>
+                                        <td class="text-center">@n.LanNop</td>
+                                        <td class="text-center">
+                                            @if (n.Diem.HasValue)
+                                            {
+                                                <span class="badge bg-success px-3 py-2">@n.Diem</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary px-3 py-2">Chưa chấm</span>
+                                            }
+                                        </td>
+                                        <td>@n.NhanXet</td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("ChamDiem", "BaiTap", new { area = "GiangVien", id = n.MaBaiTapNop })"
+                                               class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                                <i class="fa fa-pen me-1"></i> Chấm
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4 fst-italic">
+                                        <i class="fa fa-info-circle me-2"></i>Chưa có học viên nào nộp bài.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar {
+        font-weight: 600;
+    }
+
+    .col-md-10 {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f5faff;
+        transition: 0.2s ease;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .btn-outline-primary:hover {
+        transform: scale(1.05);
+        transition: 0.2s;
+    }
+</style>

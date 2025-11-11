@@ -1,0 +1,40 @@
+﻿
+@section Scripts{
+    <link rel="stylesheet" href="~/assets/css/HoSo.css" />
+}
+@{
+    var giaovien = ViewBag.Giaovien as List<GiangVien>;
+    var anhDaiDienClaim = User.Claims.FirstOrDefault(c => c.Type == "AnhDaiDien");
+    var anhDaiDien = "";
+    if (anhDaiDienClaim != null)
+    {
+        anhDaiDien = anhDaiDienClaim.Value;
+    }
+}
+
+    <div class="container">
+        <h1 class="title">Giảng viên giảng dạy</h1>
+        @foreach (var itemgv in giaovien)
+        {
+            <div style="overflow:hidden">
+                <div style=" float:left;margin-right:50px; width:250px; text-align:center"  >
+                    @* <img style="width:250px;" src="/contents/Images/GiaoVien/@itemgv.AnhDaiDien" alt="Ảnh đại diện" class="rounded-circle"> *@
+                </div>
+                <section class="personal-information">
+                    <h2>Thông tin giảng viên</h2>
+                    <ul>
+                        <li><strong>Họ tên:</strong> @itemgv.HoTen</li>
+                        <li><strong>Khóa học:</strong> Kiểm thử cho người mới</li>
+                        <li><strong>Email:</strong> @itemgv.Email</li>
+                    </ul>
+
+
+                </section>
+
+            </div>
+            <hr />
+        }
+
+
+
+    </div>

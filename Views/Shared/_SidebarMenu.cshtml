@@ -1,0 +1,202 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var user = HttpContextAccessor.HttpContext?.User;
+    var isAuthenticated = user?.Identity?.IsAuthenticated ?? false;
+    var monHocDangKy = ViewBag.LopHocDangKy as List<WebBaiGiang_CKC.Models.LopHoc>;
+    var activeMenu = ViewBag.ActiveMenu as string;
+    var currentLopHocId = ViewBag.CurrentLopHocId as int?;
+}
+
+<div class="sidebar-container">
+    <div class="menu-toggle" id="menuToggle">
+        <i class="iconoir-menu"></i>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <ul class="menu">
+            @if (isAuthenticated)
+            {
+                <li>
+                    <a asp-controller="Home" asp-action="Index"
+                       class="@(activeMenu == "TrangChu" ? "active" : "")">
+                        <i class="iconoir-home-simple-door"></i> Trang chủ
+                    </a>
+                </li>
+
+                <li class="menu-section">LỚP HỌC CỦA TÔI</li>
+
+                @if (monHocDangKy != null && monHocDangKy.Any())
+                {
+                    foreach (var lop in monHocDangKy)
+                    {
+                        <li>
+                            <a asp-controller="Home" asp-action="LopHoc" asp-route-id="@lop.MaLopHoc"
+                               class="@(currentLopHocId == lop.MaLopHoc ? "active" : "")">
+                                <i class="iconoir-book"></i> @lop.TenVietTat
+                            </a>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="menu-empty">
+                        <i class="iconoir-info-empty"></i> Chưa đăng ký lớp
+                    </li>
+                }
+
+                <li class="menu-section">KHÁC</li>
+                <li>
+                    <a asp-controller="BaiGiangs" asp-action="KyThi"
+                       class="@(activeMenu == "KyThi" ? "active" : "")">
+                        <i class="iconoir-calendar"></i> Kỳ thi
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <a asp-controller="Home" asp-action="Index"
+                       class="@(activeMenu == "TrangChu" ? "active" : "")">
+                        <i class="iconoir-home-simple-door"></i> Trang chủ
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="BaiGiangs" asp-action="KyThi"
+                       class="@(activeMenu == "KyThi" ? "active" : "")">
+                        <i class="iconoir-calendar"></i> Kỳ thi
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<!-- 🧩 Iconoir CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir@latest/css/iconoir.css" />
+
+<style>
+    /* --- Container chung --- */
+    .sidebar-container {
+        position: relative;
+    }
+
+    /* Nút mở menu (mobile) */
+    .menu-toggle {
+        display: none;
+        font-size: 26px;
+        cursor: pointer;
+        color: #126f9a;
+        margin: 12px;
+    }
+
+    /* Sidebar chính */
+    .sidebar {
+        background-color: #eeeeee;
+        width: 250px;
+        border-radius: 0;
+        color: #000;
+        box-shadow: none;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        transition: transform 0.3s ease-in-out;
+        font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    /* Menu item */
+    .menu {
+        list-style: none;
+        padding: 5px 0;
+        margin: 0;
+    }
+
+    .menu-section {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #666;
+        padding: 8px 20px;
+        margin-top: 8px;
+        text-transform: uppercase;
+    }
+
+    .menu li {
+        margin: 4px 12px;
+    }
+
+    .menu a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #222;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 10px 16px;
+        border-radius: 8px;
+        transition: all 0.25s ease;
+        background: transparent;
+    }
+
+        .menu a i {
+            font-size: 20px;
+            color: #444;
+            transition: transform 0.25s ease, color 0.25s ease;
+        }
+
+        .menu a:hover {
+            background-color: #eaeaea;
+            transform: translateX(4px);
+        }
+
+            .menu a:hover i {
+                transform: scale(1.1);
+                color: #126f9a;
+            }
+
+        /* Active link */
+        .menu a.active {
+            background-color: #126f9a;
+            color: #fff !important;
+            font-weight: 600;
+        }
+
+            .menu a.active i {
+                color: #fff !important;
+            }
+
+    /* Khi chưa có lớp */
+    .menu-empty {
+        color: #555;
+        padding: 10px 20px;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Responsive (mobile) */
+    @@media (max-width: 768px) {
+        .menu-toggle {
+            display: block;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transform: translateX(-100%);
+            z-index: 999;
+            background-color: #fff;
+        }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+    }
+</style>
+
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('menuToggle');
+    toggle?.addEventListener('click', () => sidebar.classList.toggle('active'));
+</script>

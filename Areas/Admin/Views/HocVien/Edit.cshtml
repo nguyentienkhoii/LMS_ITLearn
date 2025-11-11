@@ -1,0 +1,74 @@
+﻿@model WebBaiGiang_CKC.Areas.Admin.Controllers.HocVienTaiKhoanVM
+
+@{
+    ViewData["Title"] = "Chỉnh sửa học viên";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="HocVien" asp-action="Index">Quản lý học viên</a></li>
+    <li class="breadcrumb-item active">Chỉnh sửa</li>
+</ol>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0"><i class="fa fa-edit"></i> Cập nhật thông tin học viên</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="MaTaiKhoan" />
+
+            <!-- THÔNG TIN TÀI KHOẢN -->
+            <h5 class="fw-bold text-primary mt-3 mb-2">Thông tin tài khoản</h5>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label asp-for="TenDangNhap" class="form-label">Tên đăng nhập</label>
+                    <input asp-for="TenDangNhap" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="MatKhau" class="form-label">Mật khẩu (để trống nếu không đổi)</label>
+                    <input asp-for="MatKhau" type="password" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="true">Hoạt động</option>
+                        <option value="false">Khóa</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN HỌC VIÊN -->
+            <h5 class="fw-bold text-success mt-4 mb-2">Thông tin học viên</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="HoTen" class="form-label">Họ và tên</label>
+                    <input asp-for="HoTen" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+                    <input asp-for="SoDienThoai" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+                    <input asp-for="DiaChi" class="form-control" />
+                </div>
+            </div>
+
+            <!-- NÚT LƯU -->
+            <div class="text-end mt-4">
+                <a asp-action="Index" class="btn btn-secondary me-2">
+                    <i class="fa fa-arrow-left"></i> Quay lại
+                </a>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fa fa-save"></i> Cập nhật
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

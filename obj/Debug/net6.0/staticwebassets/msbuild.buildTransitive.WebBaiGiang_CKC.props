@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\WebBaiGiang_CKC.props" />
+</Project>

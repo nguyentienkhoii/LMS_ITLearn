@@ -1,0 +1,590 @@
+﻿body {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+}
+
+header {
+    background-color: #252525;
+    color: white;
+    height: 180px;
+}
+
+.mainheder {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.heder1 {
+    height: 90px;
+    padding: 25px;
+    overflow: hidden;
+}
+
+    .heder1 h2 {
+        margin-right: 350px;
+        float: left;
+    }
+
+.heder2 {
+    padding: 25px;
+    background-color: #126f9a;
+    height: 90px;
+    max-width: 100%;
+}
+
+
+.menu-heder1 {
+    display: none;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 36px;
+}
+
+header nav ul {
+    list-style: none;
+}
+
+header nav li {
+    display: inline-block;
+    margin-right: 20px;
+    margin-top: -55px;
+    transition: all 0.5s ease;
+}
+
+header nav a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #fffcfc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+    header nav a:hover {
+        background-color: #333;
+        color: #fff;
+    }
+
+.container-dn {
+    cursor: pointer;
+    top: 10px;
+}
+
+container-dn p {
+    cursor: pointer;
+}
+
+.tensv {
+    top: 10px;
+}
+
+.menu-daidien {
+    cursor: pointer;
+}
+
+.menu-pro a:hover {
+    background-color: #fff;
+    color: black;
+    text-decoration: none;
+}
+
+.menu-pro {
+    position: absolute;
+    background-color: #fff;
+    height: 120px;
+    margin-top: 30px;
+    width: 140px;
+    top: 35px;
+    transition: display 0.5s ease;
+    display: none;
+}
+
+    .menu-pro.active {
+        display: block;
+        transition: all 0.5s ease;
+        /* hiển thị menu-pro khi có lớp active */
+    }
+
+    .menu-pro li {
+        margin-top: 5px;
+        width: 140px;
+        text-align: center;
+        margin-left: -40px;
+    }
+
+    .menu-pro a {
+        color: black;
+        font-size: 17px;
+    }
+
+.baitap ul li {
+    cursor: pointer;
+}
+    .baitap ul li:hover {
+        color: #0077c2;
+    }
+main {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.wrapper {
+    display: flex; /* Sử dụng flexbox layout */
+    height: 100%;
+}
+
+
+.thanh {
+    max-width: 250px;
+    flex-grow: 1;
+    background-color: #eeeeee;
+}
+
+
+    .thanh li {
+        list-style: none;
+    }
+
+.noidung {
+    margin-left: 20px;
+    background-color: #eeeeee;
+    padding: 20px;
+    min-height: 100%;
+    flex-grow: 1;
+    max-width: 1200px;
+}
+
+    .noidung p {
+        font-size: 20px;
+        color: black;
+    }
+
+    .noidung li {
+        list-style: none;
+    }
+
+    .noidung thechuong {
+        background-color: #126f9a;
+        color: #fff;
+    }
+
+    .noidung a {
+        font-size: 20px;
+        color: black;
+    }
+
+.nav-link.active {
+    color: red;
+}
+/*  */
+#mydiv strong {
+    color: black;
+}
+
+.menu-item {
+    position: relative;
+}
+
+
+    .menu-item a {
+        color: #333;
+        display: block;
+        padding: 10px;
+        font-size: 22px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .menu-item a.active {
+            color: #a31f34;
+            font-weight: bold;
+        }
+
+.has-submenu a:after {
+    content: "\25BC";
+    font-size: 0.7em;
+    margin-left: 5px;
+}
+
+.submenu {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.submenu1 {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.submenu-item {
+    border-bottom: 1px solid rgb(241, 241, 241);
+    padding-left: 10px;
+}
+
+.submenu-item1 {
+    border-bottom: 1px solid rgb(241, 241, 241);
+    padding-left: 10px;
+}
+
+.submenu1 li {
+    list-style: none;
+}
+
+.submenu-item a {
+    color: #000000;
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+}
+
+    .submenu-item a:hover {
+        background-color: rgb(241, 241, 241);
+    }
+/*  */
+
+
+
+#courses ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#courses li {
+    margin-bottom: 40px;
+}
+
+#courses h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.course {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #eeeeee;
+}
+
+    .course h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .course p {
+        margin: 0;
+    }
+
+
+/* footer */
+footer {
+    height: 100px;
+    width: 100%;
+    text-align: center;
+    background: #252525;
+    color: #ffffff;
+}
+
+
+
+/*/*loginnnnn    */ /**/
+.container {
+    padding: 2rem 0rem;
+    min-height:650px;
+}
+
+@media(min-width: 576px) {
+    .modal-dialog {
+        max-width: 400px;
+    }
+
+        .modal-dialog.modal-content {
+            padding: 1rem;
+        }
+}
+
+.modal-header.close {
+    margin-top: -1.5rem;
+}
+
+.form-title {
+    margin: -2rem 0rem 2rem;
+}
+
+.btn-round {
+    border-radius: 3rem;
+}
+
+.delimiter {
+    padding: 1rem;
+}
+
+.social-buttons.btn {
+    margin: 0 0.5rem 1rem;
+}
+
+.signup-section {
+    padding: 0.3rem 0rem;
+}
+
+
+/*login */
+.nenlogin {
+    background-color: #eeee;
+    height: 100%;
+    width: 100%;
+    margin-left: -470px;
+    margin-top: -160px;
+    position: fixed;
+}
+
+.close-login {
+    color: black;
+    font-size: 25px;
+    right: 0px;
+}
+
+.login-form {
+    width: 340px;
+    margin: 50px auto;
+    font-size: 15px;
+    margin-left: 750px;
+    margin-top: 20px;
+    position: fixed;
+}
+
+    .login-form form {
+        margin-bottom: 15px;
+        background: #fff;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        padding: 30px;
+        border-radius: 5px;
+    }
+
+    .login-form h2 {
+        margin: 0 0 15px;
+    }
+
+    .login-form.form-control {
+        border-radius: 4px;
+    }
+
+    .login-form.form-group {
+        margin-bottom: 20px;
+    }
+
+    .login-form label {
+        font-weight: bold;
+    }
+
+    .login-form.btn {
+        font-size: 15px;
+        font-weight: bold;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+    }
+
+        .login-form.btn:hover {
+            background-color: #45a049;
+        }
+
+    .login-form a {
+        color: #4CAF50;
+    }
+
+        .login-form a:hover {
+            text-decoration: underline;
+        }
+
+    .login-form.fa {
+        margin-right: 10px;
+    }
+
+    .login-form.social-button {
+        margin-bottom: 15px;
+        background-color: #fff;
+        color: #4CAF50;
+        border: 2px solid #4CAF50;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        text-align: center;
+    }
+
+        .login-form.social-button:hover {
+            background-color: #4CAF50;
+            color: #fff;
+            border-color: #4CAF50;
+        }
+
+
+/*bai kiem tra*/
+.quiz-container {
+    max-width: 800px;
+    margin: 50px auto;
+}
+/*.menu-toggle {
+    display: none;
+}
+*/
+
+
+
+/*cac man hinh*/
+@media screen and (max-width: 768px) {
+    .thanh {
+        display: none;
+        height: 100%;
+        width: 75%;
+        top: 0px;
+        position: fixed;
+        min-height: 200%;
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        left: 0px;
+    }
+
+    .noidung {
+        margin: 10px;
+        margin-top: 30px;
+        min-height: 450px;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 20px;
+        border: 1px solid #333;
+        width: 80px;
+        height: 40px;
+        border-radius: 5px;
+        text-align: center;
+        background-color: #808080;
+    }
+
+        .menu-toggle a {
+            text-decoration: none;
+            color: white;
+        }
+
+    .close-btn {
+        display: block;
+        font-size: 25px;
+        margin-left: 90%;
+    }
+    /*tac menu khi bat dien thoai*/
+    header .mini {
+        display: none;
+        margin-left: 0px;
+        transition: all 0.5s ease;
+    }
+
+    .menu-heder1 {
+        display: block;
+        color: white;
+        width: 50px;
+        font-size: 25px;
+        transition: all 0.5s ease;
+    }
+
+    header nav ul {
+        margin-left: 10px;
+        transition: all 0.5s ease;
+    }
+
+        header nav ul li {
+            transition: all 0.5s ease;
+            padding: 0px;
+            display: flex;
+            margin: 0px;
+        }
+
+    header .heder1 {
+        margin-left: 10px;
+        height: auto;
+        padding: 10px;
+    }
+
+    .heder1 h2 {
+        margin-right: 0px;
+        float: none;
+    }
+
+    header {
+        height: auto;
+    }
+
+        header .heder2 {
+            display: none;
+        }
+
+
+    .menu-pro {
+        position: absolute;
+        background-color: #fff;
+        height: 120px;
+        width: 140px;
+        top: 200px;
+        display: none;
+        transition: display 0.5s ease;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .menu-toggle {
+        display: none;
+    }
+
+    .menu-heder1 {
+        display: none;
+    }
+
+    .thanh {
+    }
+
+    .noidung {
+        min-height: 650px;
+    }
+
+    .close-btn {
+        display: none;
+    }
+
+    .nenlogin {
+        display: none;
+        margin-left: -475px;
+        margin-top: -160px;
+    }
+}
+
+.bookshop h2 
+{
+   
+}
+.noidung img {
+    display: table;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    max-width: 1000px;
+    max-height: 500px;
+}
+.noidung iframe {
+    display: table;
+    margin: 0 auto;
+}
+.noidung pre {
+    background-color:#ccc;
+}

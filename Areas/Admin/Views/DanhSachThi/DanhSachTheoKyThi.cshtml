@@ -1,0 +1,164 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.DanhSachThi>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+     int? kyId = ViewBag.KyKiemTraId is int v ? v : (int?)null;
+    var tenKy = ViewBag.TenKy;
+    var kyList = ViewBag.KyList as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4><i class="fa-solid fa-users"></i> Danh sách thi kỳ thi: - @tenKy</h4>
+        <div class="d-flex align-items-center gap-2">
+            <select id="switchKy" class="form-select form-select-sm">
+            <option value="">-- Chọn kỳ kiểm tra --</option>
+                @foreach (var opt in kyList)
+                {
+                    var isSelected = kyId.HasValue && kyId.Value.ToString() == opt.Value;
+                    if (isSelected)
+                    {
+                        <option value="@opt.Value" selected="selected">@opt.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@opt.Value">@opt.Text</option>
+                    }
+                }
+            </select>
+            <button class="btn btn-light btn-sm" onclick="MoModalThemThiSinh(@kyId)">
+                <i class="fa fa-user-plus"></i> Thêm học viên
+            </button>
+        </div>
+    </div>
+        <div class="card-body" id="dsThiBody">
+            <div id="dsThiTableWrapper">
+                @await Html.PartialAsync("_DanhSachThiTable", Model)
+            </div>
+        </div>
+</div>
+
+</div>
+
+<!-- MODAL THÊM HỌC VIÊN -->
+<div class="modal fade" id="modalThemThiSinh" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fa fa-user-plus"></i> Thêm học viên vào kỳ thi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalContentThemThiSinh">
+                <p class="text-center p-3">Đang tải...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ @* <style>.swal2-container { z-index: 20000 !important; }</style>  *@
+
+  <script>
+    // Helper toast gọn
+    const swalToast = (icon, title) => Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: icon,                // 'success' | 'error' | 'warning' | 'info' | 'question'
+      title: title,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
+    });
+
+    // === Hàm reload bảng (tái sử dụng nhiều nơi) ===
+    window.reloadDanhSachThi = function (kyId) {
+      const $switch   = $('#switchKy');
+      const $wrapper  = $('#dsThiTableWrapper');
+      const $tenKyTxt = $('#tenKyText');
+      const $btnThem  = $('#btnThemHocVien');
+
+      const spinnerHtml = `
+        <div class="text-center p-4">
+          <div class="spinner-border" role="status"></div>
+          <div class="mt-2 text-muted">Đang tải danh sách...</div>
+        </div>`;
+
+      $wrapper.html(spinnerHtml);
+
+      $.get('@Url.Action("DanhSachTheoKyThi_Partial", "DanhSachThi", new { area = "Admin" })',
+            { kyKiemTraId: kyId })
+        .done(function (html) {
+          $wrapper.html(html);
+
+          // Cập nhật tiêu đề & nút
+          const tenKy = $switch.find('option[value="' + kyId + '"]').text();
+          if (tenKy) $tenKyTxt.text(' - ' + tenKy);
+          $btnThem.attr('data-ky', kyId);
+
+          // Cập nhật URL (không reload)
+          const newUrl = '@Url.Action("DanhSachTheoKyThi", "DanhSachThi", new { area = "Admin" })' + '?kyKiemTraId=' + kyId;
+          window.history.replaceState(null, '', newUrl);
+        })
+        .fail(function (xhr) {
+          $wrapper.html(`<div class="alert alert-danger">Lỗi ${xhr.status}: ${xhr.responseText || 'Không tải được danh sách.'}</div>`);
+        });
+    };
+
+    // === Chuyển kỳ nhanh (không reload) ===
+    $('#switchKy').on('change', function () {
+      const kyId = $(this).val();
+      if (kyId) reloadDanhSachThi(kyId);
+    });
+
+    // === Delegation cho checkbox "chọn tất cả" trong modal ===
+    $(document).on('change', '#checkAllHV', function () {
+      $('.chkHocVien').prop('checked', this.checked);
+    });
+
+    // === Lưu thí sinh (AJAX, không reload trang) ===
+    $(document).on('click', '#btnLuuThiSinh', function () {
+      const ids   = $('.chkHocVien:checked').map(function(){ return parseInt(this.value); }).get();
+      const kyId  = parseInt($('#KyKiemTraId').val());
+      const token = $('input[name="__RequestVerificationToken"]').val();
+
+      $.ajax({
+        url: '/Admin/DanhSachThi/CapNhatDanhSachThi',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ kyKiemTraId: kyId, maHocViens: ids }),
+        headers: { 'RequestVerificationToken': token }, // Anti-Forgery
+        success: function (res) {
+          if (res.success) {
+            $('#modalThemThiSinh').modal('hide');
+            $('#modalThemThiSinh').one('hidden.bs.modal', function(){
+            swalToast('success', res.message || 'Cập nhật danh sách thi thành công!');
+            reloadDanhSachThi(kyId);
+            });
+          } else {
+            swalToast('error', res.message || 'Cập nhật thất bại!');
+          }
+        },
+        error: function (xhr) {
+          console.error(xhr);
+          swalToast('error', 'Có lỗi xảy ra khi lưu!');
+        }
+      });
+    });
+
+    // === Hàm mở modal (AJAX GET partial) ===
+    function MoModalThemThiSinh(kyId) {
+      $("#modalContentThemThiSinh").html('<p class="text-center p-3">Đang tải...</p>');
+      $("#modalThemThiSinh").modal('show');
+      $.get('/Admin/DanhSachThi/QuanLyThiSinh_Partial', { kyKiemTraId: kyId })
+        .done(function (html) { $("#modalContentThemThiSinh").html(html); })
+        .fail(function (xhr) {
+          $("#modalContentThemThiSinh").html(
+            `<div class="text-danger p-3">Lỗi ${xhr.status}: ${xhr.responseText || 'Không tải được partial'}</div>`
+          );
+        });
+    }
+    window.MoModalThemThiSinh = MoModalThemThiSinh; // expose global
+  </script>
+}
+

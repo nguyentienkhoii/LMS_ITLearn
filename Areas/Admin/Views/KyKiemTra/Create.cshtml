@@ -1,0 +1,57 @@
+﻿@model WebBaiGiang_CKC.Models.KyKiemTra
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="KyKiemTra" asp-action="Index">Quản lý kỳ kiểm tra</a></li>
+    <li class="breadcrumb-item"><a asp-controller="KyKiemTra" asp-action="Create">Thêm</a></li>
+</ol>
+<h1 style="text-align: center;">THÊM KỲ KIỂM TRA</h1>
+<hr />
+<br />
+<div class="row">
+
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="TenKyKiemTra" class="control-label"></label>
+            <input asp-for="TenKyKiemTra" class="form-control w-100" />
+            <span asp-validation-for="TenKyKiemTra" class="text-danger"></span>
+        </div>
+
+        <br />
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="ThoiGianBatDau" class="control-label"></label>
+            <input asp-for="ThoiGianBatDau" class="form-control w-100" />
+            <span asp-validation-for="ThoiGianBatDau" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="ThoiGianKetThuc" class="control-label"></label>
+            <input asp-for="ThoiGianKetThuc" class="form-control w-100" />
+            <span asp-validation-for="ThoiGianKetThuc" class="text-danger"></span>
+        </div>
+        <br />
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="ThoiGianLamBai" class="control-label"></label>
+            <input asp-for="ThoiGianLamBai" class="form-control w-100" />
+            <span asp-validation-for="ThoiGianLamBai" class="text-danger"></span>
+        </div>
+
+
+        <br>
+        <div class="form-group flex-grow-1 mx-4">
+            <div style="float: left; padding-right:10px">
+                <input type="submit" value="Thêm" class="btn btn-primary" />
+            </div>
+            <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
+        </div>
+    </form>
+
+</div>

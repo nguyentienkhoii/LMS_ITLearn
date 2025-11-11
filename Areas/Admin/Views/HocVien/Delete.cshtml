@@ -1,0 +1,57 @@
+﻿@model WebBaiGiang_CKC.Models.HocVien
+
+@{
+    ViewData["Title"] = "Xóa học viên";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb mt-3">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="HocVien" asp-action="Index">Quản lý học viên</a></li>
+    <li class="breadcrumb-item active">Xóa</li>
+</ol>
+
+<div class="card shadow-sm mt-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Xác nhận xóa học viên
+        </h4>
+    </div>
+
+    <div class="card-body">
+        <p class="alert alert-warning">
+            <i class="fa fa-exclamation-circle"></i>
+            Bạn có chắc chắn muốn xóa học viên này không? Hành động này <strong>không thể hoàn tác</strong>.
+        </p>
+
+        <dl class="row mb-3">
+            <dt class="col-sm-3">Họ tên</dt>
+            <dd class="col-sm-9">@Model.HoTen</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.Email</dd>
+
+            <dt class="col-sm-3">Số điện thoại</dt>
+            <dd class="col-sm-9">@Model.SoDienThoai</dd>
+
+            <dt class="col-sm-3">Địa chỉ</dt>
+            <dd class="col-sm-9">@Model.DiaChi</dd>
+
+            <dt class="col-sm-3">Tên đăng nhập</dt>
+            <dd class="col-sm-9">@Model.TaiKhoan?.TenDangNhap</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="MaHocVien" />
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-danger me-2">
+                    <i class="fa fa-trash"></i> Xóa
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,88 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.KyKiemTra>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="KyKiemTra" asp-action="Index">Quản lý kỳ kiểm tra</a></li>
+
+</ol>
+<h1 style="text-align: center;">QUẢN LÝ KỲ KIỂM TRA</h1>
+<hr />
+<br />
+<div class="d-flex justify-content-between">
+    <a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+    <div class="ml-auto">
+        <button type="button" class="btn btn-info mb-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            Import File Excel
+        </button>
+        <a asp-action="DownloadExcel" class="btn btn-danger mb-2">Down File Excel</a>
+    </div>
+</div>
+@await Html.PartialAsync("_PartialViewCreateList", new WebBaiGiang_CKC.Models.DanhSachThi())
+
+<table class="table table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+            <th>
+                @Html.DisplayNameFor(model => model.KyKiemTraId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TenKyKiemTra)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.ThoiGianBatDau)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ThoiGianKetThuc)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.ThoiGianLamBai)
+            </th>
+            <th>
+               
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.KyKiemTraId)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenKyKiemTra)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.ThoiGianBatDau)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ThoiGianKetThuc)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.ThoiGianLamBai)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.KyKiemTraId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
+                    <a asp-action="Edit" asp-route-id="@item.KyKiemTraId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.KyKiemTraId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                    <a asp-action="ExportExcel" asp-route-kykiemtraid="@item.KyKiemTraId" class="action-icon">
+                        <i class="uil-down-arrow" style="color: steelblue;"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Pagination with icons -->

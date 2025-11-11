@@ -1,0 +1,101 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@model IPagedList<WebBaiGiang_CKC.Models.CauHoi>
+
+@{
+    ViewData["Title"] = "Quản lý kho câu hỏi";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item active">Quản lý kho câu hỏi</li>
+</ol>
+
+<h1 class="text-center">QUẢN LÝ KHO CÂU HỎI</h1>
+<hr />
+<br />
+
+<div class="d-flex justify-content-between">
+    <a asp-action="Create" class="btn btn-success mb-2">Thêm câu hỏi</a>
+
+    <div class="ml-auto">
+        <button type="button" class="btn btn-info mb-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            Import File Excel
+        </button>
+        <a asp-action="DownloadExcel" class="btn btn-danger mb-2">Tải File Excel Mẫu</a>
+    </div>
+</div>
+
+@await Html.PartialAsync("_PartialViewCreateList", new WebBaiGiang_CKC.Models.CauHoi())
+
+<table class="table table-striped table-bordered text-center align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Lớp học</th>
+            <th>Chương</th>
+            <th>Nội dung câu hỏi</th>
+            <th>Đáp án A</th>
+            <th>Đáp án B</th>
+            <th>Đáp án C</th>
+            <th>Đáp án D</th>
+            <th>Độ khó (%)</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ChuongNew?.LopHoc?.TenLopHoc</td>
+                    <td>@item.ChuongNew?.TenChuong</td>
+                    <td>@Html.Raw(item.NoiDung)</td>
+                    <td>@item.DapAnA</td>
+                    <td>@item.DapAnB</td>
+                    <td>@item.DapAnC</td>
+                    <td>@item.DapAnD</td>
+                    <td>@item.DoKho</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.CauHoiId" class="action-icon" title="Xem chi tiết">
+                            <i class="mdi mdi-eye" style="color:#19b6ff;font-size:22px;"></i>
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@item.CauHoiId" class="action-icon" title="Chỉnh sửa">
+                            <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:22px;"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.CauHoiId" class="action-icon" title="Xóa">
+                            <i class="mdi mdi-delete" style="color:#e75555;font-size:22px;"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="8" class="text-center text-muted">Chưa có câu hỏi nào trong cơ sở dữ liệu.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-end mt-3">
+    <ul class="pagination">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+                 new PagedListRenderOptions
+        {
+            ActiveLiElementClass = "active",
+            PageClasses = new[] { "page-link" },
+            LiElementClasses = new[] { "page-item" },
+            UlElementClasses = new[] { "pagination", "justify-content-center" },
+            LinkToNextPageFormat = "Sau",
+            LinkToPreviousPageFormat = "Trước",
+            MaximumPageNumbersToDisplay = 3,
+            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+            DisplayLinkToNextPage = PagedListDisplayMode.Always
+        })
+    </ul>
+</div>

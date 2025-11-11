@@ -1,0 +1,230 @@
+﻿@model WebBaiGiang_CKC.Models.LopHoc
+@{
+    ViewData["Title"] = Model.TenLopHoc;
+}
+
+<main>
+    @if (ViewBag.IsRegistered == true)
+    {
+        <!-- Phần đã đăng ký (giữ nguyên menu) -->
+        <div class="menu-toggle"> <a href="#">Menu</a> </div>
+        <div class="wrapper">
+            @await Html.PartialAsync("_SidebarMenu")
+            <div class="noidung">
+                <h2>@Model.TenLopHoc</h2>
+                <hr />
+
+                @foreach (var chuong in Model.Chuongs)
+                {
+                    <h3 class="thechuong">
+                        @chuong.TenChuong
+                    </h3>
+
+                    @foreach (var bai in chuong.Bais)
+                    {
+                        <a asp-controller="BaiGiangs"
+                           asp-action="Bai"
+                           asp-route-monHocId="@Model.MaLopHoc"
+                           asp-route-chuongId="@chuong.MaChuong"
+                           asp-route-baiId="@bai.BaiId">
+                            <p class="bai-item">@bai.TenBai</p>
+                        </a>
+                        <hr />
+                    }
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Phần chưa đăng ký -->
+        <div class="wrapper-no-menu">
+            <div class="noidung-with-button">
+                <div class="content-area">
+                    <h2>@Model.TenLopHoc</h2>
+                    <hr />
+
+                    <div class="alert alert-warning">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Bạn chưa đăng ký môn học này</h4>
+                        <p>Vui lòng đăng ký để xem toàn bộ nội dung bài giảng.</p>
+                    </div>
+
+                    
+
+                    <!-- Phần xem trước chương trình học -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h3>Nội dung môn học</h3>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Chuongs == null || !Model.Chuongs.Any())
+                            {
+                                <p class="alert alert-info">Chưa có bài học nào cho môn học này.</p>
+                            }
+                            else
+                            {
+                                @foreach (var chuong in Model.Chuongs)
+                                {
+                                    <div class="mb-4">
+                                        <h4 class="thechuong">
+                                            @chuong.TenChuong
+                                        </h4>
+
+                                        <div class="bai-container">
+                                            @foreach (var bai in chuong.Bais)
+                                            {
+                                                <div class="bai-locked">
+                                                    <i class="fas fa-lock"></i> @bai.TenBai
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-button-area">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form method="post" action="/Home/RegisterMonHoc" onsubmit="return confirmRegister()">
+                            <input type="hidden" name="id" value="@Model.MaLopHoc" />
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-book"></i> Đăng ký học
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button data-toggle="modal"
+                                data-target="#loginModal"
+                                class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Đăng ký học
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal đăng nhập -->
+        @await Html.PartialAsync("~/Views/PartialView/_DangNhap.cshtml")
+    }
+</main>
+
+@section Scripts {
+    <script src="~/assets/js/menu_.js"></script>
+    <script>
+        function confirmRegister() {
+            return confirm("Bạn có chắc chắn muốn đăng ký môn học này không?");
+        }
+
+        $(document).ready(function () {
+            $('#loginModal').on('hidden.bs.modal', function () {
+                if ($('#loginSuccess').val() === 'true') {
+                    location.reload();
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .thechuong {
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        background-color: #126f9a;
+        color: white;
+    }
+
+    .bai-item {
+        padding-left: 50px;
+    }
+
+    .wrapper-no-menu {
+        display: flex;
+        justify-content: center;
+    }
+
+    .noidung-with-button {
+        display: flex;
+        max-width: 1200px;
+        width: 100%;
+        gap: 20px;
+    }
+
+    .content-area {
+        flex: 1;
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .register-button-area {
+        width: 250px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        align-self: flex-start;
+        position: sticky;
+        top: 20px;
+    }
+
+        .register-button-area .btn {
+            background-color: #126f9a;
+            border-color: #126f9a;
+            width: 100%;
+        }
+
+    .card {
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-color: #126f9a;
+    }
+
+    .card-header {
+        background-color: #126f9a;
+        color: white;
+    }
+
+    .bai-container {
+        padding-left: 50px;
+    }
+
+    .bai-locked {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        color: #777;
+    }
+
+        .bai-locked i {
+            color: #ccc;
+            margin-right: 10px;
+        }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+        color: #856404;
+    }
+
+    .decuong-content {
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+
+        .decuong-content p {
+            margin-bottom: 10px;
+        }
+
+        .decuong-content ul, .decuong-content ol {
+            padding-left: 20px;
+        }
+</style>

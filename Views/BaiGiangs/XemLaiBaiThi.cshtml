@@ -1,0 +1,133 @@
+﻿@section Scripts {
+    <link rel="stylesheet" href="~/assets/css/BaiKiemTra.css" />
+    <script src="~/assets/js/BaiKiemTra.js"></script>
+}
+@{
+    var tg_tim = ViewBag.TimThoigian;
+    var cauhoi_baiLam = ViewBag.cauhoi_de_mssv as List<CauHoi_BaiLam>;
+    var tenkikiemtra = ViewBag.TenKiKiemTra;
+}
+@{
+    // 🟢 Thay vì lấy MSSV claim, ta lấy HocVienId
+    var hocVienIdClaim = User.Claims.FirstOrDefault(c => c.Type == "HocVienId");
+    var hocVienId = "";
+    if (hocVienIdClaim != null)
+    {
+        hocVienId = hocVienIdClaim.Value;
+    }
+}
+
+<div class="menu" id="menu">
+    <div class="btn-dong" id="btn-dong">
+        <i class="fas fa-times"> </i>
+    </div>
+    <h4>Câu Hỏi</h4>
+    <ul>
+        @for (int i = 0; i < cauhoi_baiLam.Count; i++)
+        {
+            <li>
+                <a href="#@cauhoi_baiLam[i].CauHoi_DeId">
+                    @(i + 1)
+                    <span style="@((cauhoi_baiLam[i].DapAnSVChon != "X") ? "background-color: #AAAAAA;" : "")"> </span>
+                </a>
+            </li>
+        }
+    </ul>
+</div>
+
+<div class="content" id="content">
+    <div class="container1">
+        @* 🟢 So sánh bằng HocVienId thay vì MSSV *@
+        @if (ViewBag.kiemtrasv_id.ToString() == hocVienId)
+        {
+            <div style="overflow:hidden;">
+                <div id="rectangle">
+                    <h1>@tenkikiemtra</h1>
+                    <p>Trắc nghiệm <i class="fa-solid fa-check"></i></p>
+                </div>
+                <div id="triangle_left"></div>
+            </div>
+
+            <div class="kiemtracs">
+                <div style="overflow:hidden;">
+                    <p class="tieudethe">Bắt đầu vào lúc:</p>
+                    <p>@ViewBag.tg_batdau</p>
+                </div>
+                <div style="overflow:hidden;">
+                    <p class="tieudethe">Kết thúc lúc:</p>
+                    <p>@ViewBag.tg_ketthuc</p>
+                </div>
+                <div style="overflow:hidden;">
+                    <p class="tieudethe">Họ và tên:</p>
+                    <p>@User.Identity.Name</p>
+                </div>
+                <div style="overflow:hidden;">
+                    <p class="tieudethe">Mã học viên:</p> @* 🟢 Thay “MSSV” *@
+                    <p>@hocVienId</p>
+                </div>
+            </div>
+
+            @foreach (var cauhoi_kt in cauhoi_baiLam)
+            {
+                <a id="@cauhoi_kt.CauHoi_DeId" name="@cauhoi_kt.CauHoi_DeId"></a>
+                <div class="question" data-question="1">
+                    <h3>
+                        Câu @(cauhoi_baiLam.IndexOf(cauhoi_kt) + 1):
+                        @Html.Raw(cauhoi_kt.CauHoi_De.CauHoi.NoiDung)
+                    </h3>
+
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnA))
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="A" @(cauhoi_kt.DapAnSVChon == "A" ? "checked" : "") disabled />
+                            <label class="form-check-label">
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnA
+                            </label>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnB))
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="B" @(cauhoi_kt.DapAnSVChon == "B" ? "checked" : "") disabled />
+                            <label class="form-check-label">
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnB
+                            </label>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnC))
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="C" @(cauhoi_kt.DapAnSVChon == "C" ? "checked" : "") disabled />
+                            <label class="form-check-label">
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnC
+                            </label>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(cauhoi_kt.CauHoi_De.CauHoi.DapAnD))
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="@cauhoi_kt.CauHoi_DeId" value="D" @(cauhoi_kt.DapAnSVChon == "D" ? "checked" : "") disabled />
+                            <label class="form-check-label">
+                                @cauhoi_kt.CauHoi_De.CauHoi.DapAnD
+                            </label>
+                        </div>
+                    }
+
+                    @* 🟢 Hiển thị đáp án đúng (tuỳ chọn) *@
+                    <p class="text-success mt-2">
+                        Đáp án đúng: <strong>@cauhoi_kt.CauHoi_De.CauHoi.DapAnDung</strong>
+                        Đáp án chọn: <strong>@cauhoi_kt.DapAnSVChon</strong>
+                    </p>
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="nopbaibtn">Trang chủ</a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="toggle-menu" id="toggle-menu">
+    <i class="fa-solid fa-chevron-left"></i>
+</div>

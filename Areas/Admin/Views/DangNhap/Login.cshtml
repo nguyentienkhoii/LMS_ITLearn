@@ -1,0 +1,183 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Đăng Nhập | ASP.NET CORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+    <meta content="Coderthemes" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="~/AdminAssets/images/favicon.ico">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- App css -->
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style" />
+    <link href="~/AdminAssets/css/app-dark.min.css" rel="stylesheet" type="text/css" id="dark-style" />
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.js"></script>
+</head>
+
+<body class="loading authentication-bg" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+    <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xxl-4 col-lg-5">
+                    <div class="card">
+
+                        <!-- Logo -->
+                        <div class="card-header pt-4 pb-4 text-center bg-primary">
+                            <a href="index.html">
+                                <span><img src="~/AdminAssets/images/logo.png" alt="" height="18"></span>
+                            </a>
+                        </div>
+
+                        <div class="card-body p-4"ng-app="myLoginApp" ng-controller="LoginController">
+
+                            <div class="text-center w-75 m-auto">
+                                <h4 class="text-dark-50 text-center pb-0 fw-bold">Đăng nhập</h4>
+
+                            </div>
+
+                            <form ng-submit="login()">
+
+                                <div class="mb-3">
+                                    <label  class="form-label">Tên đăng nhập</label>
+                                    <input class="form-control" ng-model="tendangnhap" placeholder="Nhập tên đăng nhập" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <a asp-area="Admin" asp-controller="DangNhap" asp-action="QuenMatKhau" class="text-muted float-end"><small>Quên mật khẩu?</small></a>
+                                    <label  class="form-label">Mật khẩu</label>
+                                    <div class="input-group input-group-merge">
+                                        <input type="password" id="password" ng-model="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                                        <div class="input-group-text" data-password="false">
+                                            <span class="password-eye"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="checkbox-signin" checked>
+                                        <label class="form-check-label" for="checkbox-signin">Nhớ mật khẩu</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 mb-0 text-center">
+                                    <button class="btn btn-primary" type="submit"> Đăng nhập </button>
+                                </div>
+
+                            </form>
+                        </div> <!-- end card-body -->
+                    </div>
+                    <!-- end card -->
+                    <!-- end row -->
+
+                </div> <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end container -->
+    </div>
+    <!-- end page -->
+    <!-- Modal thành công -->
+@*    <div class="modal fade" id="success-modal" tabindex="-1" role="dialog" aria-labelledby="success-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="success-modal-label">Thông báo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Chúc mừng bạn mật khẩu thành công  </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Script để hiển thị modal -->
+    <script>
+        var successMessage = sessionStorage.getItem('successMessage');
+        var errorMessage = sessionStorage.getItem('errorMessage');
+        if (successMessage) {
+            $('#success-modal').modal('show');
+            sessionStorage.removeItem('successMessage');
+        }
+        if (errorMessage) {
+            $('#error-modal').modal('show');
+            sessionStorage.removeItem('errorMessage');
+        }
+    </script>*@
+
+    <footer class="footer footer-alt">
+        2025 © Nhóm 21
+    </footer>
+    <script>
+        var app = angular.module('myLoginApp', []);
+        app.controller('LoginController', function ($scope, $http, notyf, $window) {
+            $scope.login = function () {
+                $http.post('/api/authentication/logingv', { mssv: $scope.tendangnhap, password: $scope.password })
+                    .then(function (response) {
+                        notyf.success('Đăng nhập thành công.');
+                        $window.location.href = '/Admin';
+                    })
+                    .catch(function (error) {
+                        notyf.error('Đăng nhập thất bại.');
+                    });
+            };
+        });
+
+        app.factory('notyf', function () {
+            return new Notyf({
+                duration: 3000,
+                position: {
+                    x: 'right',
+                    y: 'top',
+                },
+                types: [
+                    {
+                        type: 'success',
+                        background: '#00b300',
+                        icon: {
+                            className: 'material-icons',
+                            tagName: 'i',
+                            text: 'check_circle',
+                            color: 'white',
+                        },
+                    },
+                    {
+                       type: 'error',
+                background: '#ff4d4d',
+                icon: {
+                    className: 'material-icons',
+                    tagName: 'i',
+                            text: 'cancel',
+                    color: 'white',
+                },
+                    },
+
+                ],
+            });
+        });</script>
+    <!-- bundle -->
+    <script src="~/AdminAssets/js/vendor.min.js"></script>
+    <script src="~/AdminAssets/js/app.min.js"></script>
+   
+    @await Component.InvokeAsync("Notyf")
+</body>
+</html>

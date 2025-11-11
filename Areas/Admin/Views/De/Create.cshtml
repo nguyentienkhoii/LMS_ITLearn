@@ -1,0 +1,133 @@
+﻿@model WebBaiGiang_CKC.Models.De
+
+@{
+    ViewData["Title"] = "Thêm đề thi";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="De" asp-action="Index">Quản lý đề</a></li>
+    <li class="breadcrumb-item active">Thêm</li>
+</ol>
+
+<h1 class="text-center mb-4">THÊM ĐỀ THI</h1>
+<hr />
+
+<div class="row">
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <!-- Kỳ kiểm tra -->
+        <div class="form-group flex-grow-1 mx-4 mb-3">
+            <label asp-for="KyKiemTraId" class="control-label fw-bold">Kỳ kiểm tra</label>
+            <select asp-for="KyKiemTraId" class="form-select" asp-items="ViewBag.KyKiemTraId" id="KyKiemTraSelect">
+                <option value="">-- Chọn kỳ kiểm tra --</option>
+            </select>
+        </div>
+
+        <!-- Lớp học -->
+        <div class="form-group flex-grow-1 mx-4 mb-3" id="LopHocContainer" style="display:none;">
+            <label class="control-label fw-bold">Lớp học</label>
+            @{
+                var dsLop = ViewBag.LopHoc as IEnumerable<WebBaiGiang_CKC.Models.LopHoc> ?? new List<WebBaiGiang_CKC.Models.LopHoc>();
+            }
+            <select id="LopHocSelect" class="form-select">
+                <option value="">-- Chọn lớp học --</option>
+                @foreach (var lop in dsLop)
+                {
+                    <option value="@lop.MaLopHoc">@lop.TenLopHoc</option>
+                }
+            </select>
+
+        </div>
+
+        <!-- Số câu hỏi -->
+        <div class="form-group flex-grow-1 mx-4 mb-3">
+            <label asp-for="SoCauHoi" class="control-label fw-bold"></label>
+            <input asp-for="SoCauHoi" class="form-control" id="SoCauHoi" required oninput="hienThiFormNhapCauHoi()" />
+            <span asp-validation-for="SoCauHoi" class="text-danger"></span>
+        </div>
+
+        <div id="form-nhap-cau-hoi" class="mx-4" style="display:none;"></div>
+
+        <!-- Độ khó -->
+        <div class="form-group flex-grow-1 mx-4 mt-3">
+            <label asp-for="DoKhoDe" class="control-label fw-bold"></label>
+            <input asp-for="DoKhoDe" class="form-control" required />
+            <span asp-validation-for="DoKhoDe" class="text-danger"></span>
+        </div>
+
+        <div class="form-group flex-grow-1 mx-4 mt-4">
+            <button type="submit" class="btn btn-primary">Thêm</button>
+            <a class="btn btn-secondary" asp-action="Index">Quay lại</a>
+        </div>
+    </form>
+</div>
+
+@section scripts {
+    <script>
+        let danhSachChuong = [];
+        let lopHocDaChon = null;
+
+        // Khi chọn kỳ kiểm tra → hiển thị danh sách lớp
+        $('#KyKiemTraSelect').on('change', function () {
+            const kyId = $(this).val();
+            if (kyId) {
+                $('#LopHocContainer').show();
+            } else {
+                $('#LopHocContainer').hide();
+                $('#form-nhap-cau-hoi').hide();
+            }
+        });
+
+        // Khi chọn lớp học → gọi danh sách chương
+        $('#LopHocSelect').on('change', function () {
+            lopHocDaChon = $(this).val();
+            $('#form-nhap-cau-hoi').hide();
+            danhSachChuong = [];
+
+            if (!lopHocDaChon) return;
+
+            $.ajax({
+                url: '/Admin/De/LayDanhSachChuongTheoLop',
+                type: 'GET',
+                data: { maLop: lopHocDaChon },
+                success: function (data) {
+                    danhSachChuong = data;
+                    if (data.length === 0) {
+                        $('#form-nhap-cau-hoi').html('<p class="text-muted">Không có chương nào có câu hỏi trong lớp này.</p>').show();
+                    }
+                },
+                error: function () {
+                    alert('Không lấy được danh sách chương.');
+                }
+            });
+        });
+
+        // Khi nhập số câu hỏi → hiển thị danh sách chương tương ứng
+        function hienThiFormNhapCauHoi() {
+            const soCauHoi = parseInt($('#SoCauHoi').val());
+            const formNhap = $('#form-nhap-cau-hoi');
+
+            if (isNaN(soCauHoi) || soCauHoi <= 0 || !lopHocDaChon || danhSachChuong.length === 0) {
+                formNhap.hide();
+                return;
+            }
+
+            let html = '';
+            danhSachChuong.forEach(chuong => {
+                html += `
+                        <div class="form-group mt-3">
+                            <label for="CauHoiChuong${chuong.maChuong}">
+                                Nhập số câu hỏi cho chương <b>${chuong.tenChuong}</b>
+                            </label>
+                            <input type="number" id="CauHoiChuong${chuong.maChuong}"
+                                   name="CauHoiChuong${chuong.maChuong}"
+                                   class="form-control" min="0" required />
+                        </div>`;
+            });
+            formNhap.html(html).show();
+        }
+    </script>
+}

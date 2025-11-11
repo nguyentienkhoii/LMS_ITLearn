@@ -1,0 +1,28 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.LopHoc>
+
+<ul class="side-nav-second-level">
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var lop in Model)
+        {
+            <li>
+                <a asp-area="GiangVien"
+                   asp-controller="LopHoc"
+                   asp-action="NoiDung"
+                   asp-route-id="@lop.MaLopHoc"
+                   class="side-nav-link d-flex align-items-center gap-2">
+                    <i class="uil-window text-info"></i>
+                    <span>@lop.TenVietTat</span>
+                </a>
+            </li>
+        }
+    }
+    else
+    {
+        <li>
+            <span class="text-muted ps-2">
+                <i class="uil-exclamation-circle"></i> Không có lớp học nào
+            </span>
+        </li>
+    }
+</ul>

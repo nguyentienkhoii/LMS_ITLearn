@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@{
+    ViewBag.Title = "File Manager";
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="HinhAnh" asp-action="Index">Quản lý hình ảnh</a></li>
+
+</ol>
+<h1 style="text-align: center;">QUẢN LÝ HÌNH ẢNH</h1>
+<hr />
+<br />
+<div id="elfinder"></div>
+
+@section scripts {
+    <script type="text/javascript">
+        // Documentation for client options:
+        // https://github.com/Studio-42/elFinder/wiki/Client-configuration-options
+        $(document).ready(function () {
+            var myCommands = elFinder.prototype._options.commands;
+
+            // Not yet implemented commands in elFinder.NetCore
+            var disabled = ['callback', 'chmod', 'editor', 'netmount', 'ping', 'zipdl', 'help'];
+            elFinder.prototype.i18.en.messages.TextArea = "Edit";
+
+            $.each(disabled, function (i, cmd) {
+                (idx = $.inArray(cmd, myCommands)) !== -1 && myCommands.splice(idx, 1);
+            });
+
+            var options = {
+                baseUrl: "@Url.Content("/lib/elfinder/")",
+                url: "@Url.Action("Connector")",
+                soundPath: '/',
+                rememberLastDir: false,
+                commands: myCommands,
+                lang: 'vi',
+                uiOptions: {
+                    toolbar: [
+                        ['back', 'forward'],
+                        ['reload'],
+                        ['home', 'up'],
+                        ['mkdir', 'mkfile', 'upload'],
+                        ['open', 'download'],
+                        ['undo', 'redo'],
+                        ['info'],
+                        ['quicklook'],
+                        ['copy', 'cut', 'paste'],
+                        ['rm'],
+                        ['duplicate', 'rename', 'edit'],
+                        ['selectall', 'selectnone', 'selectinvert'],
+                        ['view', 'sort'],
+                        ['search']
+                    ]
+                },
+                //onlyMimes: ["image", "text/plain"] // Get files of requested mime types only
+                lang: 'vi',
+            };
+            $('#elfinder').elfinder(options).elfinder('instance');
+        });
+
+    </script>
+}
+

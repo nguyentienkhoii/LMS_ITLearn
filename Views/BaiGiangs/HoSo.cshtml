@@ -1,0 +1,194 @@
+﻿@using WebBaiGiang_CKC.Models
+@{
+    ViewData["Title"] = "Hồ sơ học viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var hocVienIdClaim = User.Claims.FirstOrDefault(c => c.Type == "HocVienId");
+    var emailClaim = User.Claims.FirstOrDefault(c => c.Type == "Email");
+
+    int maHocVien = 0;
+    string email = "";
+    string hoTen = User.Identity?.Name ?? "";
+
+    if (hocVienIdClaim != null)
+        int.TryParse(hocVienIdClaim.Value, out maHocVien);
+    if (emailClaim != null)
+        email = emailClaim.Value;
+
+    var danhSachThiList = ViewBag.kiemtra as List<DanhSachThi>;
+}
+@section Scripts {
+    <link rel="stylesheet" href="~/assets/css/HoSo.css" />
+}
+
+<div class="container">
+    <h1 class="title">HỒ SƠ HỌC VIÊN</h1>
+    <div style="overflow:hidden">
+        <div style="float:left;margin-right:50px;" class="container-dn" id="container-dn">
+            @if (!string.IsNullOrEmpty(hoTen))
+            {
+                var initial = hoTen.Split(' ').LastOrDefault()?.Substring(0, 1).ToUpper() ?? "U";
+                <svg xmlns="http://www.w3.org/2000/svg" width="170px" height="170px" viewBox="0 0 64 64">
+                    <circle fill="#0098a6" cx="32" cy="32" r="32" />
+                    <text x="50%" y="50%" alignment-baseline="middle" text-anchor="middle"
+                          font-size="26" font-weight="bold" dy=".1em" fill="#ffffff">
+                        @initial
+                    </text>
+                </svg>
+            }
+        </div>
+
+        <section class="personal-information">
+            <h2>Thông tin cá nhân</h2>
+            <ul>
+                <li><strong>Họ tên:</strong> @hoTen</li>
+                <li><strong>Mã học viên:</strong> @maHocVien</li>
+                <li><strong>Email:</strong> @email</li>
+            </ul>
+
+            <button type="button" style="margin-left:50px;" class="btn btn-info btn-round" data-toggle="modal" data-target="#resetModal">
+                Đổi mật khẩu
+            </button>
+
+            <!-- Modal đổi mật khẩu -->
+            <div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header border-bottom-0">
+                            <button style="color:black" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-title text-center">
+                                <h3 style="color:black">Đổi mật khẩu</h3>
+                            </div>
+                            <div class="d-flex flex-column text-center" ng-app="myDoiMatKhauApp" ng-controller="doimatkhaujs">
+                                <form ng-submit="doimatkhau()">
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" ng-model="currentPassword" placeholder="Mật khẩu hiện tại" />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" ng-model="newPassword" placeholder="Mật khẩu mới" />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" ng-model="confirmPassword" placeholder="Xác nhận mật khẩu" />
+                                    </div>
+                                    <button type="button" class="btn btn-info btn-block btn-round"
+                                            ng-click="doimatkhau(); showModal = false;" data-dismiss="modal">
+                                        Đổi mật khẩu
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section class="education">
+        <h2>CÁC BÀI KIỂM TRA</h2>
+        <hr />
+
+        @if (danhSachThiList != null && danhSachThiList.Any())
+        {
+            foreach (var item in danhSachThiList.Where(x => x.HocVien.MaHocVien == maHocVien && x.TrangThai == true))
+            {
+                // Tổng số câu hỏi trong tất cả các đề của kỳ thi
+                var soCauHoi = item.KyKiemTra.De.Sum(d => d.SoCauHoi);
+
+                // Tìm bài làm của học viên trong tất cả các đề
+                var baiLam = item.KyKiemTra.De
+                .SelectMany(d => d.CauHoi_DeThi)      // ✅ đúng property của model
+                .SelectMany(cd => cd.CauHoi_BaiLam)
+                .Select(cb => cb.BaiLam)
+                .FirstOrDefault(bl => bl != null && bl.MaHocVien == maHocVien);
+
+                var soCauDung = baiLam?.SoCauDung ?? 0;
+                var diem = baiLam?.Diem ?? 0;
+
+                if (baiLam != null)
+                {
+                    <div style="padding-bottom:20px;">
+                        <div style="border-radius:10px;padding:8px;overflow:hidden;">
+                            <div style="float:left;padding-right:250px;">
+                                <h2>@item.KyKiemTra.TenKyKiemTra</h2>
+                                <p class="tieudethe">Bắt đầu: @item.KyKiemTra.ThoiGianBatDau</p>
+                                <p class="tieudethe">Kết thúc: @item.KyKiemTra.ThoiGianKetThuc</p>
+                                <p class="tieudethe">Thời gian làm bài: @item.KyKiemTra.ThoiGianLamBai phút</p>
+                            </div>
+
+                            <div style="float:left;padding-top:30px;padding-right:70px;">
+                                <p>Trạng thái: <strong>Đã làm</strong></p>
+                                <p>Số câu đúng: <strong>@soCauDung</strong> / @soCauHoi</p>
+                                <p>Điểm: <strong>@diem.ToString("0.00")</strong></p>
+                            </div>
+
+                            <form asp-controller="BaiGiangs" asp-action="XemLaiBaiThi" method="post">
+                                <div style="padding-top:50px;padding-left:800px;">
+                                    <input type="hidden" name="id" value="@item.KyKiemTra.KyKiemTraId" />
+                                    <button type="submit" class="btn btn-info btn-round">Xem lại bài</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <hr />
+                }
+            }
+        }
+        else
+        {
+            <p>Không có bài kiểm tra nào để hiển thị.</p>
+        }
+    </section>
+</div>
+
+<script>
+    angular.module('myDoiMatKhauApp', [])
+        .factory('notyf', function () {
+            return new Notyf({
+                duration: 3000,
+                position: { x: 'right', y: 'top' },
+                types: [
+                    { type: 'success', background: '#00b300', icon: { className: 'material-icons', tagName: 'i', text: 'check_circle', color: 'white' } },
+                    { type: 'error', background: '#ff4d4d', icon: { className: 'material-icons', tagName: 'i', text: 'cancel', color: 'white' } },
+                ],
+            });
+        })
+        .controller('doimatkhaujs', function ($scope, $http, notyf) {
+            $scope.showModal = true;
+            $scope.doimatkhau = function () {
+                if (!$scope.currentPassword || !$scope.newPassword || !$scope.confirmPassword) {
+                    notyf.error('Vui lòng nhập đầy đủ thông tin.');
+                    return;
+                }
+
+                if ($scope.newPassword !== $scope.confirmPassword) {
+                    notyf.error('Mật khẩu xác nhận không khớp.');
+                    return;
+                }
+
+                if ($scope.newPassword.length < 6) {
+                    notyf.error('Mật khẩu mới phải có ít nhất 6 ký tự.');
+                    return;
+                }
+
+                var data = {
+                    currentPassword: $scope.currentPassword,
+                    newPassword: $scope.newPassword,
+                    confirmPassword: $scope.confirmPassword
+                };
+
+                $http.post('/api/authentication/changepassword', data, { headers: { 'Content-Type': 'application/json' }, withCredentials: true })
+                    .then(function (response) {
+                        notyf.success(response.data);
+                        $scope.currentPassword = $scope.newPassword = $scope.confirmPassword = '';
+                    })
+                    .catch(function (error) {
+                        notyf.error(error.data);
+                        console.error('Lỗi đổi mật khẩu:', error);
+                    });
+            };
+        });
+</script>

@@ -1,0 +1,277 @@
+﻿@* <!-- Modal Đăng nhập -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <button style="color:black" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Form Đăng nhập -->
+                <div id="formLogin">
+                    <div class="form-title text-center">
+                        <h3 style="color:black">Đăng nhập</h3>
+                    </div>
+                    <div class="d-flex flex-column text-center" ng-app="myLoginApp" ng-controller="LoginController">
+                        <form ng-submit="login()">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="tendangnhap" ng-model="tendangnhap" placeholder="Tên đăng nhập" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" class="form-control" ng-model="password" placeholder="Mật khẩu" required>
+                            </div>
+                            <button type="submit" class="btn btn-info btn-block btn-round">Đăng nhập</button>
+                        </form>
+                        <a class="btnQuen" style="margin-top:15px; color:black;" href="/quenmatkhau">Quên mật khẩu</a>
+                        <a href="#" id="goToRegister" style="margin-top:10px; color:#007bff;">Chưa có tài khoản? Đăng ký ngay</a>
+                    </div>
+                </div>
+
+                <!-- Form Đăng ký -->
+                <div id="formRegister" style="display:none;">
+                    <div class="form-title text-center">
+                        <h3 style=" color:black">Đăng ký</h3>
+                    </div>
+                    <div class="d-flex flex-column text-center">
+                        <form id="registerForm">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="tendangnhap-register" placeholder="Tên đăng nhập" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" class="form-control" id="matkhau-register" placeholder="Mật khẩu" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" class="form-control" id="email-register" placeholder="Email" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="hoten-register" placeholder="Họ tên" required>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block btn-round">Đăng ký</button>
+                            <a href="#" id="goToLogin" style="margin-top:10px; color:#007bff;">Đã có tài khoản? Đăng nhập</a>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btnQuen:hover {
+        color: black;
+        background-color: transparent;
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<script>
+    // Notyf toàn cục
+    window.notyf = new Notyf({
+        duration: 3000,
+        position: { x: 'right', y: 'top' },
+        types: [
+            { type: 'success', background: '#00b300', icon: { className: 'material-icons', tagName: 'i', text: 'check_circle', color: 'white' } },
+            { type: 'error', background: '#ff4d4d', icon: { className: 'material-icons', tagName: 'i', text: 'cancel', color: 'white' } },
+        ],
+    });
+
+    // AngularJS Login
+    var app = angular.module('myLoginApp', []);
+    app.controller('LoginController', function ($scope, $http, $window) {
+        $scope.login = function () {
+            $http.post('/api/authentication/login', {
+                TenDangNhap: $scope.tendangnhap,
+                Password: $scope.password
+            }).then(function () {
+                notyf.success('Đăng nhập thành công.');
+                $window.location.href = '/';
+            }).catch(function (xhr) {
+                const message = xhr.data?.message || 'Đăng nhập thất bại.';
+                notyf.error(message);
+            });
+        };
+    });
+
+    // JQuery xử lý modal và đăng ký
+    $(document).ready(function () {
+        $('#loginModal').on('show.bs.modal', function () {
+            $('#formRegister').hide();
+            $('#formLogin').show();
+        });
+
+        $('#goToRegister').click(function (e) {
+            e.preventDefault();
+            $('#formLogin').hide();
+            $('#formRegister').fadeIn();
+        });
+
+        $('#goToLogin').click(function (e) {
+            e.preventDefault();
+            $('#formRegister').hide();
+            $('#formLogin').fadeIn();
+        });
+
+        $('#registerForm').submit(function (e) {
+            e.preventDefault();
+
+            const data = {
+                TenDangNhap: $('#tendangnhap-register').val(),
+                Password: $('#matkhau-register').val(),
+                Email: $('#email-register').val(),
+                HoTen: $('#hoten-register').val()
+            };
+
+            $.ajax({
+                url: '/api/authentication/register',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function () {
+                    notyf.success('Đăng ký thành công!');
+                    setTimeout(function () { window.location.href = '/'; }, 1000);
+                },
+                error: function (xhr) {
+                    const message = xhr.responseJSON?.message || xhr.responseText || 'Đăng ký thất bại.';
+                    notyf.error(message);
+                }
+            });
+        });
+    });
+</script>
+ *@
+<!-- Modal Đăng nhập / Đăng ký -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Form Đăng nhập -->
+                <div id="formLogin">
+                    <div class="form-title text-center"><h3>Đăng nhập</h3></div>
+                    <div ng-app="myLoginApp" ng-controller="LoginController" class="d-flex flex-column text-center">
+                        <form ng-submit="login()">
+                            <input type="text" class="form-control mb-2" ng-model="tendangnhap" placeholder="Tên đăng nhập" required>
+                            <input type="password" class="form-control mb-2" ng-model="password" placeholder="Mật khẩu" required>
+                            <button type="submit" class="btn btn-info btn-block">Đăng nhập</button>
+                        </form>
+                        <a class="btnQuen mt-2" href="/quenmatkhau">Quên mật khẩu?</a>
+                        <a href="#" id="goToRegister" class="mt-2">Chưa có tài khoản? Đăng ký</a>
+                    </div>
+                </div>
+
+                <!-- Form Đăng ký -->
+                <div id="formRegister" style="display:none;">
+                    <div class="form-title text-center"><h3>Đăng ký</h3></div>
+                    <div class="d-flex flex-column text-center">
+                        <form id="registerForm">
+                            <input type="text" class="form-control mb-2" id="tendangnhap-register" placeholder="Tên đăng nhập" required>
+                            <input type="password" class="form-control mb-2" id="matkhau-register" placeholder="Mật khẩu" required>
+                            <input type="email" class="form-control mb-2" id="email-register" placeholder="Email" required>
+                            <input type="text" class="form-control mb-2" id="hoten-register" placeholder="Họ tên" required>
+                            <button type="submit" class="btn btn-success btn-block">Đăng ký</button>
+                            <a href="#" id="goToLogin" class="mt-2">Đã có tài khoản? Đăng nhập</a>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notyf -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+<!-- AngularJS -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<script>
+    // Notyf
+    window.notyf = new Notyf({
+        duration: 3000,
+        position: { x: 'right', y: 'top' },
+        types: [
+            { type: 'success', background: '#00b300', icon: { className: 'material-icons', tagName: 'i', text: 'check_circle', color: 'white' } },
+            { type: 'error', background: '#ff4d4d', icon: { className: 'material-icons', tagName: 'i', text: 'cancel', color: 'white' } }
+        ]
+    });
+
+    // AngularJS App
+    var app = angular.module('myLoginApp', []);
+    app.controller('LoginController', function ($scope, $http, $window) {
+        $scope.login = function () {
+            $http.post('/api/authentication/login', {
+                TenDangNhap: $scope.tendangnhap,
+                Password: $scope.password
+            }).then(function (res) {
+                notyf.success(res.data.message);
+                $window.location.href = res.data.redirectUrl;
+            }).catch(function (xhr) {
+                notyf.error(xhr.data?.message || "Đăng nhập thất bại");
+            });
+        };
+    });
+
+    // JQuery xử lý chuyển form login/register
+    $(document).ready(function () {
+        $('#loginModal').on('show.bs.modal', function () {
+            $('#formRegister').hide();
+            $('#formLogin').show();
+        });
+
+        $('#goToRegister').click(function (e) {
+            e.preventDefault();
+            $('#formLogin').hide();
+            $('#formRegister').fadeIn();
+        });
+
+        $('#goToLogin').click(function (e) {
+            e.preventDefault();
+            $('#formRegister').hide();
+            $('#formLogin').fadeIn();
+        });
+
+        // Đăng ký
+        $('#registerForm').submit(function (e) {
+            e.preventDefault();
+            const data = {
+                TenDangNhap: $('#tendangnhap-register').val(),
+                Password: $('#matkhau-register').val(),
+                Email: $('#email-register').val(),
+                HoTen: $('#hoten-register').val()
+            };
+            $.ajax({
+                url: '/api/authentication/register',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (res) {
+                    notyf.success(res.message || 'Đăng ký thành công!');
+                    setTimeout(() => { window.location.href = res.redirectUrl || '/hocvien'; }, 1000);
+                },
+                error: function (xhr) {
+                    const message = xhr.responseJSON?.message || xhr.responseText || 'Đăng ký thất bại.';
+                    notyf.error(message);
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .btnQuen:hover {
+        color: black;
+        background-color: transparent;
+    }
+</style>

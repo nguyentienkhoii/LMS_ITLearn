@@ -1,0 +1,139 @@
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Truy cập bị từ chối - ITLearnCollab</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <link href="~/img/saas.png" rel="icon" />
+    <link href="~/img/apple-touch-icon.png" rel="apple-touch-icon" />
+
+</head>
+<body class="login-page">
+
+    <div class="glass-card text-center">
+        <h3 class="text-danger mb-3">
+            <i class="fa-solid fa-ban text-danger me-2" aria-hidden="true"></i>
+            Truy cập bị từ chối
+        </h3>
+        <p class="text-white-50 mb-4">Bạn không có quyền truy cập vào trang này.</p>
+        <button type="button" class="btn btn-primary btn-lg" onclick="goBack()">Quay lại</button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">@TempData["SuccessMessage"]</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="toast align-items-center text-white bg-danger border-0 show" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">@TempData["ErrorMessage"]</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+      // Kích hoạt toast nếu cần (Bootstrap 5)
+      document.querySelectorAll('.toast').forEach(t => new bootstrap.Toast(t));
+
+
+        function goBack() {
+            // Nếu có referrer cùng origin → quay lại đúng trang đó
+            try {
+            const ref = document.referrer;
+            if (ref && new URL(ref).origin === location.origin) {
+                location.href = ref;
+                return;
+            }
+            } catch (_) { /* bỏ qua nếu URL không hợp lệ */ }
+
+            // Không có referrer hoặc khác domain → fallback
+            if (history.length > 1) history.back();
+            else window.location.href = '@Url.Action("Index","Home")';
+        }
+
+    </script>
+</body>
+</html>
+    <style>
+    /* Body full page, flex căn giữa */
+    .login-page {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: url('/img/services-5.webp') no-repeat center center;
+        background-size: cover;
+        margin: 0;
+    }
+    .login-page::before {
+        content: "";
+        position: absolute;
+        top:0; left:0;
+        width:100%; height:100%;
+        background: rgba(30,60,114,0.35);
+        backdrop-filter: blur(4px);
+        z-index:1;
+    }
+    .glass-card {
+        position: relative;
+        z-index: 2;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.25);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 2rem;
+        width: 380px;
+        border-radius: 1rem;
+        transition: all 0.3s ease-in-out;
+    }
+    .glass-card:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+    .input-glass {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: all 0.3s;
+    }
+    .input-glass::placeholder { color: rgba(255,255,255,0.7); }
+    .input-glass:focus {
+        background: rgba(255,255,255,0.3);
+        border-color: #66b3ff;
+        box-shadow: 0 0 10px rgba(102,179,255,0.4);
+        color: #fff;
+    }
+    .btn-login {
+        font-weight: 600; letter-spacing: .5px; border-radius: 10px; transition: .3s;
+    }
+    .btn-login:hover {
+        background-color: #1e3c72;
+        box-shadow: 0 0 15px rgba(102,179,255,0.6);
+        transform: translateY(-2px);
+    }
+    label { font-weight: 500; }
+    </style>
