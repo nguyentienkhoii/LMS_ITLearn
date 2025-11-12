@@ -43,16 +43,16 @@
 
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold">@Model.TenLopHoc</h5>
-    <div>
-        <button class="btn btn-outline-primary btn-lg me-2 action-btn">
-            <i class="fa fa-chart-line me-2"></i> Xem tiến độ
-        </button>
-        <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#modalThemChuong">
-            <i class="fa fa-plus me-2"></i> Thêm chủ đề
-        </button>
-    </div>
-</div>
+            <h5 class="fw-bold">@Model.TenLopHoc</h5>
+            <div>
+                <button class="btn btn-outline-primary btn-lg me-2 action-btn">
+                    <i class="fa fa-chart-line me-2"></i> Xem tiến độ
+                </button>
+                <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#modalThemChuong">
+                    <i class="fa fa-plus me-2"></i> Thêm chủ đề
+                </button>
+            </div>
+        </div>
 
 
         <div id="list-chuongs">
@@ -147,24 +147,24 @@
 
                                                     <!-- Menu ba chấm cho mỗi mục -->
                                                     <div class="dropdown">
-                            <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
-                            <i class="fa fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                            <a href="@Url.Action("Sua", "Muc", new { area = "GiangVien", id = muc.MucId, maLopHoc = ViewBag.MaLopHoc })"
-                            class="dropdown-item">
-                            <i class="fa fa-edit me-1 text-primary"></i> Sửa mục
-                            </a>
-                            </li>
-                            <li>
-                            <a href="@Url.Action("Xoa", "Muc", new { area = "GiangVien", id = muc.MucId })"
-                            class="dropdown-item text-danger">
-                            <i class="fa fa-trash me-1"></i> Xóa mục
-                            </a>
-                            </li>
-                            </ul>
-                            </div>
+                                                     <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
+                                                        <i class="fa fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a href="@Url.Action("Sua", "Muc", new { area = "GiangVien", id = muc.MucId, maLopHoc = ViewBag.MaLopHoc })"
+                                                         class="dropdown-item">
+                                                          <i class="fa fa-edit me-1 text-primary"></i> Sửa mục
+                                                        </a>
+                                                     </li> 
+                                                    <li>
+                                                        <a href="@Url.Action("Xoa", "Muc", new { area = "GiangVien", id = muc.MucId })"
+                                                         class="dropdown-item text-danger">
+                                                          <i class="fa fa-trash me-1"></i> Xóa mục
+                                                        </a>
+                                                    </li>
+                                                    </ul>
+                                                    </div>
 
                                                 </li>
                                             }
@@ -177,60 +177,57 @@
                                         </ul>
                                     }
                                     @if (bai.BaiTaps != null && bai.BaiTaps.Any())
-{
-    <ul class="sub-items ps-4 mt-2">
-        @foreach (var baitap in bai.BaiTaps)
-        {
-            <li class="d-flex justify-content-between align-items-center border-bottom py-1" data-baitap-id="@baitap.MaBaiTap">
-                <div>
-                    <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap })"
-                        class="text-decoration-none fw-semibold text-primary">
-                        <i class="fa fa-tasks text-success me-2"></i>
-                        @baitap.TenBaiTap
-                    </a>
-                    @if (baitap.HanNop != null)
-                    {
-                        <small class="text-danger ms-2 fst-italic">
-                            Hạn nộp: @baitap.HanNop.Value.ToString("dd/MM/yyyy HH:mm")
-                        </small>
-                    }
-                </div>
+                                    {
+                                        <ul class="sub-items ps-4 mt-2">
+                                            @foreach (var baitap in bai.BaiTaps)
+                                            {
+                                                <li class="d-flex justify-content-between align-items-center border-bottom py-1" data-baitap-id="@baitap.MaBaiTap">
+                                                    <div>
+                                                        <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap })"
+                                                            class="text-decoration-none fw-semibold text-primary">
+                                                            <i class="fa fa-tasks text-success me-2"></i>
+                                                            @baitap.TenBaiTap
+                                                        </a>
+                                                        @if (baitap.HanNop != null)
+                                                        {
+                                                            <small class="text-danger ms-2 fst-italic">
+                                                                Hạn nộp: @baitap.HanNop.Value.ToString("dd/MM/yyyy HH:mm")
+                                                            </small>
+                                                        }
+                                                    </div>
 
 
-                <div class="dropdown">
-                    <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
-                        <i class="fa fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a href="@Url.Action("Sua", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap, maLopHoc = ViewBag.MaLopHoc })"
-                               class="dropdown-item">
-                                <i class="fa fa-edit me-1 text-primary"></i> Sửa bài tập
-                            </a>
-                        </li>
-                        <li>
-                            <a href="@Url.Action("Xoa", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap })"
-                               class="dropdown-item text-danger"
-                               onclick="return confirm('Bạn có chắc muốn xóa bài tập này không?');">
-                                <i class="fa fa-trash me-1"></i> Xóa bài tập
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-        }
-    </ul>
-}
-else
-{
-    <ul class="sub-items ps-4">
-        <li class="text-muted small fst-italic">Chưa có bài tập nào trong bài này.</li>
-    </ul>
-}
-
-
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
+                                                            <i class="fa fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li>
+                                                                <a href="@Url.Action("Sua", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap, maLopHoc = ViewBag.MaLopHoc })"
+                                                                class="dropdown-item">
+                                                                    <i class="fa fa-edit me-1 text-primary"></i> Sửa bài tập
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Action("Xoa", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap })"
+                                                                class="dropdown-item text-danger"
+                                                                onclick="return confirm('Bạn có chắc muốn xóa bài tập này không?');">
+                                                                    <i class="fa fa-trash me-1"></i> Xóa bài tập
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <ul class="sub-items ps-4">
+                                            <li class="text-muted small fst-italic">Chưa có bài tập nào trong bài này.</li>
+                                        </ul>
+                                    }
                                 }
-
                             }
                             else
                             {
@@ -239,7 +236,6 @@ else
                         </div>
                     </div>
                 }
-
             }
             else
             {
@@ -739,7 +735,6 @@ else
     transform: scale(1.15);
 }
 
-       
 </style>
 
 @section Scripts {
@@ -787,7 +782,7 @@ else
                 $.post('/GiangVien/Chuong/SuaAjax', data, function (res) {
                     if (res.success) {
                         $('#modalSuaChuong').modal('hide');
-                        notyf.success('✏️ Cập nhật chương thành công!');
+                        notyf.success('Cập nhật chương thành công!');
                         setTimeout(() => location.reload(), 1000);
                     } else {
                         notyf.error('Không thể cập nhật chương.');
@@ -907,25 +902,24 @@ else
 
             $('#btnDoiAnh').click(() => $('#fileAnhLop').click());
 
-$('#fileAnhLop').on('change', function () {
-    const formData = new FormData($('#formDoiAnh')[0]);
-    $.ajax({
-        url: '/GiangVien/LopHoc/CapNhatAnh?id=@Model.MaLopHoc',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: (res) => {
-            if (res.success) {
-                $('.banner-img').attr('src', res.path);
-                notyf.success('Ảnh đã được cập nhật!');
-            } else {
-                notyf.error(res.message);
-            }
-        }
-    });
-});
-
+        $('#fileAnhLop').on('change', function () {
+            const formData = new FormData($('#formDoiAnh')[0]);
+            $.ajax({
+                url: '/GiangVien/LopHoc/CapNhatAnh?id=@Model.MaLopHoc',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: (res) => {
+                    if (res.success) {
+                        $('.banner-img').attr('src', res.path);
+                        notyf.success('Ảnh đã được cập nhật!');
+                    } else {
+                        notyf.error(res.message);
+                    }
+                }
+            });
+        });
 
         });
     </script>

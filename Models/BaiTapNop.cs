@@ -40,4 +40,26 @@ namespace WebBaiGiang_CKC.Models
         public int MaHocVien { get; set; }
         public virtual HocVien HocVien { get; set; }
     }
+
+        public static class SubmissionStatus
+        {
+            public const string MoiNop = "MOI_NOP";
+           // public const string DaChamNhap = "DA_CHAM_NHAP"; // nháp
+            public const string DaChamChot = "DA_CHOT";      // đã công bố & khóa
+
+            public static readonly TimeSpan Grace = TimeSpan.FromHours(1);
+            public static bool IsWithinGrace(string status, DateTime? ngayCham)
+            {
+                if (!string.Equals(status, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
+                if (ngayCham == null) return false;
+                return DateTime.Now < ngayCham.Value.Add(Grace);
+        
+            }
+            public static bool IsLocked(string s, DateTime? ngayCham)
+            {
+                if (!string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
+                if (ngayCham == null) return false;
+                return DateTime.Now >= ngayCham.Value.Add(Grace);
+            } 
+        }
 }

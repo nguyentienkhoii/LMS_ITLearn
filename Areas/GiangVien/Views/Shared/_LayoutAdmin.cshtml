@@ -32,6 +32,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link href="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.js"></script>
+
+    @RenderSection("styles", required:false)
 </head>
 
 <body class="loading" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":true, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
@@ -239,6 +241,5 @@
 
     @await Component.InvokeAsync("Notyf")
     @RenderSection("scripts",required: false);
-
 </body>
 </html>

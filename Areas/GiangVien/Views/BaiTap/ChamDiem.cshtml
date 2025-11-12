@@ -2,6 +2,17 @@
 @{
     Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
     ViewData["Title"] = "Chấm điểm bài nộp";
+    bool locked = string.Equals(Model?.TrangThai, SubmissionStatus.DaChamChot, StringComparison.OrdinalIgnoreCase);
+    bool withinGrace = locked && Model?.NgayCham != null && DateTime.Now < Model.NgayCham.Value.Add(SubmissionStatus.Grace);
+    bool hardLocked  = locked && Model?.NgayCham != null && DateTime.Now >= Model.NgayCham.Value.Add(SubmissionStatus.Grace);
+    TimeSpan? remain = (withinGrace && Model?.NgayCham != null)
+        ? Model.NgayCham.Value.Add(SubmissionStatus.Grace) - DateTime.Now
+        : (TimeSpan?)null;
+
+         // ISO-8601 UTC cho JS parse chính xác múi giờ
+    string deadlineIso = (Model?.NgayCham != null)
+        ? Model.NgayCham.Value.Add(SubmissionStatus.Grace).ToUniversalTime().ToString("o")
+        : null;
 }
 
 <div class="row">
@@ -69,39 +80,116 @@
 
                         <!-- Bên phải: nhập điểm và nhận xét -->
                         <div class="col-md-3">
-                            <form asp-action="ChamDiem" asp-area="GiangVien"
-                                  asp-controller="BaiTap" method="post">
+                            <form asp-action="ChamDiem" asp-area="GiangVien" asp-controller="BaiTap" method="post">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@Model.MaBaiTapNop" />
 
-                                <h5 class="fw-bold text-primary mb-3">
-                                    <i class="fa fa-check-circle"></i> Chấm điểm
+                                <h5 class="font-weight-bold mb-3 d-flex align-items-center">
+                                    <span class="text-primary">
+                                        <i class="fa fa-check-circle mr-2"></i> Chấm điểm
+                                    </span>
+                                 @if (locked && withinGrace)
+                                {
+                                    @* <span class="badge badge-info ml-3 badge-locked">
+                                    Còn @Math.Floor(remain.Value.TotalHours)h @remain.Value.Minutes' để chỉnh
+                                    </span> *@
+                                     <span id="countdown"
+                                        class="badge badge-info ml-3 badge-locked badge-countdown"
+                                        data-deadline="@deadlineIso">
+                                        @* Fallback text nếu JS chưa chạy *@
+                                        @{
+                                            // Format HH:MM:SS đẹp mắt
+                                            var hh = Math.Floor(remain.Value.TotalHours);
+                                            var mm = remain.Value.Minutes;
+                                            var ss = remain.Value.Seconds;
+                                        }
+                                        Còn @hh.ToString("00"):@mm.ToString("00"):@ss.ToString("00") để chỉnh
+                                    </span>
+                                }
+                                else if (hardLocked)
+                                {
+                                    <span class="badge badge-secondary badge-pill align-middle badge-locked"><i class="fa fa-lock mr-1"></i> ĐÃ CHỐT Điểm</span>
+                                }
+                                
+                                    @* @if (locked)
+                                    {
+                                         <span class="badge badge-secondary badge-pill align-middle badge-locked">
+                                            <i class="fa fa-lock mr-1"></i> ĐÃ CHỐT
+                                         </span>
+
+                                    } *@
                                 </h5>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Điểm</label>
-                                    <input type="number" name="diem" value="@Model.Diem"
-                                           step="0.1" min="0" max="10"
-                                           class="form-control" placeholder="Nhập điểm" />
-                                </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Nhận xét</label>
-                                    <textarea name="nhanXet" class="form-control" rows="6"
-                                              placeholder="Nhập nhận xét...">@Model.NhanXet</textarea>
-                                </div>
+                                <!-- Khi locked = true, toàn bộ input trong fieldset bị disable -->
+                                <fieldset class="grade-form @(hardLocked ? "is-locked" : "")" @(hardLocked ? "disabled" : "")>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Điểm</label>
+                                        <input type="number" name="diem" value="@Model.Diem"
+                                            step="0.1" min="0" max="10"
+                                            class="form-control" placeholder="Nhập điểm" />
+                                    </div>
 
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Nhận xét</label>
+                                        <textarea name="nhanXet" class="form-control" rows="6"
+                                                placeholder="Nhập nhận xét...">@Model.NhanXet</textarea>
+                                    </div>
+
+                                </fieldset>
                                 <div class="text-end mt-4">
-                                    <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = Model.MaBaiTap })"
-                                       class="btn btn-secondary me-2">
-                                        <i class="fa fa-arrow-left"></i> Quay lại
-                                    </a>
-
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fa fa-save"></i> Lưu kết quả
-                                    </button>
-                                </div>
+                                       <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = Model.MaBaiTap })"
+                                        class="btn btn-secondary me-2">
+                                            <i class="fa fa-arrow-left"></i> Quay lại
+                                        </a>
+                                        @* <button type="submit" class="btn btn-primary" @(locked ? "disabled" : null)>
+                                            <i class="fa fa-save"></i> Lưu kết quả
+                                        </button> *@
+                                        @if (!hardLocked)
+                                        {
+                                            <button type="submit" class="btn btn-success">
+                                            <i class="fa fa-check"></i> @(locked ? "Cập nhật" : "Xác nhận")
+                                            </button>
+                                        }
+                                 </div>
                             </form>
+
+                            @* Thông điệp & hành động khi bài đã chốt *@
+                            @if (hardLocked)
+                            {
+                                <div class="alert alert-info mt-3">
+                                    <i class="fa fa-lock mr-1"></i>
+                                    Bài tập đã chấm lúc
+                                    <strong>@Model.NgayCham?.ToString("dd/MM/yyyy HH:mm")</strong>.
+                                </div>
+
+                                <!-- GV gửi yêu cầu mở khóa -->
+                               <div class="unlock-actions mt-3">
+                                <div class="btn-wrap">
+                                    <div class="btn-row">
+                                     @if (User.IsInRole("GiangVien")){
+                                    <form asp-action="YeuCauMoKhoa" asp-area="GiangVien" asp-controller="BaiTap" method="post" class="mb-2 mb-md-0 m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.MaBaiTapNop" />
+                                        <button class="btn btn-outline-warning btn-sm w-100">
+                                        <i class="fa fa-unlock"></i> Gửi yêu cầu mở khóa
+                                        </button>
+                                    </form>
+                                    }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <form asp-action="MoKhoaBaiNop" asp-area="GiangVien" asp-controller="BaiTap" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.MaBaiTapNop" />
+                                        <button class="btn btn-danger btn-sm w-100">
+                                            <i class="fa fa-unlock-alt"></i> Mở khóa (Admin)
+                                        </button>
+                                        </form>
+                                    }
+                                    </div>
+                                </div>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -116,97 +204,63 @@
     <img class="modal-content-img" id="imgPreview">
 </div>
 
-<style>
-    .card {
-        border-radius: 12px;
-    }
-
-    .form-control {
-        border-radius: 8px;
-        box-shadow: none !important;
-    }
-
-    .btn {
-        border-radius: 8px;
-    }
-
-    iframe, img {
-        transition: all 0.2s ease-in-out;
-    }
-
-    iframe:hover, img:hover {
-        transform: scale(1.01);
-    }
-
-    @@media (max-width: 768px) {
-        .border-end {
-            border-right: none !important;
-            border-bottom: 1px solid #dee2e6;
-        }
-    }
-
-    /* Lightbox (phóng to ảnh) */
-    .modal-img {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        padding-top: 100px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.9);
-    }
-
-    .modal-content-img {
-        margin: auto;
-        display: block;
-        width: 80%;
-        max-width: 900px;
-        border-radius: 10px;
-        box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    }
-
-    .close {
-        position: absolute;
-        top: 60px;
-        right: 80px;
-        color: #fff;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.2s ease-in-out;
-    }
-
-    .close:hover {
-        color: #ccc;
-    }
-</style>
-
-@section Scripts {
-    <script>
-        // Lightbox mở ảnh lớn khi bấm
-        const modal = document.getElementById("imgModal");
-        const modalImg = document.getElementById("imgPreview");
-        const images = document.querySelectorAll(".preview-image");
-        const closeBtn = document.getElementsByClassName("close")[0];
-
-        images.forEach(img => {
-            img.onclick = function () {
-                modal.style.display = "block";
-                modalImg.src = this.src;
-            }
-        });
-
-        closeBtn.onclick = function () {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    </script>
+@section styles{
+  <link rel="stylesheet" href="~/assets/giangvien/chamdiem.css" asp-append-version="true" />
 }
+
+@section scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Lightbox
+  const modal = document.getElementById("imgModal");
+  const modalImg = document.getElementById("imgPreview");
+  const images = document.querySelectorAll(".preview-image");
+  const closeBtn = document.getElementsByClassName("close")[0];
+
+  images.forEach(img => {
+    img.onclick = function () { modal.style.display = "block"; modalImg.src = this.src; }
+  });
+  if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
+  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+
+  // Countdown
+  var el = document.getElementById('countdown');
+  if (!el) return;
+
+  var iso = el.getAttribute('data-deadline');
+  if (!iso) return;
+
+  var deadline = new Date(iso);
+  function pad(n){ return n < 10 ? '0' + n : n; }
+
+  function lockUI() {
+    el.classList.remove('badge-info');
+    el.classList.add('badge-secondary');
+    el.innerHTML = '<i class="fa fa-lock mr-1"></i> ĐÃ CHỐT';
+
+    var fs = document.querySelector('.grade-form');
+    if (fs) { fs.setAttribute('disabled',''); fs.classList.add('is-locked'); }
+
+    var btns = document.querySelectorAll('button[type="submit"].btn-success, button[type="submit"].btn-primary');
+    btns.forEach(b => b.disabled = true);
+  }
+
+  function tick(){
+    var now = new Date();
+    var diff = deadline - now;
+    if (diff <= 0) { lockUI(); clearInterval(timer); return; }
+
+    var total = Math.floor(diff / 1000);
+    var h = Math.floor(total / 3600);
+    var m = Math.floor((total % 3600) / 60);
+    var s = total % 60;
+
+    el.textContent = 'Còn ' + pad(h) + ':' + pad(m) + ':' + pad(s) + ' để chỉnh';
+  }
+
+  tick();
+  var timer = setInterval(tick, 1000);
+});
+</script>
+}
+

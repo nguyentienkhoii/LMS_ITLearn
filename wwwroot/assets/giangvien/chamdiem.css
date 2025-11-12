@@ -1,0 +1,109 @@
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        box-shadow: none !important;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    iframe, img {
+        transition: all 0.2s ease-in-out;
+    }
+
+    iframe:hover, img:hover {
+        transform: scale(1.01);
+    }
+
+    @media (max-width: 768px) {
+        .border-end {
+            border-right: none !important;
+            border-bottom: 1px solid #dee2e6;
+        }
+    }
+
+    /* Lightbox (phóng to ảnh) */
+    .modal-img {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .modal-content-img {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 900px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    .close {
+        position: absolute;
+        top: 60px;
+        right: 80px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s ease-in-out;
+    }
+
+    .close:hover {
+        color: #ccc;
+    }
+
+/* Nut cham diem */
+
+/* Căn giữa cụm nút + giới hạn bề rộng để nút có cùng size */
+.unlock-actions { text-align: center; }
+.unlock-actions .btn-wrap {
+  max-width: 360px;   /* chỉnh 300–420 tùy ý */
+  margin: 0 auto;     /* căn giữa trong cột phải */
+}
+
+/* Mặc định mobile xếp dọc, từ md trở lên xếp ngang */
+.unlock-actions .btn-row { display: block; }
+.unlock-actions .btn-row form .btn { width: 100%; } /* nút full chiều ngang */
+
+@media (min-width: 768px) {
+  .unlock-actions .btn-row {
+    display: flex;             /* xếp ngang */
+    align-items: stretch;
+  }
+  .unlock-actions .btn-row form {
+    flex: 1 1 0;               /* hai form cùng độ rộng */
+  }
+  .unlock-actions .btn-row form:first-child { margin-right: 8px; }
+  .unlock-actions .btn-row form:last-child  { margin-left: 8px; }
+}
+
+/* Khi form bị khoá, vẫn giữ cụm nút mờ & không click nút Lưu (ở trên bạn đã có) */
+.grade-form.is-locked { opacity: .6; }
+
+  /* Ưu tiên cao để thắng các rule .text-* hoặc theme tuỳ biến */
+.badge-secondary { background-color: #6c757d !important; color: #fff !important; }
+.badge-primary   { background-color: #007bff !important; color: #fff !important; }
+.badge-info { color: #ff74ae !important;}
+/* Nếu muốn: mặc định mọi .badge không có biến thể sẽ dùng màu xám */
+.badge:not([class*="badge-"]) { background-color: #6c757d; color: #fff; }
+
+.badge-locked { margin-left: .75rem; }
+.badge-locked.badge-countdown{
+  font-size: 0.85rem;       /* to hơn mặc định một chút */
+  font-weight: 900;
+  letter-spacing: .3px;
+  padding: .4em .6em;
+}
