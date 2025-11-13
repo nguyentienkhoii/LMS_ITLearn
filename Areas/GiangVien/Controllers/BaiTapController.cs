@@ -1,8 +1,10 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using WebBaiGiang_CKC.Data;
+using WebBaiGiang_CKC.Hubs;
 using WebBaiGiang_CKC.Models;
 
 namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
@@ -13,11 +15,15 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
     {
         private readonly WebBaiGiangContext _context;
         private readonly INotyfService _notyf;
+        private readonly IHubContext<NotificationsHub> _hub;
+        private readonly ILogger<BaiTapController> _logger;
 
-        public BaiTapController(WebBaiGiangContext context, INotyfService notyf)
+        public BaiTapController(WebBaiGiangContext context, INotyfService notyf, IHubContext<NotificationsHub> hub, ILogger<BaiTapController> logger)
         {
             _context = context;
             _notyf = notyf;
+            _hub = hub;
+            _logger = logger;
         }
 
         // GET: GiangVien/BaiTap/Them?baiId=5&maLopHoc=3
@@ -217,7 +223,28 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
         }
 
         // Model/BaiTapNop/SubmissionStatus.cs
+        // (Để đây cho tiện xem)
+        // public static class SubmissionStatus
+        // {
+        //     public const string MoiNop = "MOI_NOP";
+        //    // public const string DaChamNhap = "DA_CHAM_NHAP"; // nháp
+        //     public const string DaChamChot = "DA_CHOT";      // đã công bố & khóa
+
+        //     public static readonly TimeSpan Grace = TimeSpan.FromHours(1);
+        //     public static bool IsWithinGrace(string status, DateTime? ngayCham)
+        //     {
+        //         if (!string.Equals(status, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
+        //         if (ngayCham == null) return false;
+        //         return DateTime.Now < ngayCham.Value.Add(Grace);
         
+        //     }
+        //     public static bool IsLocked(string s, DateTime? ngayCham)
+        //     {
+        //         if (!string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
+        //         if (ngayCham == null) return false;
+        //         return DateTime.Now >= ngayCham.Value.Add(Grace);
+        //     } 
+        // }
         // Trang chấm điểm
         [HttpGet]
         public async Task<IActionResult> ChamDiem(int id)
@@ -264,11 +291,16 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
         //     return RedirectToAction("DanhSachBaiNop", new { id = baiNop.MaBaiTap }); // ✅ sửa dòng này
         // }
 
+
+        //Cập nhật thêm thông báo và chốt điểm
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChamDiem(int id, double? diem, string nhanXet)
         {
-            var baiNop = await _context.BaiTapNops.FindAsync(id);
+            var baiNop = await _context.BaiTapNops
+                .Include(x => x.BaiTap)
+                .FirstOrDefaultAsync(x => x.MaBaiTapNop == id);
+
             if (baiNop == null)
             {
                 TempData["Error"] = "Bài nộp không tồn tại!";
@@ -286,6 +318,22 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 return RedirectToAction(nameof(ChamDiem), new { id });
             }
 
+            var hocVienUserId = await _context.HocViens
+                .Where(h => h.MaHocVien == baiNop.MaHocVien)
+                .Select(h => h.MaTaiKhoan) // string Id của AspNetUsers
+                .FirstOrDefaultAsync();
+
+            // var link = Url.Action("ChiTiet","BaiTap", new { area = "", baiTapId = baiNop.MaBaiTap }, Request.Scheme);
+            // _logger?.LogInformation("Notify link: {Link}", link);
+
+            object BuildPayload(string title, string msg) => new
+            {
+                title,
+                message = msg,
+                link = Url.Action("ChiTiet","BaiTap", new { area = "", baiTapId = baiNop.MaBaiTap }, Request.Scheme),
+                createdAt = DateTime.UtcNow
+            };
+                
             if (!isChot)
             {
                 baiNop.Diem = diem;
@@ -296,20 +344,36 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 _context.Update(baiNop);
                 await _context.SaveChangesAsync();
 
-                _notyf.Success("Đã chốt & công bố điểm. Bạn có 24 giờ để chỉnh sửa nếu cần.");
+                if (hocVienUserId > 0)
+                {
+                    await _hub.Clients.User(hocVienUserId.ToString())
+                        .SendAsync("ReceiveNotification", 
+                          BuildPayload("Điểm bài tập đã được công bố",
+                                       $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem:0.##}/10"));
+                }
+                _notyf.Success("Đã chốt & công bố điểm. Bạn có 1 giờ để chỉnh sửa nếu cần.");
                 return RedirectToAction("DanhSachBaiNop", new { id = baiNop.MaBaiTap });
             }
             
             if (withinGrace)
                 {
-                    // CẬP NHẬT TRONG 24H (KHÔNG đổi NgayCham)
+                    // CẬP NHẬT TRONG 1H (KHÔNG đổi NgayCham)
                     baiNop.Diem    = diem;
                     baiNop.NhanXet = (nhanXet ?? "").Trim();
 
                     _context.Update(baiNop);
                     await _context.SaveChangesAsync();
 
-                    _notyf.Success("Đã cập nhật trong thời gian 24 giờ sau khi chốt.");
+                if (hocVienUserId > 0)
+                {
+                    await _hub.Clients.User(hocVienUserId.ToString())
+                            .SendAsync("ReceiveNotification",
+                                BuildPayload($"Điểm bài tập đã được cập nhật",
+                                            $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem:0.##}/10 (đã cập nhật)"));
+                                            
+                }
+
+                     _notyf.Success("Đã cập nhật trong thời gian 1 giờ sau khi chốt.");
                     return RedirectToAction(nameof(ChamDiem), new { id });
                 }
 

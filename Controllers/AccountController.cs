@@ -246,21 +246,6 @@ namespace WebBaiGiang_CKC.Controllers
                 return View(model);
             }
 
-            // Tạo danh sách claim
-            /*var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.VaiTro switch
-                {
-                    "HocVien" => user.HocVien?.HoTen ?? user.TenDangNhap,
-                    "GiangVien" => user.GiangVien?.HoTen ?? user.TenDangNhap,
-                    "Admin" => user.GiangVien?.HoTen ?? user.TenDangNhap,
-                    _ => user.TenDangNhap
-                }),
-                new Claim(ClaimTypes.Role, user.VaiTro),
-                new Claim("TenDangNhap", user.TenDangNhap),
-                new Claim("MaTaiKhoan", user.MaTaiKhoan.ToString())
-            };*/
-
             // Tạo danh sách claim (thêm claim cho học viên)
             var claims = new List<Claim>
             {
@@ -273,8 +258,10 @@ namespace WebBaiGiang_CKC.Controllers
             }),
             new Claim(ClaimTypes.Role, user.VaiTro),
             new Claim("TenDangNhap", user.TenDangNhap),
-            new Claim("MaTaiKhoan", user.MaTaiKhoan.ToString())
-};
+            new Claim("MaTaiKhoan", user.MaTaiKhoan.ToString()),
+
+            new Claim(ClaimTypes.NameIdentifier, user.MaTaiKhoan.ToString())
+            };
 
             // ✅ Nếu là học viên, thêm claim HocVienId
             if (user.VaiTro == "HocVien" && user.HocVien != null)

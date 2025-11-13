@@ -25,6 +25,15 @@
     {
       "library": "summernote@0.8.20",
       "destination": "wwwroot/lib/summernote"
+    },
+    {
+      "library": "@microsoft/signalr@8.0.0",
+      "provider": "unpkg",
+      "destination": "wwwroot/lib/microsoft/signalr",
+      "files": [
+        "dist/browser/signalr.min.js",
+        "dist/browser/signalr.min.js.map"
+      ]
     }
   ]
 }

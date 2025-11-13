@@ -40,15 +40,20 @@
     <!-- JS
     ============================================ -->
     <!-- Vendors JS -->
-    <script src="~/assets/js/main.js">
+    <script src="~/assets/js/main.js"></script> 
+
+    <!-- SignalR: ưu tiên file local, nếu chưa có thì dùng CDN -->
+    <script>
+      window.AppUserId = '@User.FindFirst("MaTaiKhoan")?.Value';
     </script>
-
-
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/assets/js/notifications.js" asp-append-version="true"></script>
 
     <!-- Template Main JS File -->
     @* <script src="~/assets/js/custom.js"></script>*@
     @await Component.InvokeAsync("Notyf")
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+    
 
+</body>
 </html>

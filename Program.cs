@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using WebBaiGiang_CKC.Data;
+using WebBaiGiang_CKC.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +38,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.IsEssential = true;
     });
 
-var app = builder.Build();
+builder.Services.AddSignalR();
 
+var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -64,6 +66,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSession();
+app.MapHub<NotificationsHub>("/hubs/notifications");
 
 app.UseEndpoints(endpoints =>
 {
