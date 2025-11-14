@@ -44,10 +44,14 @@ namespace WebBaiGiang_CKC.Models
         public static class SubmissionStatus
         {
             public const string MoiNop = "MOI_NOP";
-           // public const string DaChamNhap = "DA_CHAM_NHAP"; // nháp
+            public const string DaChotSoft = "DA_CHOT_SOFT"; // chưa xác nhận hẳn
             public const string DaChamChot = "DA_CHOT";      // đã công bố & khóa
 
             public static readonly TimeSpan Grace = TimeSpan.FromHours(1);
+
+            public static bool IsSoftLocked(string s)
+                => string.Equals(s, DaChotSoft, StringComparison.OrdinalIgnoreCase);
+        
             public static bool IsWithinGrace(string status, DateTime? ngayCham)
             {
                 if (!string.Equals(status, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;

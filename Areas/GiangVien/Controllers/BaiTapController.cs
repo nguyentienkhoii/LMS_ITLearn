@@ -269,29 +269,6 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
         }
 
 
-        // ✳️ Lưu điểm và nhận xét
-        // [HttpPost]
-        // [ValidateAntiForgeryToken]
-        // public async Task<IActionResult> ChamDiem(int id, double? diem, string nhanXet)
-        // {
-        //     var baiNop = await _context.BaiTapNops.FindAsync(id);
-        //     if (baiNop == null)
-        //     {
-        //         TempData["Error"] = "Bài nộp không tồn tại!";
-        //         return RedirectToAction("Index");
-        //     }
-
-        //     baiNop.Diem = diem;
-        //     baiNop.NhanXet = nhanXet;
-        //     _context.Update(baiNop);
-        //     await _context.SaveChangesAsync();
-
-        //     _notyf.Success("✅ Chấm điểm thành công!");
-
-        //     return RedirectToAction("DanhSachBaiNop", new { id = baiNop.MaBaiTap }); // ✅ sửa dòng này
-        // }
-
-
         //Cập nhật thêm thông báo và chốt điểm
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -307,10 +284,10 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 return RedirectToAction("Index");
             }
 
-            var isChot      = string.Equals(baiNop.TrangThai, SubmissionStatus.DaChamChot, StringComparison.OrdinalIgnoreCase);
+            var softLocked = SubmissionStatus.IsSoftLocked(baiNop.TrangThai);
             var withinGrace = SubmissionStatus.IsWithinGrace(baiNop.TrangThai, baiNop.NgayCham);
             var lockedHard = SubmissionStatus.IsLocked(baiNop.TrangThai, baiNop.NgayCham);
-            
+
             // ĐÃ Chốt điểm → chặn
             if (lockedHard)
             {
@@ -330,16 +307,16 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             {
                 title,
                 message = msg,
-                link = Url.Action("ChiTiet","BaiTap", new { area = "", baiTapId = baiNop.MaBaiTap }, Request.Scheme),
+                link = Url.Action("ChiTiet", "BaiTap", new { area = "", baiTapId = baiNop.MaBaiTap }, Request.Scheme),
                 createdAt = DateTime.UtcNow
             };
-                
-            if (!isChot)
+
+            if (!softLocked && !withinGrace)
             {
                 baiNop.Diem = diem;
                 baiNop.NhanXet = (nhanXet ?? "").Trim();
-                baiNop.NgayCham = DateTime.Now;
-                baiNop.TrangThai = SubmissionStatus.DaChamChot;
+                baiNop.TrangThai = SubmissionStatus.DaChotSoft;
+                baiNop.NgayCham = null;
 
                 _context.Update(baiNop);
                 await _context.SaveChangesAsync();
@@ -347,22 +324,22 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 if (hocVienUserId > 0)
                 {
                     await _hub.Clients.User(hocVienUserId.ToString())
-                        .SendAsync("ReceiveNotification", 
+                        .SendAsync("ReceiveNotification",
                           BuildPayload("Điểm bài tập đã được công bố",
                                        $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem:0.##}/10"));
                 }
-                _notyf.Success("Đã chốt & công bố điểm. Bạn có 1 giờ để chỉnh sửa nếu cần.");
+                _notyf.Success("Chấm điểm thành công. Giảng viên có thể chỉnh sửa thêm nếu cần !");
                 return RedirectToAction("DanhSachBaiNop", new { id = baiNop.MaBaiTap });
             }
-            
-            if (withinGrace)
-                {
-                    // CẬP NHẬT TRONG 1H (KHÔNG đổi NgayCham)
-                    baiNop.Diem    = diem;
-                    baiNop.NhanXet = (nhanXet ?? "").Trim();
 
-                    _context.Update(baiNop);
-                    await _context.SaveChangesAsync();
+            if (withinGrace)
+            {
+                // CẬP NHẬT TRONG 1H (KHÔNG đổi NgayCham)
+                baiNop.Diem = diem;
+                baiNop.NhanXet = (nhanXet ?? "").Trim();
+
+                _context.Update(baiNop);
+                await _context.SaveChangesAsync();
 
                 if (hocVienUserId > 0)
                 {
@@ -370,18 +347,68 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                             .SendAsync("ReceiveNotification",
                                 BuildPayload($"Điểm bài tập đã được cập nhật",
                                             $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem:0.##}/10 (đã cập nhật)"));
-                                            
+
                 }
 
-                     _notyf.Success("Đã cập nhật trong thời gian 1 giờ sau khi chốt.");
-                    return RedirectToAction(nameof(ChamDiem), new { id });
-                }
+                _notyf.Success("Đã cập nhật trong thời gian cho phép.");
+                return RedirectToAction(nameof(ChamDiem), new { id });
+            }
 
                 // Phòng hờ (không rơi vào nhánh nào)
-                _notyf.Warning("Không thể cập nhật bài nộp.");
-                return RedirectToAction(nameof(ChamDiem), new { id });
-    
+            _notyf.Warning("Không thể cập nhật nữa");
+            return RedirectToAction(nameof(ChamDiem), new { id });
+
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BatDauCapNhat(int id, double? diem, string nhanXet)
+        {
+            var b = await _context.BaiTapNops
+                .Include(x => x.BaiTap)
+                .FirstOrDefaultAsync(x => x.MaBaiTapNop == id);
+            if (b == null) return NotFound();
+
+            if (!SubmissionStatus.IsSoftLocked(b.TrangThai))
+            {
+                _notyf.Warning("Trạng thái không hợp lệ để xác nhận.");
+                return RedirectToAction(nameof(ChamDiem), new { id });
+            }
+
+            // lưu giá trị mới & bắt đầu đếm
+            b.Diem      = diem;
+            b.NhanXet   = (nhanXet ?? "").Trim();
+            b.TrangThai = SubmissionStatus.DaChamChot;
+            b.NgayCham  = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            // notify công bố
+            var hocVienUserId = await _context.HocViens
+                .Where(h => h.MaHocVien == b.MaHocVien)
+                .Select(h => h.MaTaiKhoan)
+                .FirstOrDefaultAsync();
+
+            if (hocVienUserId > 0)
+            {
+                object BuildPayload(string title, string msg) => new {
+                    title,
+                    message   = msg,
+                    link      = Url.Action("ChiTiet","BaiTap", new { area="", baiTapId = b.MaBaiTap }, Request.Scheme),
+                    createdAt = DateTime.UtcNow
+                };
+
+                await _hub.Clients.User(hocVienUserId.ToString()).SendAsync(
+                    "ReceiveNotification",
+                    BuildPayload("Điểm bài tập đã được công bố",
+                                $"{b.BaiTap?.TenBaiTap}: {b.Diem:0.##}/10")
+                );
+            }
+
+            _notyf.Success("Đã xác nhận & bắt đầu đếm thời gian cập nhật.");
+            return RedirectToAction(nameof(ChamDiem), new { id });
+        }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -403,7 +430,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             if (b == null) return NotFound();
 
             b.TrangThai = SubmissionStatus.MoiNop; // mở để chấm lại
-            b.NgayCham = null;                                               // KHÔNG reset Diem/NhanXet, tùy bạn: nếu muốn reset thì set null ở đây.
+            b.NgayCham = null;                                               
             await _context.SaveChangesAsync();
 
             _notyf.Success("Đã mở khóa bài nộp, giảng viên có thể chấm lại.");

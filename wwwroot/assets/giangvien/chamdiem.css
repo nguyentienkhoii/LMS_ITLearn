@@ -95,6 +95,7 @@
 
   /* Ưu tiên cao để thắng các rule .text-* hoặc theme tuỳ biến */
 .badge-secondary { background-color: #6c757d !important; color: #fff !important; }
+.badge-warning {background-color: rgb(111, 151, 226) !important; color: #fff !important;}
 .badge-primary   { background-color: #007bff !important; color: #fff !important; }
 .badge-info { color: #ff74ae !important;}
 /* Nếu muốn: mặc định mọi .badge không có biến thể sẽ dùng màu xám */
