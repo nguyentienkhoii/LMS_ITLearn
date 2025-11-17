@@ -1,3 +1,16 @@
+- Sửa giao diện create/ edit đề thi
+- <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9df98f8c-61ab-4252-8907-76356ffa4232" />
+- Thêm chi tiết đề thi
+- <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/db791dfa-058d-4163-aeb6-86b97ecfb63d" />
+
+- Thêm 2 trường tùy chọn vào bài tập:
+- <img width="1309" height="226" alt="image" src="https://github.com/user-attachments/assets/7cef1055-830f-4cba-9e4b-b8247fe0b332" />
+
+- Thêm 2 loại thông báo: Khi học viên nộp bài và khi nhắc chấm điểm
+- <img width="394" height="487" alt="image" src="https://github.com/user-attachments/assets/b9d1af32-e81b-4ce8-9d0b-896ba307e951" />
+
+
+
 - Cập nhật danh sách thi
    <img width="3242" height="1674" alt="localhost_7258_Admin_DanhSachThi_ChonKy" src="https://github.com/user-attachments/assets/75715b96-aaa3-4aad-9206-e8380048369e" />
 - **Thêm trạng thái khi nộp bài**
