@@ -1,0 +1,237 @@
+﻿@{
+    var giaovien = ViewBag.Giaovien as List<GiangVien>;
+    var monHocDangKy = ViewBag.LopHocDangKy as List<WebBaiGiang_CKC.Models.LopHoc>;
+    var activeMenu = ViewBag.ActiveMenu as string;
+    var currentLopHocId = ViewBag.CurrentLopHocId as int?;
+}
+<header>
+    <div class="mainheder">
+        <div class="heder1">
+            <h2 class="d-flex align-items-center">
+                <img src="~/assets/images/icon.png" alt="IT Learn Logo" style="height:36px; margin-right:8px;">
+                IT LEARN
+            </h2>
+
+            <div>
+                <div class="menu-heder1">
+                    <i class="fas fa-bars">
+
+                    </i>
+                </div>
+                <nav class="mini">
+
+                    <ul>
+                        <li class="nav-item dropdown" style="@(User.Identity.IsAuthenticated ? "" : "visibility: hidden;")">
+                            <a class="nav-link dropdown-toggle" id="dropdownMonHoc" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
+                                Lớp học của tôi
+                            </a>
+
+                            <div class="dropdown-menu" aria-labelledby="dropdownMonHoc">
+                                @if (monHocDangKy != null && monHocDangKy.Any())
+                                {
+                                    foreach (var lop in monHocDangKy)
+                                    {
+                                        <a class="dropdown-item @(currentLopHocId == lop.MaLopHoc ? "active" : "")"
+                                           asp-controller="Home" asp-action="LopHoc" asp-route-id="@lop.MaLopHoc">
+                                            <i class="iconoir-book"></i> @lop.TenLopHoc
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="dropdown-item text-muted">
+                                        <i class="iconoir-info-empty"></i> Chưa đăng ký lớp
+                                    </span>
+                                }
+                            </div>
+                        </li>
+
+                        <li>
+                            <a asp-controller="Home" asp-action="Index">
+                                Trang chủ
+                            </a>
+                        </li>
+                        <li><a asp-controller="BaiGiangs" asp-action="GiaoVien">Giảng viên</a></li>
+                        <li><a data-toggle="modal" data-target="#lienhe">Liên hệ</a></li>
+                        <li class="nav-item dropdown ml-2" style="@(User.Identity.IsAuthenticated ? "" : "display:none")">
+                        <a class="nav-link position-relative" href="#" id="bellMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-bell"></i>
+                            <span id="notifyCount" class="badge badge-danger notify-badge" style="display:none;">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right p-0" aria-labelledby="bellMenu" style="min-width:320px;">
+                            <!-- Trong dropdown header, thêm nút clear (tuỳ chọn) -->
+                            <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="font-weight-bold">Thông báo</span>
+                                <button id="notifyMarkRead" type="button" class="btn btn-link btn-sm p-0">Đánh dấu đã đọc</button>
+                            </div>
+                            <div id="notifyList" style="max-height:360px; overflow:auto;">
+                                <div id="notifyEmpty" class="p-3 text-muted small mb-0">Chưa có thông báo</div>
+                            </div>
+
+                        </div>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <div class="container-dn" id="container-dn">
+
+
+                                    @if (!string.IsNullOrEmpty(User.Identity.Name))
+                                    {
+                                        var firstName = "";
+                                        var lastName = User.Identity.Name.Trim();
+
+                                        var lastSpaceIndex = lastName.LastIndexOf(' ');
+                                        if (lastSpaceIndex >= 0 && lastSpaceIndex < lastName.Length - 1)
+                                        {
+                                            firstName = lastName.Substring(lastSpaceIndex + 1, 1);
+                                        }
+                                        else
+                                        {
+                                            firstName = lastName.Substring(0, 1);
+                                        }
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40px" height="40px" viewBox="0 0 64 64" version="1.1">
+                                            <circle fill="#0098a6" width="35" height="35" cx="32" cy="32" r="32" />
+                                            <text x="50%" y="50%" style="color: #ffffff;line-height: 1;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;" alignment-baseline="middle" text-anchor="middle" font-size="26" font-weight="400" dy=".1em" dominant-baseline="middle" fill="#ffffff">
+                                                @Html.Raw(firstName)
+                                            </text>
+                                        </svg>
+                                    }
+                                </div>
+                                <div class="mainheder">
+                                    <ul class="menu-pro" id="menu-pro">
+                                        <li>
+                                            <a asp-controller="BaiGiangs" asp-action="HoSo"> <i class="fas fa-user"></i>&nbsp Hồ sơ</a>
+                                        </li>
+                                        <li>
+                                            <a asp-controller="DangNhap" asp-action="Logout"><i class="fas fa-sign-out-alt"></i>&nbsp Đăng xuất </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li>
+                                <strong> @User.Identity.Name</strong>
+                                <script>
+                                    //////// dang xuat
+                                    angular.module('myApp', []).controller('LogoutController', function ($scope, $http, $window) {
+                                        var notyf = new Notyf();
+                                        $scope.logout = function () {
+                                            $http.post('/api/authentication/logout')
+                                                .then(function (response) {
+                                                    localStorage.removeItem('token');
+                                                    notyf.success('Đăng xuất thành công.');
+                                                    $window.location.href = '/';
+                                                })
+                                                .catch(function (error) {
+                                                    console.log(error);
+                                                });
+                                        };
+                                    });</script>
+                            </li>
+
+                        }
+                        else
+                        {
+                            <li>
+
+                                <button type="button" class="btn btn-info btn-round" data-toggle="modal" data-target="#loginModal">
+                                    Đăng nhập
+                                </button>
+                                @await Html.PartialAsync("~/Views/PartialView/_DangNhap.cshtml")
+                            </li>
+
+                            <li style="display: inline-block;">
+                                <button type="button" class="btn btn-success btn-round" data-toggle="modal" data-target="#registerModal">
+                                    Đăng ký
+                                </button>
+                                @await Html.PartialAsync("~/Views/PartialView/_DangKy.cshtml")
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="forgotPasswordModalLabel">Quên mật khẩu</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form asp-controller="DangNhap" asp-action="QuenMatKhau" method="post">
+                            <div class="form-group">
+                                <label for="Email">Email</label>
+                                <input type="email" class="form-control" id="Email" name="Email" placeholder="Nhập địa chỉ email của bạn" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="heder2">
+
+        <div class="mainheder">
+            <h2 style="padding-left:20px;">
+                Explore IT World
+
+            </h2>
+        </div>
+
+    </div>
+
+</header>
+
+
+<div class="modal fade" id="lienhe" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <button style="color:black" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-title text-center">
+                    <h2>Thông tin liên hệ</h2>
+                </div>
+                <div class="d-flex flex-column text-center">
+                    <p><strong>Thông tin liên hệ:</strong> </p>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+    .heder1 {
+        overflow: visible; 
+        position: relative;
+    }
+
+    h2.d-flex {
+        display: flex;
+        align-items: center;
+        color: #fff; 
+    }
+.notify-badge{ position:absolute; top:-6px; right:-6px; }
+.dropdown-menu a.dropdown-item{ white-space: normal; }
+
+/* chấm xanh cho notify chưa đọc */
+.notify-dot {
+  display:inline-block;
+  width:8px; height:8px;
+  border-radius:50%;
+  background:#574bff; /* xanh lá Bootstrap-ish */
+  margin-right:6px;
+}
+.notify-item.read .notify-dot { display:none; } /* đã đọc thì ẩn chấm */
+</style>
+

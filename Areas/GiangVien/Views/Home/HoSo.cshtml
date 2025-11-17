@@ -1,0 +1,318 @@
+@model WebBaiGiang_CKC.Models.GiangVien
+@{
+    ViewData["Title"] = "Hồ sơ giảng viên";
+    Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
+
+    string OrLabel(string s) => string.IsNullOrWhiteSpace(s) ? "— chưa cập nhật —" : s!;
+    bool Has(string s) => !string.IsNullOrWhiteSpace(s);
+
+    string Initials(string name) {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0,1).ToUpper();
+        return (parts[^2][0].ToString() + parts[^1][0].ToString()).ToUpper();
+    }
+
+    // Tính độ hoàn thiện hồ sơ (4 trường cơ bản)
+    var fields = new[] { Model.Email, Model.SoDienThoai, Model.DiaChi, Model.ChuyenMon };
+    var completed = fields.Count(f => !string.IsNullOrWhiteSpace(f));
+    var total = fields.Length;
+    var percent = (int)Math.Round(100.0 * completed / Math.Max(total,1));
+
+    // Danh sách thiếu để thông báo
+    var missing = new List<string>();
+    if (!Has(Model.Email)) missing.Add("Email");
+    if (!Has(Model.SoDienThoai)) missing.Add("Số điện thoại");
+    if (!Has(Model.DiaChi)) missing.Add("Địa chỉ");
+    if (!Has(Model.ChuyenMon)) missing.Add("Chuyên môn");
+}
+
+<style>
+  .profile-header {
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-avatar {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 1.75rem;
+    border: 2px solid rgba(255,255,255,.35);
+    backdrop-filter: blur(2px);
+  }
+  .chip {
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.25rem .6rem; border-radius: 999px;
+    background: rgba(255,255,255,.16); color: #fff; font-weight:600;
+  }
+  .glass-card {
+    background: rgba(255,255,255,.9);
+    backdrop-filter: blur(6px);
+    border-radius: 1rem; border: 1px solid rgba(0,0,0,.06);
+  }
+  .info-grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); /* desktop 2 cột đẹp, mobile tự 1 cột */
+  }
+  @@media (max-width: 480px) {
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="profile-header mb-4">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <div class="profile-avatar">@Initials(Model.HoTen)</div>
+    <div class="flex-grow-1">
+      <h2 class="mb-1">@Model.HoTen</h2>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="chip"><i class="bi bi-briefcase"></i> @OrLabel(Model.ChuyenMon)</span>
+        <span class="chip"><i class="bi bi-person-badge"></i> Mã GV: @Model.MaGiangVien</span>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 ms-auto">
+      @if (Has(Model.Email)) {
+        <a class="btn btn-light" href="mailto:@Model.Email"><i class="bi bi-envelope"></i> Email</a>
+      } else {
+        <button class="btn btn-light" type="button" disabled title="Chưa có email">
+          <i class="bi bi-envelope"></i> Email
+        </button>
+      }
+      @if (Has(Model.SoDienThoai)) {
+        <a class="btn btn-outline-light" href="tel:@Model.SoDienThoai"><i class="bi bi-telephone"></i> Gọi</a>
+      } else {
+        <button class="btn btn-outline-light" type="button" disabled title="Chưa có số điện thoại">
+          <i class="bi bi-telephone"></i> Gọi
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Thanh tiến độ hoàn thiện hồ sơ -->
+  <div class="mt-3">
+    <div class="small">Mức hoàn thiện hồ sơ: <strong>@percent%</strong></div>
+    <div class="progress" style="height: 8px;">
+      <div class="progress-bar bg-success" role="progressbar" style="width:@percent%"></div>
+    </div>
+    @if (missing.Any())
+    {
+      <div class="mt-2 small">
+        <i class="bi bi-info-circle"></i>
+        Cần bổ sung: @string.Join(", ", missing)
+      </div>
+    }
+  </div>
+</div>
+
+<div class="info-grid">
+  <!-- Card thông tin liên hệ -->
+  <div class="glass-card p-4">
+    <h5 class="mb-3"><i class="bi bi-person-lines-fill me-1"></i> Thông tin liên hệ</h5>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="small text-muted">Email</div>
+        <div class="fw-semibold">
+          @if (Has(Model.Email)) {
+            @Model.Email
+          } else {
+            <span class="text-muted">— chưa cập nhật —</span>
+          }
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="small text-muted">Số điện thoại</div>
+        <div class="fw-semibold">
+          @if (Has(Model.SoDienThoai)) {
+            @Model.SoDienThoai
+          } else {
+            <span class="text-muted">— chưa cập nhật —</span>
+          }
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="small text-muted">Địa chỉ</div>
+        <div class="fw-semibold">
+          @if (Has(Model.DiaChi)) {
+            @Model.DiaChi
+          } else {
+            <span class="text-muted">— chưa cập nhật —</span>
+          }
+        </div>
+      </div>
+    </div>
+    <hr class="my-4" />
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" href="@Url.Action("Edit","GiangVien", new { area="Admin", id = Model.MaGiangVien })">
+        <i class="bi bi-pencil-square"></i> Chỉnh sửa hồ sơ
+      </a>
+     <a href="javascript:void(0);" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#signup-modal">
+        <i class="bi bi-shield-lock"></i>
+          <span>Đổi mật khẩu</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card phân công giảng dạy -->
+  <div class="glass-card p-4">
+    <h5 class="mb-3"><i class="bi bi-journal-check me-1"></i> Phân công giảng dạy</h5>
+
+    @if (Model.LopHocs != null && Model.LopHocs.Any())
+    {
+        <div class="mb-2 small text-muted">
+          Tổng số lớp phụ trách: <span class="fw-semibold">@Model.LopHocs.Count()</span>
+        </div>
+
+        <!-- Nếu bạn có thuộc tính như TenLop, MaLop, KhoaHoc.Ten... hãy thay vào table bên dưới -->
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tên lớp</th>
+                <th>Khoá học</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            @{
+              var idx = 1;
+              foreach (var lop in Model.LopHocs)
+              {
+                  <tr>
+                    <td>@idx</td>
+                    <td>@(string.IsNullOrWhiteSpace(lop?.TenLopHoc) ? "— chưa đặt tên —" : lop.TenLopHoc)</td>
+                    <td>@(lop?.KhoaHoc?.TenKhoaHoc ?? "— chưa gán khoá học —")</td>
+                    <td class="text-end">
+                      @* ví dụ nút xem chi tiết lớp nếu có *@
+                      @* <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details","LopHoc", new { area="GiangVien", id = lop.MaLopHoc })">Xem</a> *@
+                    </td>
+                  </tr>
+                  idx++;
+              }
+            }
+            </tbody>
+          </table>
+        </div>
+
+    }
+    else
+    {
+        <div class="alert alert-light border d-flex align-items-center" role="alert">
+          <i class="bi bi-info-circle me-2"></i> Chưa có phân công lớp học.
+        </div>
+    }
+  </div>
+</div>
+
+<div id="signup-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đổi mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body" ng-app="DoiMatKhauApp" ng-controller="doimatkhaujs">
+                <div class="text-center mt-2 mb-4">
+                    <a asp-controller="Home" asp-action="Index" class="text-success">
+                        <span><img src="~/AdminAssets/images/logo-dark.png" alt="" height="18"></span>
+                    </a>
+                </div>
+                <form class="ps-3 pe-3">
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu cũ</label>
+                        <input class="form-control" type="password" ng-model="currentPassword" required placeholder="Nhập mật khẩu cũ">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu mới</label>
+                        <input class="form-control" type="password" ng-model="newPassword" required placeholder="Nhập mật khẩu mới">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Xác nhận mật khẩu</label>
+                        <input class="form-control" type="password" ng-model="confirmPassword" required placeholder="Nhập lại mật khẩu mới">
+                    </div>
+
+                    <div class="mb-3 text-center">
+                        <button class="btn btn-primary" type="submit" ng-click="doimatkhau(); showModal = false;" data-dismiss="modal">
+                            <i class="fa fa-key"></i> Đổi mật khẩu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+<script>
+    var app = angular.module('DoiMatKhauApp', []);
+
+    app.controller('doimatkhaujs', function ($scope, $http, notyf) {
+        $scope.showModal = true;
+
+        $scope.doimatkhau = function () {
+            var currentPassword = $scope.currentPassword;
+            var newPassword = $scope.newPassword;
+            var confirmPassword = $scope.confirmPassword;
+
+            if (newPassword !== confirmPassword) {
+                notyf.error('Mật khẩu mới và xác nhận không khớp.');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                notyf.error('Mật khẩu mới phải có ít nhất 6 ký tự.');
+                return;
+            }
+
+            var data = {
+                currentPassword: currentPassword,
+                newPassword: newPassword,
+                confirmPassword: confirmPassword
+            };
+
+            $http({
+                method: 'POST',
+                url: '/api/authentication/changepasswordgv',
+                data: data,
+                headers: { 'Content-Type': 'application/json' },
+                withCredentials: true
+            })
+                .then(function (response) {
+                    notyf.success(response.data);
+                    $scope.currentPassword = '';
+                    $scope.newPassword = '';
+                    $scope.confirmPassword = '';
+                    $('#signup-modal').modal('hide');
+                })
+                .catch(function (error) {
+                    notyf.error(error.data || 'Đổi mật khẩu thất bại!');
+                    console.log('Request error', error);
+                });
+        };
+    });
+
+    app.factory('notyf', function () {
+        return new Notyf({
+            duration: 3000,
+            position: { x: 'right', y: 'top' },
+            types: [
+                {
+                    type: 'success',
+                    background: '#00b300',
+                    icon: { className: 'material-icons', tagName: 'i', text: 'check_circle', color: 'white' },
+                },
+                {
+                    type: 'error',
+                    background: '#ff4d4d',
+                    icon: { className: 'material-icons', tagName: 'i', text: 'cancel', color: 'white' },
+                }
+            ],
+        });
+    });
+</script>
+}

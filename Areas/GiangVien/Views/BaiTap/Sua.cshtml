@@ -1,0 +1,155 @@
+﻿@model WebBaiGiang_CKC.Models.BaiTap
+@{
+    Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Sửa bài tập";
+}
+
+<div class="row">
+    <!-- Sidebar trái -->
+    <div class="col-md-2 border-end bg-white">
+        @await Html.PartialAsync("~/Areas/GiangVien/Views/Shared/_SidebarGiangVien.cshtml")
+    </div>
+
+    <!-- Nội dung chính -->
+    <div class="col-md-10">
+        <div class="container mt-4">
+            <h3 class="fw-bold mb-4 text-primary">
+                <i class="fa fa-edit me-2"></i> Sửa bài tập
+            </h3>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-action="Sua" asp-controller="BaiTap" asp-area="GiangVien" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="MaBaiTap" />
+                        <input type="hidden" asp-for="BaiId" />
+                        <input type="hidden" name="maLopHoc" value="@ViewBag.MaLopHoc" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên bài tập <span class="text-danger">*</span></label>
+                            <input asp-for="TenBaiTap" class="form-control" placeholder="Nhập tên bài tập..." />
+                            <span asp-validation-for="TenBaiTap" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mô tả</label>
+                            <textarea asp-for="MoTa" id="MoTa" class="form-control" rows="6" placeholder="Nhập mô tả hoặc hướng dẫn cho bài tập..."></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Hạn nộp</label>
+                            <input asp-for="HanNop" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="HanNop" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">File đính kèm (nếu muốn cập nhật)</label>
+                            <input type="file" name="FileUpload" class="form-control" />
+                            @if (!string.IsNullOrEmpty(Model.FileDinhKem))
+                            {
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fa fa-paperclip me-1"></i> File hiện tại:
+                                    <a href="@Model.FileDinhKem" target="_blank">Tải xuống</a>
+                                </small>
+                            }
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <a href="@Url.Action("NoiDung", "LopHoc", new { id = ViewBag.MaLopHoc, area = "GiangVien" })"
+                               class="btn btn-secondary me-2">
+                                <i class="fa fa-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save me-1"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- ✅ TinyMCE không cần API key -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6.7.0/tinymce.min.js"></script>
+
+    <script>
+        tinymce.init({
+            selector: '#MoTa',
+            height: 400,
+            menubar: false,
+            plugins: 'lists link image table code emoticons',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link image | alignleft aligncenter alignright | code emoticons',
+            branding: false,
+            content_style: "body { font-family: Arial, sans-serif; font-size: 14px; }",
+
+            // ✅ Cho phép dán / kéo ảnh vào nội dung
+            images_upload_url: '/GiangVien/Upload/NoiDungImage',
+            automatic_uploads: true,
+            images_upload_handler: function (blobInfo, progress) {
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/GiangVien/Upload/NoiDungImage');
+                    xhr.onload = function () {
+                        if (xhr.status !== 200) {
+                            reject('Upload lỗi: ' + xhr.status);
+                            return;
+                        }
+                        var json = JSON.parse(xhr.responseText);
+                        if (!json || typeof json.location != 'string') {
+                            reject('Phản hồi không hợp lệ: ' + xhr.responseText);
+                            return;
+                        }
+                        resolve(json.location);
+                    };
+                    var formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+                    xhr.send(formData);
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+
+    label {
+        color: #333;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        box-shadow: none !important;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    .btn-primary {
+        background-color: #126f9a;
+        border-color: #126f9a;
+    }
+
+        .btn-primary:hover {
+            background-color: #0d5a7d;
+            border-color: #0d5a7d;
+        }
+
+    .bg-white {
+        background-color: #fff !important;
+    }
+
+    .col-md-10 {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+</style>

@@ -1,0 +1,157 @@
+﻿@{
+    Layout = null;
+}
+@using BaiGiang.Models;
+@model ResetPasswordViewModel
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Đặt lại mật khẩu | ASP.NET CORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+    <meta content="Coderthemes" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="~/AdminAssets/images/favicon.ico">
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style" />
+    <link href="~/AdminAssets/css/app-dark.min.css" rel="stylesheet" type="text/css" id="dark-style" />
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.js"></script>
+</head>
+
+<body class="loading authentication-bg" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+
+    <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xxl-4 col-lg-5">
+                    <div class="card">
+                        <!-- Logo -->
+                        <div class="card-header pt-4 pb-4 text-center bg-primary">
+                            <a href="index.html">
+                                <span><img src="~/AdminAssets/images/logo.png" alt="" height="18"></span>
+                            </a>
+                        </div>
+                        <div class="card-body p-4" ng-app="myApp" ng-controller="ResetPasswordController">
+
+                            <div class="text-center w-75 m-auto">
+                                <h4 class="text-dark-50 text-center mt-0 fw-bold">Quên mật khẩu</h4>
+                                <p class="text-muted mb-4">Chúng tôi đã gửi email có mã token khôi phục mật khẩu cho bạn </p>
+                            </div>
+
+                            <form ng-submit="resetPassword()">
+                                <div class="mb-3">
+                                    <label class="form-label">Nhập Token</label>
+                                    <input class="form-control" ng-model="token" required placeholder="Nhập Token">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mật khẩu mới </label>
+                                    <input class="form-control" type="password" ng-model="password" required placeholder="Nhập Mật khẩu mới">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Xác nhận mật khẩu</label>
+                                    <input class="form-control" type="password" ng-model="confirmPassword" required placeholder="Xác nhận mật khẩu">
+                                </div>
+
+                                <div class="mb-0 text-center">
+                                    <button class="btn btn-primary" type="submit">Đổi mật khẩu</button>
+                                </div>
+                            </form>
+                        </div> <!-- end card-body-->
+                    </div>
+                    <!-- end card -->
+
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <p class="text-muted">Quay lại <a asp-action="Login" class="text-muted ms-1"><b>Đăng nhập</b></a></p>
+                        </div> <!-- end col -->
+                    </div>
+                    <!-- end row -->
+
+                </div> <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end container -->
+    </div>
+    <!-- end page -->
+
+    <footer class="footer footer-alt">
+        2025 © Nhóm 21
+    </footer>
+    <script>
+        angular.module('myApp', [])
+        .factory('notyf', function () {
+            return new Notyf({
+                duration: 3000,
+                position: {
+                    x: 'right',
+                    y: 'top',
+                },
+                types: [
+                    {
+                        type: 'success',
+                        background: '#00b300',
+                        icon: {
+                            className: 'material-icons',
+                            tagName: 'i',
+                            text: 'check_circle',
+                            color: 'white',
+                        },
+                    },
+                    {
+                            type: 'error',
+                            background: '#ff4d4d',
+                            icon: {
+                                className: 'material-icons',
+                                tagName: 'i',
+                                text: 'cancel',
+                                color: 'white',
+                            },
+                    },
+
+                ],
+            });
+        })
+            .controller('ResetPasswordController', ['$scope', '$http', 'notyf', '$window', function ($scope, $http, notyf, $window) {
+                $scope.resetPassword = function () {
+                    var token = $scope.token;
+                    var password = $scope.password;
+                    var confirmPassword = $scope.confirmPassword;
+                    if ($scope.password !== $scope.confirmPassword) {
+                        alert('Xác nhận mật khẩu không đúng!');
+                        return;
+                    }
+                    if (token && password && confirmPassword) {
+                        var data = {
+                            Token: token,
+                            Password: password,
+                            ConfirmPassword: confirmPassword
+                        };
+
+                        $http.post('/api/authentication/resetpasswordgv', data)
+                            .then(function (response) {
+                               
+                                $window.location.href = '/Admin/DangNhap/Login';
+                                
+                            })
+                            .catch(function (error) {
+                                notyf.error(error.data);
+                            });
+                    } else {
+                        notyf.error('Vui lòng nhập đầy đủ thông tin');
+                    }
+                };
+            }]);
+    </script>
+    <!-- bundle -->
+    <script src="~/AdminAssets/js/vendor.min.js"></script>
+    <script src="~/AdminAssets/js/app.min.js"></script>
+    @await Component.InvokeAsync("Notyf")
+</body>
+</html>

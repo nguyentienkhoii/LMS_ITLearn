@@ -1,0 +1,339 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard | LMS2025</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description">
+    <meta content="Coderthemes" name="author">
+    <!-- App favicon -->
+
+
+    <!-- third party css -->
+    <link href="~/AdminAssets/css/vendor/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css">
+    <!-- third party css end -->
+
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
+    <link href="~/AdminAssets/css/app-dark.min.css" rel="stylesheet" type="text/css" id="dark-style">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Tích hợp summernote và elfinder -->
+    <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/theme.css" />
+    <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" href="~/lib/elfinder/css/elfinder.full.css" />
+    <link rel="stylesheet" href="~/lib/elfinder/css/theme.css" />
+    <link rel="stylesheet" href="~/css/elfinder/themes/material/css/theme-gray.css" />
+    @*  summernote*@
+    <link rel="stylesheet" href="~/lib/summernote/summernote-bs5.css" />
+    <link rel="stylesheet" href="~/lib/summernote/summernote-lite.css" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3.2.0/notyf.min.js"></script>
+</head>
+
+<body class="loading" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+    <!-- Begin page -->
+    <div class="wrapper">
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="leftside-menu">
+
+            <!-- LOGO -->
+            <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="logo text-center logo-light">
+                <span class="logo-lg">
+                    <img src="~/AdminAssets/images/logoto.png" alt="" height="30">
+                </span>
+                <span class="logo-sm">
+                    <img src="~/AdminAssets/images/logoto.png" alt="" height="16">
+                </span>
+            </a>
+
+            <!-- LOGO -->
+            <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="logo text-center logo-dark">
+                <span class="logo-lg">
+                    <img src="~/AdminAssets/images/logoitlearn.png" alt="" height="30">
+                </span>
+                <span class="logo-sm">
+                    <img src="~/AdminAssets/images/logoitlearn.png" alt="" height="16">
+                </span>
+            </a>
+
+
+            <div class="h-100" id="leftside-menu-container" data-simplebar="">
+
+                <!--- Sidemenu -->
+                <ul class="side-nav">
+
+                    <li class="side-nav-item">
+                        <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="side-nav-link">
+                            <i class="uil-home-alt"></i>
+
+                            <span> Trang chủ </span>
+                        </a>
+
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarLayouts" aria-expanded="false" aria-controls="sidebarLayouts" class="side-nav-link">
+                            <i class="uil-window"></i>
+                            <span> QUẢN LÝ BÀI GIẢNG </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarLayouts">
+                            <ul class="side-nav-second-level">
+                                @* <li>
+
+                                    <a asp-area="Admin" asp-controller="MonHoc" asp-action="Index" class="side-nav-link">  <i class="uil-calender"></i>Môn Học </a>
+                                </li> *@
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="KhoaHoc" asp-action="Index" class="side-nav-link">  <i class="uil-calender"></i>Khóa Học </a>
+                                </li>
+
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="LopHoc" asp-action="Index" class="side-nav-link">  <i class="uil-calender"></i>Lớp Học </a>
+                                </li>
+
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="Chuong" asp-action="Index" class="side-nav-link">  <i class="uil-clipboard-alt"></i>Chương </a>
+                                </li>
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="Bai" asp-action="Index" class="side-nav-link">  <i class="uil-table"></i>Bài </a>
+                                </li>
+                                <li>
+
+                                    <a asp-area="Admin" asp-controller="Muc" asp-action="Index" class="side-nav-link">  <i class=" uil-notebooks"></i>Mục </a>
+                                </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="BaiTap" asp-action="Index" class="side-nav-link">  <i class=" uil-notebooks"></i>Bài Tập </a>
+                                </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="DeCuong" asp-action="Index" class="side-nav-link">  <i class=" uil-clipboard-alt"></i>Đề Cương </a>
+                                </li>
+                               
+
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarPages" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link">
+                            <i class="uil-copy-alt"></i>
+                            <span> QUẢN LÝ KIỂM TRA </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarPages">
+                            <ul class="side-nav-second-level">
+                                <li>
+                                    <a asp-area="Admin" asp-controller="KyKiemTra" asp-action="Index" class="side-nav-link"> <i class="uil-chart"></i> Kỳ Kiểm Tra</a>
+                                </li>
+                                 <li>
+                                <a asp-area="Admin" asp-controller="DanhSachThi" asp-action="ChonKy" class="side-nav-link"> <i class="uil-package"></i> Danh Sách Thi
+                                </a>
+                                </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="De" asp-action="Index" class="side-nav-link">  <i class="uil-box"></i>  Đề Thi</a>
+                                </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="KhoCauHoi" asp-action="Index" class="side-nav-link"><i class="uil-document-layout-center"></i> Kho Câu Hỏi</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarIcons" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
+                            <i class="uil-streering"></i>
+                            <span> QUẢN LÝ TÀI KHOẢN </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarIcons">
+                            <ul class="side-nav-second-level">
+                                @* <li>
+                                    <a asp-area="Admin" asp-controller="GiaoVien" asp-action="Index" class="side-nav-link">   <i class="uil-box"></i>Giáo Viên</a>
+                                </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="Index" class="side-nav-link">   <i class="uil-box"></i>Sinh Viên</a>
+                                </li> *@
+                                <li>
+                                    <a asp-area="Admin" asp-controller="HocVien" asp-action="Index" class="side-nav-link">
+                                        <i class="uil-user-square"></i>Học Viên
+                                    </a>
+                                </li>
+                                <li>
+                                    <a asp-area="Admin" asp-controller="GiangVien" asp-action="Index" class="side-nav-link">
+                                        <i class="uil-user-square"></i>Giảng Viên
+                                    </a>
+                                </li>
+
+
+                            </ul>
+                        </div>
+                    </li>
+
+
+                    <li class="side-nav-item">
+                        <a asp-area="Admin" asp-controller="HinhAnh" asp-action="Index" class="side-nav-link">
+                            <i class="uil-folder-plus"></i>
+                            <span> HÌNH ẢNH </span>
+                        </a>
+                    </li>
+
+
+                </ul>
+
+                <!-- End Sidebar -->
+
+                <div class="clearfix"></div>
+
+            </div>
+            <!-- Sidebar -left -->
+
+        </div>
+        <!-- Left Sidebar End -->
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+        @await Html.PartialAsync("~/Areas/Admin/Views/PartialView/_Header.cshtml")
+        <div class="content-page">
+
+            @RenderBody()
+            <!-- content -->
+            @await Html.PartialAsync("~/Areas/Admin/Views/PartialView/_Footer.cshtml")
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+
+
+    </div>
+    <!-- END wrapper -->
+    <!-- Right Sidebar -->
+    <div class="end-bar">
+
+        <div class="rightbar-title">
+            <a href="javascript:void(0);" class="end-bar-toggle float-end">
+                <i class="dripicons-cross noti-icon"></i>
+            </a>
+            <h5 class="m-0">Settings</h5>
+        </div>
+
+        <div class="rightbar-content h-100" data-simplebar="">
+
+            <div class="p-3">
+
+
+                <!-- Settings -->
+                <h5 class="mt-3">Color Scheme</h5>
+                <hr class="mt-1">
+
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="light" id="light-mode-check" checked="">
+                    <label class="form-check-label" for="light-mode-check">Light Mode</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="dark" id="dark-mode-check">
+                    <label class="form-check-label" for="dark-mode-check">Dark Mode</label>
+                </div>
+
+
+                <!-- Width -->
+                <h5 class="mt-4">Width</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="width" value="fluid" id="fluid-check" checked="">
+                    <label class="form-check-label" for="fluid-check">Fluid</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="width" value="boxed" id="boxed-check">
+                    <label class="form-check-label" for="boxed-check">Boxed</label>
+                </div>
+
+
+                <!-- Left Sidebar-->
+                <h5 class="mt-4">Left Sidebar</h5>
+                <hr class="mt-1">
+
+
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="theme" value="light" id="light-check" checked="">
+                    <label class="form-check-label" for="light-check">Light</label>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="theme" value="dark" id="dark-check">
+                    <label class="form-check-label" for="dark-check">Dark</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="fixed" id="fixed-check" checked="">
+                    <label class="form-check-label" for="fixed-check">Fixed</label>
+                </div>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="condensed" id="condensed-check">
+                    <label class="form-check-label" for="condensed-check">Condensed</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="scrollable" id="scrollable-check">
+                    <label class="form-check-label" for="scrollable-check">Scrollable</label>
+                </div>
+
+
+            </div> <!-- end padding-->
+
+        </div>
+    </div>
+
+    <div class="rightbar-overlay"></div>
+    <!-- /End-bar -->
+    <!-- bundle -->
+    <script src="~/AdminAssets/js/vendor.min.js"></script>
+    <script src="~/AdminAssets/js/app.min.js"></script>
+
+    <!-- third party js -->
+
+    <script src="~/AdminAssets/js/vendor/jquery-jvectormap-1.2.2.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/jquery-jvectormap-world-mill-en.js"></script>
+    <!-- third party js ends -->
+    <!-- demo app -->
+    @* <script src="~/AdminAssets/js/pages/demo.dashboard.js"></script>*@
+    <!-- end demo js-->
+    @*elfinder*@
+
+
+    <environment names="Development">
+
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        @* <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
+       
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
+        </script>
+
+    </environment>
+
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/lib/elfinder/js/elfinder.full.js"></script>
+
+    @* summernote*@
+
+    <script src="~/lib/summernote/summernote-bs5.js"></script>
+    <script src="~/lib/summernote/summernote-lite.min.js"></script>
+
+    @await Component.InvokeAsync("Notyf")
+    @RenderSection("scripts",required: false);
+</body>
+</html>

@@ -1,0 +1,91 @@
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@using X.PagedList;
+@model IPagedList<WebBaiGiang_CKC.Models.Muc>
+
+@{
+   
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="Muc" asp-action="Index">Quản lý nội dung</a></li>
+
+</ol>
+<h1 style="text-align: center;">QUẢN LÝ NỘI DUNG</h1>
+<hr />
+<br />
+
+<a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+
+<table class="table table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+            <th>
+                Chương
+            </th>
+            <th>
+                Tên Bài
+            </th>
+            <th>
+                Tên Mục
+            </th>
+            <th>
+                Số Mục
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Bai.Chuong.TenChuong)
+                </td>
+                  <td>
+                    @Html.DisplayFor(modelItem => item.Bai.TenBai)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenMuc)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MucSo)
+                </td>
+                <td>
+
+                    <a asp-action="Details" asp-route-id="@item.MucId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
+                    <a asp-action="Edit" asp-route-id="@item.MucId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.MucId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Pagination with icons -->
+<div class="row">
+
+    <div class="row ">
+
+        <ul class="pagination justify-content-end ">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new {page = page}), new PagedListRenderOptions()
+            {
+            ActiveLiElementClass = "active",
+            PageClasses = new[]{ "page-link"},
+            LiElementClasses=new[] { "page-item" },
+            UlElementClasses = new[] { "pagination","justify-content-center", "mt-3" },
+            LinkToNextPageFormat = "Sau",
+            LinkToPreviousPageFormat = "Trước",
+            MaximumPageNumbersToDisplay = 3,
+            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+            DisplayLinkToNextPage = PagedListDisplayMode.Always
+            })
+        </ul>
+
+    </div>
+
+</div>
+<!-- End Right/End Aligned Pagination -->

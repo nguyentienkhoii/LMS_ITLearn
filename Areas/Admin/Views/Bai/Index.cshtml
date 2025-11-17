@@ -1,0 +1,61 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.Bai>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<ol class="breadcrumb">
+
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Index">Quản lý bài </a></li>
+
+</ol>
+<style>
+    h1 {
+        text-align: center;
+    }
+</style>
+<h1>QUẢN LÝ ĐỀ BÀI</h1>
+<hr />
+<br />
+
+<a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+
+<table class="table table alert-light">
+    <thead class="table-dark">
+        <tr style="text-align: center;">
+            <th>
+                @Html.DisplayNameFor(model => model.Chuong.TenChuong)
+            </th>
+            <th> @Html.DisplayNameFor(model => model.TenBai)</th>
+            <th>
+                @Html.DisplayNameFor(model => model.SoBai)
+            </th>
+           
+           
+            <th></th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Chuong.TenChuong)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenBai)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SoBai)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.BaiId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
+                    <a asp-action="Edit" asp-route-id="@item.BaiId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.BaiId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Pagination with icons -->

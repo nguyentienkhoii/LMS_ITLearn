@@ -1,0 +1,121 @@
+﻿@model WebBaiGiang_CKC.Models.De
+
+@{
+    ViewData["Title"] = "Sửa đề thi";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var danhSachChuong = ViewBag.DanhSachChuong as IEnumerable<dynamic> ?? new List<dynamic>();
+    var dsLop = ViewBag.LopHoc as IEnumerable<WebBaiGiang_CKC.Models.LopHoc> ?? new List<WebBaiGiang_CKC.Models.LopHoc>();
+}
+
+<h2 class="text-center">SỬA ĐỀ THI</h2>
+<hr />
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="DeId" />
+
+    <div class="form-group">
+        <label asp-for="KyKiemTraId"></label>
+        <select asp-for="KyKiemTraId" class="form-control" asp-items="ViewBag.KyKiemTraId"></select>
+    </div>
+
+    <div class="form-group">
+        <label class="fw-bold">Lớp học</label>
+        <select id="LopHocSelect" class="form-control">
+            <option value="">-- Chọn lớp học --</option>
+            @foreach (var lop in dsLop)
+            {
+                <option value="@lop.MaLopHoc">@lop.TenLopHoc</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="SoCauHoi"></label>
+        <input asp-for="SoCauHoi" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DoKhoDe"></label>
+        <input asp-for="DoKhoDe" class="form-control" />
+    </div>
+
+    <hr />
+    <h5>Phân bổ số câu hỏi theo từng chương</h5>
+
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Chương</th>
+                <th>Số câu hỏi hiện có</th>
+                <th>Số câu muốn chọn</th>
+            </tr>
+        </thead>
+        <tbody id="ChuongTableBody">
+            @foreach (var chuong in danhSachChuong)
+            {
+                <tr>
+                    <td>@chuong.TenChuong</td>
+                    <td>@chuong.SoLuongCauHoi</td>
+                    <td>
+                        <input type="number"
+                               name="CauHoiChuong@(chuong.MaChuong)"
+                               class="form-control"
+                               min="0"
+                               max="@chuong.SoLuongCauHoi"
+                               value="0" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Lưu thay đổi</button>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </div>
+</form>
+
+@section scripts {
+    <script>
+        // Khi chọn lớp → load danh sách chương qua Ajax
+        $('#LopHocSelect').on('change', function () {
+            const maLop = $(this).val();
+            if (!maLop) {
+                $('#ChuongTableBody').html('<tr><td colspan="3" class="text-muted text-center">Vui lòng chọn lớp học để hiển thị chương</td></tr>');
+                return;
+            }
+
+            $.ajax({
+                url: '/Admin/De/LayDanhSachChuongTheoLop',
+                type: 'GET',
+                data: { maLop: maLop },
+                success: function (data) {
+                    let html = '';
+                    if (data.length === 0) {
+                        html = '<tr><td colspan="3" class="text-center text-muted">Không có chương nào có câu hỏi trong lớp này.</td></tr>';
+                    } else {
+                        data.forEach(chuong => {
+                            html += `
+                                                <tr>
+                                                    <td>${chuong.tenChuong}</td>
+                                                    <td>${chuong.soLuongCauHoi ?? ''}</td>
+                                                    <td>
+                                                        <input type="number"
+                                                               name="CauHoiChuong${chuong.maChuong}"
+                                                               class="form-control"
+                                                               min="0"
+                                                               max="100"
+                                                               value="0" />
+                                                    </td>
+                                                </tr>`;
+                        });
+                    }
+                    $('#ChuongTableBody').html(html);
+                },
+                error: function () {
+                    alert('Không thể tải danh sách chương.');
+                }
+            });
+        });
+    </script>
+}

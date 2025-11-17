@@ -1,0 +1,113 @@
+﻿@{
+    var selectedMonHoc = ViewBag.SelectedMonHoc as LopHoc; // Môn học đã chọn
+}
+
+<div class="thanh">
+    <nav class="custom-menu">
+        <ul class="menu">
+            <li class="menu-header">
+                <i class="fas fa-book me-2"></i>
+                @(selectedMonHoc != null ? selectedMonHoc.TenLopHoc.ToUpper() : "LỚP HỌC")
+            </li>
+
+            <li class="menu-item">
+                <a id="menu-item-1" asp-controller="Home" asp-action="MonHoc" asp-route-id="@selectedMonHoc?.MaLopHoc">
+                    <i class="fas fa-home"></i> Tổng quan
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a id="menu-item-2" asp-controller="BaiGiangs" asp-action="DeCuong" asp-route-monHocId="@selectedMonHoc?.MaLopHoc">
+                    <i class="fas fa-file-alt"></i> Đề cương
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a id="menu-item-3" asp-controller="Home" asp-action="MonHoc" asp-route-id="@selectedMonHoc?.MaLopHoc">
+                    <i class="fas fa-chalkboard-teacher"></i> Bài giảng
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a id="menu-item-4" asp-controller="BaiGiangs" asp-action="BaiTap" asp-route-monHocId="@selectedMonHoc?.MaLopHoc">
+                    <i class="fas fa-pencil-alt"></i> Bài tập
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    /* === Menu trong trang môn học === */
+    .thanh {
+        background: linear-gradient(180deg, #126f9a, #5ce1e6);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 0.8rem 0;
+        color: white;
+        margin-bottom: 20px;
+    }
+
+    .custom-menu .menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Tiêu đề môn học */
+    .menu-header {
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.05rem;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+        color: #fff;
+    }
+
+    /* Item */
+    .menu-item a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: white;
+        padding: 10px 20px;
+        transition: all 0.25s ease;
+        font-weight: 500;
+        border-radius: 8px;
+        margin: 4px 12px;
+    }
+
+    .menu-item a:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateX(4px);
+    }
+
+    /* Icon */
+    .menu-item i {
+        width: 22px;
+        text-align: center;
+        font-size: 17px;
+        opacity: 0.9;
+    }
+
+    /* Mục đang chọn */
+    .menu-item.active a,
+    .menu-item a.active {
+        background: rgba(255, 255, 255, 0.3);
+        font-weight: 600;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .menu-item a {
+            padding: 8px 14px;
+            font-size: 15px;
+        }
+    }
+</style>

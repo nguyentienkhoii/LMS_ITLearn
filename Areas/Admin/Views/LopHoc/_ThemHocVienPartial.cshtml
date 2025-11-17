@@ -1,0 +1,70 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Areas.Admin.Controllers.LopHocController.HocVienCheckboxVM>
+@{
+    var maLop = ViewBag.MaLopHoc;
+}
+
+<form id="formCapNhatHocVien">
+    <input type="hidden" id="MaLopHoc" value="@maLop" />
+
+    <div style="max-height:400px; overflow:auto; border:1px solid #ddd; padding:6px;">
+        <table class="table table-bordered table-sm align-middle">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="checkAllHV" /></th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hv in Model)
+                {
+                    <tr>
+                        <td class="text-center">
+                            <input class="form-check-input chkHocVien"
+                                   type="checkbox"
+                                   value="@hv.MaHocVien"
+                            @(hv.DaTrongLop ? "checked" : "") />
+                        </td>
+                        <td>@hv.HoTen</td>
+                        <td>@hv.Email</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-end mt-3">
+        <button type="button" class="btn btn-primary" id="btnLuuHocVien">
+            Lưu
+        </button>
+    </div>
+</form>
+
+<script>
+    $("#checkAllHV").on("change", function () {
+        $(".chkHocVien").prop("checked", this.checked);
+    });
+
+    $("#btnLuuHocVien").click(function () {
+        var ids = $(".chkHocVien:checked").map(function () { return parseInt(this.value); }).get();
+        var req = { maLopHoc: parseInt($("#MaLopHoc").val()), maHocViens: ids };
+
+        $.ajax({
+            url: '/Admin/LopHoc/CapNhatHocVienLop',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(req),
+            success: function (res) {
+                if (res.success) {
+                    notyf.success(res.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    notyf.error(res.message);
+                }
+            },
+            error: function () {
+                notyf.error("Có lỗi xảy ra, vui lòng thử lại!");
+            }
+        });
+    });
+</script>

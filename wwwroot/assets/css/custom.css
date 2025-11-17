@@ -1,0 +1,13 @@
+﻿/* ===== FIX ICON GEAR + BELL THẲNG HÀNG ===== */
+.noti-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
+}

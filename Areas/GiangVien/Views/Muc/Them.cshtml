@@ -1,0 +1,243 @@
+﻿@model WebBaiGiang_CKC.Models.Muc
+@{
+    Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Thêm mục mới";
+}
+
+<div class="row">
+    <!-- Sidebar trái -->
+    <div class="col-md-2 border-end bg-white">
+        @await Html.PartialAsync("~/Areas/GiangVien/Views/Shared/_SidebarGiangVien.cshtml")
+    </div>
+
+    <!-- Nội dung chính -->
+    <div class="col-md-10">
+        <div class="container mt-4">
+            <h4 class="fw-bold text-primary mb-4">
+                <i class="fa fa-list"></i> Thêm mục mới cho bài:
+                <span class="text-dark">@ViewBag.Bai?.TenBai</span>
+            </h4>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form asp-area="GiangVien"
+                          asp-controller="Muc"
+                          asp-action="Them"
+                          method="post"
+                          enctype="multipart/form-data"
+                          asp-route-maLopHoc="@ViewBag.MaLopHoc">
+
+                        @Html.AntiForgeryToken()
+
+                        <!-- Giữ BaiId -->
+                        <input type="hidden" asp-for="BaiId" />
+                        <input type="hidden" name="maLopHoc" value="@ViewBag.MaLopHoc" />
+
+                        <!-- Tên mục -->
+                        <div class="mb-3">
+                            <label asp-for="TenMuc" class="form-label fw-semibold"></label>
+                            <input asp-for="TenMuc" class="form-control" placeholder="Nhập tên mục..." />
+                            <span asp-validation-for="TenMuc" class="text-danger"></span>
+                        </div>
+
+                        <!-- Số mục -->
+                        <div class="mb-3">
+                            <label asp-for="MucSo" class="form-label fw-semibold"></label>
+                            <input asp-for="MucSo" type="number" class="form-control" placeholder="Nhập số mục..." min="1" value="1" />
+                            <span asp-validation-for="MucSo" class="text-danger"></span>
+                        </div>
+
+                        <!-- Nội dung -->
+                        <!-- Nội dung -->
+                        <div class="mb-3">
+                            <label asp-for="NoiDung" class="form-label fw-semibold"></label>
+                            <textarea asp-for="NoiDung" id="NoiDung" class="form-control" rows="6" placeholder="Nhập nội dung..."></textarea>
+                            <span asp-validation-for="NoiDung" class="text-danger"></span>
+                        </div>
+
+
+                        <!-- Kéo thả file (upload nhiều tài liệu) -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tài liệu đính kèm</label>
+                            <div id="dropzone" class="dropzone">
+                                <p class="mb-1">
+                                    <i class="fa fa-upload me-2 text-primary"></i>
+                                    Kéo và thả tệp vào đây hoặc nhấn để chọn
+                                </p>
+                                <input type="file" id="FileTaiLieu" name="FileTaiLieuList" class="form-control-file d-none" multiple />
+                                <small class="text-muted">
+                                    Hỗ trợ các loại tệp: PDF, DOCX, PPTX, hình ảnh, ...
+                                </small>
+                            </div>
+                            <div id="filePreview" class="mt-2 text-success small fw-semibold"></div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save me-1"></i> Lưu mục
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- ✅ TinyMCE bản không cần API key -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6.7.0/tinymce.min.js"></script>
+
+    <script>
+        // ==============================
+        // 🔹 TinyMCE Editor
+        // ==============================
+        tinymce.init({
+            selector: '#NoiDung',
+            height: 400,
+            menubar: false,
+            plugins: 'lists link image table code emoticons',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link image | alignleft aligncenter alignright | code emoticons',
+            branding: false,
+            content_style: "body { font-family: Arial, sans-serif; font-size: 14px; }",
+
+            // ✅ Cho phép dán / kéo ảnh
+            images_upload_url: '/GiangVien/Upload/NoiDungImage',
+            automatic_uploads: true,
+            images_upload_handler: function (blobInfo, progress) {
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/GiangVien/Upload/NoiDungImage');
+                    xhr.onload = function () {
+                        if (xhr.status !== 200) {
+                            reject('Upload lỗi: ' + xhr.status);
+                            return;
+                        }
+                        var json = JSON.parse(xhr.responseText);
+                        if (!json || typeof json.location != 'string') {
+                            reject('Phản hồi không hợp lệ: ' + xhr.responseText);
+                            return;
+                        }
+                        resolve(json.location);
+                    };
+                    var formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+                    xhr.send(formData);
+                });
+            }
+        });
+
+        // ==============================
+        // 🔹 Kéo & thả file upload (multi-file)
+        // ==============================
+        const dropzone = document.getElementById("dropzone");
+        const fileInput = document.getElementById("FileTaiLieu");
+        const filePreview = document.getElementById("filePreview");
+
+        if (dropzone && fileInput && filePreview) {
+            dropzone.addEventListener("click", () => fileInput.click());
+
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                const files = e.dataTransfer.files;
+                fileInput.files = files;
+                filePreview.innerHTML = "";
+                for (const file of files) {
+                    filePreview.innerHTML += "📄 " + file.name + "<br/>";
+                }
+            });
+
+            fileInput.addEventListener("change", (e) => {
+                const files = e.target.files;
+                filePreview.innerHTML = "";
+                for (const file of files) {
+                    filePreview.innerHTML += "📄 " + file.name + "<br/>";
+                }
+            });
+        }
+
+        // ✅ Fix MucSo không được <= 0
+        document.querySelector("form").addEventListener("submit", function () {
+            const mucSo = document.querySelector("[name='MucSo']");
+            if (mucSo && parseInt(mucSo.value) <= 0) mucSo.value = 1;
+        });
+    </script>
+}
+
+
+
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+
+    label {
+        color: #333;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        box-shadow: none !important;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    .btn-primary {
+        background-color: #126f9a;
+        border-color: #126f9a;
+    }
+
+        .btn-primary:hover {
+            background-color: #0d5a7d;
+            border-color: #0d5a7d;
+        }
+
+    .bg-white {
+        background-color: #fff !important;
+    }
+
+    .col-md-10 {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* --- Kéo thả file --- */
+    .dropzone {
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        text-align: center;
+        padding: 25px;
+        background-color: #fafafa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .dropzone.dragover {
+            background-color: #e8f4fc;
+            border-color: #0d6efd;
+        }
+
+        .dropzone p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+    #filePreview {
+        font-size: 0.9rem;
+    }
+</style>

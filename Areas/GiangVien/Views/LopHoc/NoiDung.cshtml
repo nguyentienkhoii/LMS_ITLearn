@@ -1,0 +1,928 @@
+﻿@model WebBaiGiang_CKC.Models.LopHoc
+@{
+    Layout = "~/Areas/GiangVien/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Nội dung học tập - " + Model.TenLopHoc;
+}
+
+<div class="row">
+    <!-- Sidebar trái -->
+    <div class="col-md-2 border-end">
+        @await Html.PartialAsync("~/Areas/GiangVien/Views/Shared/_SidebarGiangVien.cshtml")
+    </div>
+
+    <!-- Nội dung chính -->
+    <div class="col-md-8">
+        <!-- Ảnh minh họa khóa học -->
+        <!-- Banner khóa học -->
+        @* <div class="course-banner position-relative mb-4">
+            <img src="@(Model.AnhLopHoc ?? Url.Content("/contents/Images/MonHoc/macdinhnew.png"))" 
+     alt="Ảnh minh họa khóa học" class="img-fluid banner-img" />
+
+
+            <!-- Lớp phủ gradient -->
+            <div class="banner-overlay"></div>
+
+            <!-- Tên lớp học -->
+            <div class="banner-title">
+                <h2 class="text-white fw-bold mb-0">@Model.TenLopHoc</h2>
+                <p class="text-white-50 small mb-0" style="font-size: 1rem;">@Model.MoTa</p>
+
+            </div>
+
+            <!-- Nút chỉnh sửa -->
+            <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-3 shadow-sm" id="btnDoiAnh">
+                <i class="fa fa-pen"></i> Chỉnh sửa ảnh
+            </button>
+
+            
+            <form id="formDoiAnh" enctype="multipart/form-data" style="display:none;">
+                <input type="file" name="file" id="fileAnhLop" accept="image/*" />
+            </form>
+
+        </div> *@
+
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold">@Model.TenLopHoc</h5>
+            <div>
+                <button class="btn btn-outline-primary btn-lg me-2 action-btn">
+                    <i class="fa fa-chart-line me-2"></i> Xem tiến độ
+                </button>
+                <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#modalThemChuong">
+                    <i class="fa fa-plus me-2"></i> Thêm chủ đề
+                </button>
+            </div>
+        </div>
+
+
+        <div id="list-chuongs">
+            @if (Model.Chuongs != null && Model.Chuongs.Any())
+            {
+                @foreach (var chuong in Model.Chuongs)
+                {
+                    <div class="topic-card mb-3" data-chuong-id="@chuong.MaChuong">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="fw-bold">
+                                <i class="fa fa-caret-down me-1"></i> Chủ đề: @chuong.TenChuong
+                            </div>
+                            <div class="btn-group">
+                                <!-- Nút thêm bài -->
+                                <button class="btn btn-light btn-sm btn-them-bai" title="Thêm bài"><i class="fa fa-plus"></i></button>
+
+
+                                <!-- Menu ba chấm -->
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Tùy chọn">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a href="#" class="dropdown-item btn-sua-chuong" data-id="@chuong.MaChuong" data-ten="@chuong.TenChuong"><i class="fa fa-edit me-1 text-primary"></i> Sửa chương</a></li>
+                                        <li><a href="#" class="dropdown-item text-danger btn-xoa-chuong" data-id="@chuong.MaChuong"><i class="fa fa-trash me-1"></i> Xóa chương</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            @if (chuong.Bais != null && chuong.Bais.Any())
+                            {
+                                @foreach (var bai in chuong.Bais)
+                                {
+                                    <div class="lesson-item d-flex justify-content-between align-items-center" data-bai-id="@bai.BaiId">
+                                        <div>
+                                            <i class="fa fa-file-alt text-primary me-2"></i>
+                                            <strong>@bai.TenBai</strong>
+                                            <span class="text-muted small ms-2">(@(bai.Mucs?.Count ?? 0) mục)</span>
+                                        </div>
+
+                                        <div class="btn-group">
+                                            <!-- Nút thêm -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Thêm nội dung">
+                                                    <i class="fa fa-plus"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    
+                                                    <li>
+                                                        <a href="@Url.Action("Them", "BaiTap", new { area = "GiangVien", baiId = bai.BaiId, maLopHoc = ViewBag.MaLopHoc })"
+                                                            class="dropdown-item">
+                                                                <i class="fa fa-tasks me-1 text-success"></i> Thêm bài tập
+                                                         </a>
+                                                   </li>
+
+                                                    <li>
+                                                        <a href="@Url.Action("Them", "Muc", new { area = "GiangVien", baiId = bai.BaiId, maLopHoc = ViewBag.MaLopHoc })"
+                                                           class="dropdown-item">
+                                                            <i class="fa fa-list me-1 text-primary"></i> Thêm mục
+                                                        </a>
+
+                                                    </li>
+
+                                                </ul>
+                                            </div>
+
+                                            <!-- Menu ba chấm -->
+                                            <div class="dropdown ms-1">
+                                                <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a href="#" class="dropdown-item btn-sua-bai" data-id="@bai.BaiId" data-ten="@bai.TenBai"><i class="fa fa-edit me-1 text-primary"></i> Sửa bài</a></li>
+                                                    <li><a href="#" class="dropdown-item text-danger btn-xoa-bai" data-id="@bai.BaiId"><i class="fa fa-trash me-1"></i> Xóa bài</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (bai.Mucs != null && bai.Mucs.Any())
+                                    {
+                                        <ul class="sub-items ps-4">
+                                            @foreach (var muc in bai.Mucs)
+                                            {
+                                                <li class="d-flex justify-content-between align-items-center border-bottom py-1" data-muc-id="@muc.MucId">
+                                                    <div>
+                                                        <i class="fa fa-angle-right text-secondary me-2"></i>
+                                                        <span>@muc.TenMuc</span>
+                                                    </div>
+
+                                                    <!-- Menu ba chấm cho mỗi mục -->
+                                                    <div class="dropdown">
+                                                     <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
+                                                        <i class="fa fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a href="@Url.Action("Sua", "Muc", new { area = "GiangVien", id = muc.MucId, maLopHoc = ViewBag.MaLopHoc })"
+                                                         class="dropdown-item">
+                                                          <i class="fa fa-edit me-1 text-primary"></i> Sửa mục
+                                                        </a>
+                                                     </li> 
+                                                    <li>
+                                                        <a href="@Url.Action("Xoa", "Muc", new { area = "GiangVien", id = muc.MucId })"
+                                                         class="dropdown-item text-danger">
+                                                          <i class="fa fa-trash me-1"></i> Xóa mục
+                                                        </a>
+                                                    </li>
+                                                    </ul>
+                                                    </div>
+
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <ul class="sub-items ps-4">
+                                            <li class="text-muted small fst-italic">Chưa có mục nào trong bài này.</li>
+                                        </ul>
+                                    }
+                                    @if (bai.BaiTaps != null && bai.BaiTaps.Any())
+                                    {
+                                        <ul class="sub-items ps-4 mt-2">
+                                            @foreach (var baitap in bai.BaiTaps)
+                                            {
+                                                <li class="d-flex justify-content-between align-items-center border-bottom py-1" data-baitap-id="@baitap.MaBaiTap">
+                                                    <div>
+                                                        <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap })"
+                                                            class="text-decoration-none fw-semibold text-primary">
+                                                            <i class="fa fa-tasks text-success me-2"></i>
+                                                            @baitap.TenBaiTap
+                                                        </a>
+                                                        @if (baitap.HanNop != null)
+                                                        {
+                                                            <small class="text-danger ms-2 fst-italic">
+                                                                Hạn nộp: @baitap.HanNop.Value.ToString("dd/MM/yyyy HH:mm")
+                                                            </small>
+                                                        }
+                                                    </div>
+
+
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" title="Tùy chọn">
+                                                            <i class="fa fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li>
+                                                                <a href="@Url.Action("Sua", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap, maLopHoc = ViewBag.MaLopHoc })"
+                                                                class="dropdown-item">
+                                                                    <i class="fa fa-edit me-1 text-primary"></i> Sửa bài tập
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Action("Xoa", "BaiTap", new { area = "GiangVien", id = baitap.MaBaiTap })"
+                                                                class="dropdown-item text-danger"
+                                                                onclick="return confirm('Bạn có chắc muốn xóa bài tập này không?');">
+                                                                    <i class="fa fa-trash me-1"></i> Xóa bài tập
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <ul class="sub-items ps-4">
+                                            <li class="text-muted small fst-italic">Chưa có bài tập nào trong bài này.</li>
+                                        </ul>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted small fst-italic">Chưa có nội dung trong chương này.</p>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-light border text-center">
+                    <i class="fa fa-info-circle me-1"></i> Chưa có chương nào. Nhấn <b>+ Chương</b> để thêm chương đầu tiên.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Sidebar phải -->
+    <div class="col-md-2 sidebar-right">
+        <div class="card mb-3">
+            <div class="card-body text-center">
+                <h6 class="fw-bold">Tình trạng lớp học</h6>
+                <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố</button>
+                <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button>
+            </div>
+        </div>
+
+        <div class="list-group small">
+            <a href="#" class="list-group-item list-group-item-action"><i class="fa fa-home me-2"></i>Chọn trang chủ</a>
+            <a href="#" class="list-group-item list-group-item-action"><i class="fa fa-bell me-2"></i>Thông báo mới</a>
+            <a href="#" class="list-group-item list-group-item-action"><i class="fa fa-eye me-2"></i>Chế độ xem của học viên</a>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="fw-bold">Sắp diễn ra</h6>
+                <p class="text-muted mb-0">Không có gì cho tuần tới</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Chương -->
+<div class="modal fade" id="modalThemChuong" tabindex="-1" aria-labelledby="modalThemChuongLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formThemChuong">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-layer-group me-1"></i> Thêm chương mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="MaLopHoc" value="@Model.MaLopHoc" />
+                    <div class="mb-3">
+                        <label class="form-label">Tên chương <span class="text-danger">*</span></label>
+                        <input id="TenChuong" class="form-control" />
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save me-1"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal Sửa Chương -->
+<div class="modal fade" id="modalSuaChuong" tabindex="-1" aria-labelledby="modalSuaChuongLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formSuaChuong">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-pen me-1"></i> Sửa chương</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="Sua_MaChuong" />
+                    <div class="mb-3">
+                        <label class="form-label">Tên chương</label>
+                        <input id="Sua_TenChuong" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Bài -->
+<div class="modal fade" id="modalThemBai" tabindex="-1" aria-labelledby="modalThemBaiLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formThemBai">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-file-alt me-1"></i> Thêm bài mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="Bai_MaChuong" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên bài <span class="text-danger">*</span></label>
+                        <input id="Bai_TenBai" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bài số <span class="text-danger">*</span></label>
+                        <input id="Bai_SoBai" type="number" class="form-control" min="1" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả <span class="text-danger">*</span></label>
+                        <textarea id="Bai_MoTa" class="form-control"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save me-1"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal Sửa Bài -->
+<!-- Modal Sửa Bài -->
+<div class="modal fade" id="modalSuaBai" tabindex="-1" aria-labelledby="modalSuaBaiLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formSuaBai">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-edit me-1"></i> Sửa bài</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" id="Bai_Sua_Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên bài <span class="text-danger">*</span></label>
+                        <input id="Bai_Sua_Ten" class="form-control" placeholder="Nhập tên bài" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả <span class="text-danger">*</span></label>
+                        <textarea id="Bai_Sua_MoTa" class="form-control" rows="3" placeholder="Nhập mô tả bài học..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- CSS -->
+<style>
+    /* Tổng thể */
+    body {
+        background-color: #f5f6f8;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    /* Phần nội dung chính ở giữa */
+    .col-md-8 {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 35px 40px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        font-size: 17.5px; /* chữ lớn hơn một chút */
+        line-height: 1.75; /* giãn dòng thoáng */
+        color: #333;
+    }
+
+        /* Tiêu đề lớp */
+        .col-md-8 h5 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+    /* Thẻ chương */
+    .topic-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        margin-bottom: 22px;
+        background-color: #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+
+        .topic-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            transform: translateY(-2px);
+        }
+
+                /* Header chương */
+.topic-card .card-header {
+    background-color: #126f9a;    
+    color: #fff;                 
+    padding: 14px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: none;           
+    border-radius: 8px 8px 0 0;    
+}
+        /* Căn chỉnh các nút trong header chương */
+.topic-card .card-header .btn-group,
+.topic-card .card-header .dropdown {
+    display: flex;
+    align-items: center;
+}
+
+.topic-card .card-header .btn {
+    padding: 6px 10px; /* Giảm padding để đồng đều */
+    height: 32px;       /* Giữ cùng chiều cao */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Đảm bảo khoảng cách giữa các nút đều nhau */
+.topic-card .card-header .btn-group .btn,
+.topic-card .card-header .dropdown .btn {
+    margin-left: 4px;
+}
+
+/* Fix cho phần biểu tượng caret xuống (icon trước tên chương) */
+.topic-card .card-header i.fa-caret-down {
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+    /* Bài học */
+    .lesson-item {
+        padding: 12px 16px;
+        border: 1px solid #ebedf0;
+        border-radius: 8px;
+        background-color: #ffffff;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+    }
+
+        .lesson-item:hover {
+            background-color: #f9fbff;
+            border-left: 4px solid #126f9a;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+
+        .lesson-item strong {
+            font-size: 17px;
+            color: #2c3e50;
+        }
+
+    /* Danh sách mục con */
+    .sub-items {
+        padding-left: 40px;
+        margin-top: 8px;
+    }
+
+        .sub-items li {
+            background: #fff;
+            border-left: 3px solid #126f9a;
+            padding: 7px 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #444;
+            transition: background-color 0.2s;
+        }
+
+            .sub-items li:hover {
+                background-color: #eef4ff;
+            }
+
+    /* Sidebar phải */
+    .sidebar-right {
+        background-color: #ffffff;
+        border-left: 1px solid #e5e7eb;
+        padding: 10px;
+    }
+
+        .sidebar-right .list-group-item {
+            background-color: #f6f7f9;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            font-weight: 500;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            padding: 10px 12px;
+        }
+
+            .sidebar-right .list-group-item:hover {
+                background-color: #e9eef5;
+                color: #126f9a;
+                transform: translateX(2px);
+            }
+
+    /* Sidebar trái */
+    .col-md-2.border-end {
+        background-color: #ffffff !important;
+    }
+
+
+
+    /* Ảnh minh họa ở đầu nội dung */
+    .course-banner img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    /* ===== Banner Khóa Học ===== */
+    .course-banner {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+        .course-banner .banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.85);
+            transition: transform 0.3s ease;
+        }
+
+@*         .course-banner:hover .banner-img {
+            transform: scale(1.02);
+        }
+
+        /* Overlay gradient */
+        .course-banner .banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0, 64, 152, 0.8), rgba(0, 110, 255, 0.4));
+        } *@
+
+        /* Tiêu đề hiển thị trên banner */
+        .course-banner .banner-title {
+            position: absolute;
+            left: 25px;
+            bottom: 20px;
+        }
+
+        /* Nút chỉnh sửa */
+        .course-banner button {
+            border-radius: 20px;
+            font-weight: 500;
+            background-color: #ffffffd9;
+            color: #126f9a;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+            .course-banner button:hover {
+                background-color: #126f9a;
+                color: #fff;
+            }
+
+
+            /* ======================= */
+/* ✨ Giao diện Modal mới  */
+/* ======================= */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: fadeInUp 0.25s ease;
+}
+
+.modal-header {
+    background-color: #126f9a;
+    color: #fff;
+    border-bottom: none;
+    padding: 16px 20px;
+    font-weight: 600;
+}
+
+.modal-header .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+    opacity: 0.9;
+}
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+/* Nút trong footer */
+.modal-footer {
+    border-top: none;
+    background-color: #f8f9fb;
+    border-radius: 0 0 12px 12px;
+    padding: 14px 18px;
+}
+
+/* Nút chính */
+.modal-footer .btn-primary {
+    background-color: #126f9a;
+    border-color: #126f9a;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+.modal-footer .btn-primary:hover {
+    background-color: #126f9a;
+}
+
+/* Nút phụ */
+.modal-footer .btn-secondary {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.modal-footer .btn-secondary:hover {
+    background-color: #e9ecef;
+}
+
+/* Animation mượt */
+@@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Nút hành động lớn, hiện đại */
+.action-btn {
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Nút viền xanh: Xem tiến độ */
+.btn-outline-primary.action-btn {
+    background-color: #fff;
+    color: #126f9a;
+    border: 2px solid #126f9a;
+}
+.btn-outline-primary.action-btn:hover {
+    background-color: #126f9a;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+/* Nút chính: Thêm chủ đề */
+.btn-primary.action-btn {
+    background-color: #126f9a;
+    border: 2px solid #126f9a;
+    color: #fff;
+}
+.btn-primary.action-btn:hover {
+    background-color: #0b5ed7;
+    border-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+/* Icon spacing & smooth transition */
+.action-btn i {
+    font-size: 15px;
+    transition: transform 0.2s ease;
+}
+.action-btn:hover i {
+    transform: scale(1.15);
+}
+
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // ----- THÊM CHƯƠNG -----
+            $('#formThemChuong').on('submit', function (e) {
+                e.preventDefault();
+                const data = {
+                    MaLopHoc: $('#MaLopHoc').val(),
+                    TenChuong: $('#TenChuong').val()
+                };
+                //if (!data.TenChuong.trim()) {
+                    //notyf.warning('⚠️ Vui lòng nhập tên chương!');
+                   // return;
+               // }
+
+                $.post('/GiangVien/Chuong/ThemAjax', data, function (res) {
+                    if (res.success) {
+                        $('#modalThemChuong').modal('hide');
+                        notyf.success('Đã thêm chương mới!');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notyf.error(res.message || ' Lỗi khi thêm chương');
+                    }
+                });
+            });
+
+            // ----- MỞ MODAL SỬA CHƯƠNG -----
+            $(document).on('click', '.btn-sua-chuong', function (e) {
+                e.preventDefault();
+                $('#Sua_MaChuong').val($(this).data('id'));
+                $('#Sua_TenChuong').val($(this).data('ten'));
+                $('#modalSuaChuong').modal('show');
+            });
+
+            // ----- GỬI SỬA CHƯƠNG -----
+            $('#formSuaChuong').on('submit', function (e) {
+                e.preventDefault();
+                const data = {
+                    MaChuong: $('#Sua_MaChuong').val(),
+                    TenChuong: $('#Sua_TenChuong').val()
+                };
+                $.post('/GiangVien/Chuong/SuaAjax', data, function (res) {
+                    if (res.success) {
+                        $('#modalSuaChuong').modal('hide');
+                        notyf.success('Cập nhật chương thành công!');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notyf.error('Không thể cập nhật chương.');
+                    }
+                });
+            });
+
+            // ----- XÓA CHƯƠNG -----
+            $(document).on('click', '.btn-xoa-chuong', function (e) {
+                e.preventDefault();
+                if (!confirm('Bạn có chắc muốn xóa chương này?')) return;
+
+                const id = $(this).data('id');
+                $.post('/GiangVien/Chuong/XoaAjax', { id: id }, function (res) {
+                    if (res.success) {
+                        notyf.success('Đã xóa chương.');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notyf.error(res.message || 'Xóa thất bại.');
+                    }
+                });
+            });
+
+            // ----- MỞ MODAL THÊM BÀI -----
+            $(document).on('click', '.btn-them-bai', function (e) {
+                e.preventDefault();
+                const maChuong = $(this).closest('.topic-card').data('chuong-id');
+                $('#Bai_MaChuong').val(maChuong);
+                $('#Bai_TenBai').val('');
+                $('#Bai_SoBai').val('');
+                $('#Bai_MoTa').val('');
+                $('#modalThemBai').modal('show');
+            });
+
+            // ----- GỬI THÊM BÀI -----
+            $('#formThemBai').on('submit', function (e) {
+                e.preventDefault();
+                const data = {
+                    MaChuong: $('#Bai_MaChuong').val(),
+                    TenBai: $('#Bai_TenBai').val(),
+                    SoBai: $('#Bai_SoBai').val(),
+                    MoTa: $('#Bai_MoTa').val()
+                };
+
+                //if (!data.TenBai.trim()) return notyf.warning('⚠️ Vui lòng nhập tên bài!');
+                //if (data.SoBai <= 0) return notyf.warning('⚠️ Số bài phải lớn hơn 0!');
+                //if (!data.MoTa.trim()) return notyf.warning('⚠️ Vui lòng nhập mô tả!');
+
+                $.post('/GiangVien/Bai/ThemAjax', data, function (res) {
+                    if (res.success) {
+                        $('#modalThemBai').modal('hide');
+                        notyf.success('Đã thêm bài mới!');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notyf.error(res.message || 'Lỗi khi thêm bài.');
+                    }
+                });
+            });
+
+            // ----- MỞ MODAL SỬA BÀI -----
+            $(document).on('click', '.btn-sua-bai', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+
+                $.get(`/GiangVien/Bai/GetById?id=${id}`, function (res) {
+                    if (res.success) {
+                        $('#Bai_Sua_Id').val(res.data.baiId);
+                        $('#Bai_Sua_Ten').val(res.data.tenBai);
+                        $('#Bai_Sua_MoTa').val(res.data.moTa);
+                        $('#modalSuaBai').modal('show');
+                    } else {
+                        notyf.error(res.message || 'Không thể tải dữ liệu bài.');
+                    }
+                });
+            });
+
+            // ----- GỬI CẬP NHẬT BÀI -----
+            $('#formSuaBai').on('submit', function (e) {
+                e.preventDefault();
+                const data = {
+                    BaiId: $('#Bai_Sua_Id').val(),
+                    TenBai: $('#Bai_Sua_Ten').val(),
+                    MoTa: $('#Bai_Sua_MoTa').val()
+                };
+
+                if (!data.TenBai.trim() || !data.MoTa.trim()) {
+                    notyf.warning('⚠️ Vui lòng nhập đủ thông tin.');
+                    return;
+                }
+
+                $.post('/GiangVien/Bai/SuaAjax', data, function (res) {
+                    if (res.success) {
+                        $('#modalSuaBai').modal('hide');
+                        notyf.success('✏️ Cập nhật bài thành công!');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notyf.error(res.message || 'Không thể cập nhật bài.');
+                    }
+                });
+            });
+
+            // ----- XÓA BÀI -----
+            $(document).on('click', '.btn-xoa-bai', function (e) {
+                e.preventDefault();
+                if (!confirm('Bạn có chắc muốn xóa bài này?')) return;
+
+                const id = $(this).data('id');
+                $.post('/GiangVien/Bai/XoaAjax', { id: id }, function (res) {
+                    if (res.success) {
+                        notyf.success('Đã xóa bài.');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notyf.error(res.message || 'Không thể xóa bài.');
+                    }
+                });
+            });
+
+            $('#btnDoiAnh').click(() => $('#fileAnhLop').click());
+
+        $('#fileAnhLop').on('change', function () {
+            const formData = new FormData($('#formDoiAnh')[0]);
+            $.ajax({
+                url: '/GiangVien/LopHoc/CapNhatAnh?id=@Model.MaLopHoc',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: (res) => {
+                    if (res.success) {
+                        $('.banner-img').attr('src', res.path);
+                        notyf.success('Ảnh đã được cập nhật!');
+                    } else {
+                        notyf.error(res.message);
+                    }
+                }
+            });
+        });
+
+        });
+    </script>
+}
+
+

@@ -1,0 +1,88 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+
+}
+
+.title {
+    text-align: center;
+    color: #0077c2;
+    margin-top: 0;
+}
+
+.personal-information {
+    color: #005ea2;
+    margin-top: 20px;
+   
+}
+
+    .personal-information h2 {
+        font-size: 1.5rem;
+        margin-top: 0;
+    }
+
+    .personal-information ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .personal-information li {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 10px;
+        transition: color 0.3s ease-in-out;
+    }
+
+        .personal-information li:hover {
+            color: #0077c2;
+        }
+
+    .personal-information strong {
+        font-weight: bold;
+    }
+
+.education, .work-experience, .skills {
+    color: #005ea2;
+    margin-top: 20px;
+}
+
+    .education h2, .work-experience h2, .skills h2 {
+        font-size: 1.5rem;
+        margin-top: 0;
+    }
+
+    .education ul, .work-experience ul, .skills ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .education li, .work-experience li, .skills li {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 10px;
+        transition: color 0.3s ease-in-out;
+    }
+
+        .education li:hover, .work-experience li:hover, .skills li:hover {
+            color: #0077c2;
+        }
+
+    .education strong, .work-experience strong, .skills strong {
+        font-weight: bold;
+    }
+

@@ -1,0 +1,70 @@
+﻿@model WebBaiGiang_CKC.Models.LopHoc
+@{
+    ViewData["Title"] = "Chi tiết lớp học";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4><i class="fa-solid fa-users"></i> Lớp: @Model.TenLopHoc</h4>
+        <button class="btn btn-light btn-sm" onclick="MoModalThemHocVien(@Model.MaLopHoc)">
+            <i class="fa fa-user-plus"></i> Thêm học viên
+        </button>
+    </div>
+    <div class="card-body">
+        <h5>Danh sách học viên</h5>
+        <table class="table table-bordered align-middle">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>Mã</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.HocVien_LopHocs != null && Model.HocVien_LopHocs.Any())
+                {
+                    foreach (var hv in Model.HocVien_LopHocs)
+                    {
+                        <tr>
+                            <td class="text-center">@hv.MaHocVien</td>
+                            <td>@hv.HocVien?.HoTen</td>
+                            <td>@hv.HocVien?.Email</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="3" class="text-center text-muted">Chưa có học viên nào.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL THÊM HỌC VIÊN -->
+<div class="modal fade" id="modalThemHocVien" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fa fa-user-plus"></i> Thêm học viên vào lớp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalContentThemHocVien">
+                <!-- nội dung form sẽ được load ở đây -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function MoModalThemHocVien(maLop) {
+            $("#modalContentThemHocVien").html('<p class="text-center p-3">Đang tải...</p>');
+            $("#modalThemHocVien").modal('show');
+            $.get('/Admin/LopHoc/ThemHocVien_Partial', { maLop: maLop }, function (html) {
+                $("#modalContentThemHocVien").html(html);
+            });
+        }
+    </script>
+}

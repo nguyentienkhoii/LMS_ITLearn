@@ -1,0 +1,49 @@
+﻿@model WebBaiGiang_CKC.Models.KhoaHoc
+@{
+    ViewData["Title"] = "Thêm khóa học";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb mt-3">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="KhoaHoc" asp-action="Index">Quản lý khóa học</a></li>
+    <li class="breadcrumb-item active">Thêm</li>
+</ol>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h4><i class="fa fa-plus-circle"></i> Thêm khóa học mới</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="TenKhoaHoc" class="form-label"></label>
+                <input asp-for="TenKhoaHoc" class="form-control" />
+                <span asp-validation-for="TenKhoaHoc" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MoTa" class="form-label"></label>
+                <textarea asp-for="MoTa" class="form-control"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ThoiGianBatDau" class="form-label"></label>
+                    <input asp-for="ThoiGianBatDau" class="form-control" type="date" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ThoiGianKetThuc" class="form-label"></label>
+                    <input asp-for="ThoiGianKetThuc" class="form-control" type="date" />
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Lưu</button>
+                <a asp-action="Index" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>

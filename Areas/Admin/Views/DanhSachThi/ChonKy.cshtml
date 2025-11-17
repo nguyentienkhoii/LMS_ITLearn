@@ -1,0 +1,52 @@
+@model IEnumerable<WebBaiGiang_CKC.Models.KyKiemTra>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var q = ViewBag.Query as string;
+}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4><i class="fa-solid fa-calendar-check"></i> Chọn kỳ kiểm tra</h4>
+        <form method="get" class="d-flex" asp-area="Admin" asp-controller="DanhSachThi" asp-action="ChonKy">
+            <input type="text" name="q" value="@q" class="form-control form-control-sm me-2" placeholder="Tìm tên kỳ kiểm tra...">
+            <button class="btn btn-light btn-sm" type="submit"><i class="fa fa-search"></i></button>
+        </form>
+    </div>
+
+    <div class="card-body">
+        @if (Model != null && Model.Any())
+        {
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:80px;">Mã kỳ</th>
+                        <th>Tên kỳ kiểm tra</th>
+                        <th style="width:160px;" class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var k in Model)
+                {
+                    <tr>
+                        <td class="text-center">@k.KyKiemTraId</td>
+                        <td>@k.TenKyKiemTra</td>
+                        <td class="text-center">
+                            <a class="btn btn-success btn-sm"
+                               asp-area="Admin"
+                               asp-controller="DanhSachThi"
+                               asp-action="DanhSachTheoKyThi"
+                               asp-route-kyKiemTraId="@k.KyKiemTraId">
+                                <i class="fa fa-list"></i> Xem danh sách thi
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted mb-0">Chưa có kỳ kiểm tra nào.</p>
+        }
+    </div>
+</div>

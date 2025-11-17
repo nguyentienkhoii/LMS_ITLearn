@@ -1,0 +1,294 @@
+﻿@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<WebBaiGiang_CKC.Models.LopHoc>
+@using X.PagedList;
+@using X.PagedList.Web.Common;
+
+@{
+    ViewData["Title"] = "Danh sách môn học";
+}
+
+<main>
+    <div class="menu-toggle">
+        <a href="#">Menu</a>
+    </div>
+    <div class="wrapper">
+        <!-- Menu bên trái -->
+        <!-- Menu bên trái -->
+        <!-- Menu bên trái -->
+        @await Html.PartialAsync("_SidebarMenu")
+
+
+        <!-- Nội dung bên phải -->
+        <div class="noidung">
+@*             <h2>Danh sách môn học</h2>
+            <p>Chọn một môn học để xem nội dung</p>
+
+            <!-- Thanh tìm kiếm -->
+            <form asp-action="SearchMonHoc" method="get" class="search-form">
+                <input type="text" name="keyword" placeholder="Tìm kiếm môn học..." value="@ViewData["SearchKeyword"]" />
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form> *@
+
+            <!-- Danh sách môn học -->
+            <div class="course-grid">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var lop in Model)
+                    {
+                        <div class="course-card">
+                            <a class="course-link" asp-controller="Home" asp-action="LopHoc" asp-route-id="@lop.MaLopHoc">
+                                <div class="course-thumbnail">
+                                    @if (!string.IsNullOrEmpty(lop.AnhLopHoc))
+                                    {
+                                        <!-- ✅ Có ảnh lớp học -->
+                                        <img src="@Url.Content(lop.AnhLopHoc)" alt="@lop.TenLopHoc" />
+                                    }
+                                    else
+                                    {
+                                        <!-- 🖼 Ảnh mặc định -->
+                                        <img src="@Url.Content("~/contents/Images/MonHoc/macdinhnew.png")" alt="Ảnh mặc định" />
+                                    }
+                                </div>
+
+                                <div class="course-content">
+                                    <h4 class="course-title">@lop.TenLopHoc</h4>
+                                    <p class="course-teacher">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                        Giảng viên: @(lop.GiangVien != null ? lop.GiangVien.HoTen : "Chưa phân công")
+                                    </p>
+
+                                    <!-- ✅ Thêm trạng thái lớp học -->
+                                    <p class="course-status mt-1">
+                                        <i class="fas fa-circle me-1 @(lop.TrangThai == "Đang hoạt động" ? "text-success" : lop.TrangThai == "Hoàn thành" ? "text-primary" : "text-warning")"></i>
+                                        <span>@lop.TrangThai</span>
+                                    </p>
+
+                                </div>
+                            </a>
+                        </div>
+                    }
+
+
+                }
+                else
+                {
+                    <p>Không có môn học nào.</p>
+                }
+            </div>
+
+
+            <!-- Phân trang -->
+            <div class="pagination-container">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+                         new PagedListRenderOptions
+                {
+                    LinkToPreviousPageFormat = "«",
+                    LinkToNextPageFormat = "»",
+                    MaximumPageNumbersToDisplay = 3,
+                    ContainerDivClasses = new[] { "pagination" },
+                    UlElementClasses = new[] { "pagination-list" },
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" }
+                })
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="~/assets/js/menu_.js"></script>
+}
+
+<>
+    
+
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+
+    /* Nội dung chính */
+    .noidung {
+        padding: 20px;
+        flex-grow: 1;
+    }
+
+    /* Thanh tìm kiếm */
+    .search-form {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 400px;
+        margin: 15px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: hidden;
+        background-color: white;
+    }
+
+        .search-form input {
+            flex-grow: 1;
+            padding: 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .search-form button {
+            background-color: #126f9a;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: white;
+        }
+
+            .search-form button i {
+                font-size: 16px;
+            }
+
+
+    /* Grid layout for courses */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Chỉnh lại để có 4 môn học trong 1 dòng */
+        gap: 20px;
+        margin-top: 20px;
+    }
+    /* Course card styles */
+    .course-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .course-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+        /* Khi hover, vẫn không có gạch chân */
+        .course-link:hover {
+            text-decoration: none; /* Bỏ gạch chân */
+        }
+
+    .course-thumbnail {
+        height: 160px;
+        overflow: hidden;
+    }
+
+        .course-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+    .course-card:hover .course-thumbnail img {
+        transform: scale(1.05);
+    }
+
+    .course-content {
+        padding: 15px;
+    }
+
+    .course-title {
+        margin: 0 0 15px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        min-height: auto;
+    }
+
+    .course-teacher {
+        font-size: 14px !important; /* Làm chữ giảng viên nhỏ hơn */
+        color: #666 !important; /* Chỉnh màu sắc cho phù hợp */
+    }
+
+    .course-status {
+        font-size: 14px !important;
+        color: #666 !important;
+    }
+
+        .course-status i {
+            font-size: 10px;
+        }
+
+
+
+
+
+    /* Phân trang */
+    .pagination-container {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-item {
+        display: inline-block;
+    }
+
+    .page-link {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        color: #126f9a;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+        .page-link:hover {
+            background-color: #126f9a;
+            color: white;
+        }
+
+    .page-item.active .page-link {
+        background-color: #0b5f80;
+        color: white;
+        border-color: #0b5f80;
+    }
+
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .course-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .course-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+    /* Responsive (menu nhỏ gọn hơn trên mobile) */
+    @@media (max-width: 768px) {
+        .thanh {
+            min-width: 100%;
+            border-radius: 8px;
+        }
+
+        .menu-item a,
+        .sub-item a {
+            padding: 10px 16px;
+        }
+    }
+</style>

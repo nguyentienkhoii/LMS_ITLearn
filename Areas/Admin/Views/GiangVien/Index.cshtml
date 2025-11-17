@@ -1,0 +1,142 @@
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.GiangVien>
+
+@{
+    ViewData["Title"] = "Quản lý giảng viên";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a>
+    </li>
+    <li class="breadcrumb-item active">Quản lý giảng viên</li>
+</ol>
+
+<div class="d-flex justify-content-between align-items-center my-3">
+    <h2 class="fw-bold text-uppercase mb-0 text-primary">
+        <i class="fa fa-chalkboard-teacher"></i> Danh sách giảng viên
+    </h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Thêm giảng viên
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Chuyên môn</th>
+                    <th>Tài khoản</th>
+                    <th>Trạng thái</th>
+                    <th style="width:150px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int i = 1;
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@i</td>
+                            <td class="text-start">@item.HoTen</td>
+                            <td>@item.Email</td>
+                            <td>@item.SoDienThoai</td>
+                            <td>@item.ChuyenMon</td>
+                            <td>@item.TaiKhoan?.TenDangNhap</td>
+
+                            <!-- ✅ Nút bật/tắt trạng thái -->
+                            <td>
+                                <button type="button"
+                                        class="btn btn-sm px-3 py-1 toggle-status-btn
+                                               @(item.TaiKhoan?.TrangThai == true ? "btn-outline-success" : "btn-outline-danger")"
+                                        data-id="@item.MaGiangVien"
+                                        data-status="@(item.TaiKhoan?.TrangThai ?? false)">
+                                    @if (item.TaiKhoan?.TrangThai == true)
+                                    {
+                                        <text><i class="fa fa-unlock"></i> Hoạt động</text>
+                                    }
+                                    else
+                                    {
+                                        <text><i class="fa fa-lock"></i> Khóa</text>
+                                    }
+                                </button>
+                            </td>
+
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.MaGiangVien" class="btn btn-sm btn-warning me-1" title="Sửa">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.MaGiangVien"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Xác nhận xóa giảng viên này?')" title="Xóa">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Chưa có giảng viên nào.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const buttons = document.querySelectorAll(".toggle-status-btn");
+
+            buttons.forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const id = this.getAttribute("data-id");
+
+                    if (!confirm("Bạn có chắc muốn thay đổi trạng thái tài khoản này?")) return;
+
+                    try {
+                        const res = await fetch(`/Admin/GiangVien/ToggleTrangThaiAjax?id=${id}`, {
+                            method: "POST"
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            this.setAttribute("data-status", data.trangThai);
+
+                            if (data.trangThai) {
+                                this.classList.remove("btn-outline-danger");
+                                this.classList.add("btn-outline-success");
+                                this.innerHTML = `<i class="fa fa-unlock"></i> Hoạt động`;
+                            } else {
+                                this.classList.remove("btn-outline-success");
+                                this.classList.add("btn-outline-danger");
+                                this.innerHTML = `<i class="fa fa-lock"></i> Khóa`;
+                            }
+
+                            if (window.Notyf) new Notyf().success(data.message);
+                            else alert(data.message);
+                        } else {
+                            if (window.Notyf) new Notyf().error(data.message);
+                            else alert(data.message);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        if (window.Notyf) new Notyf().error("Lỗi kết nối server!");
+                        else alert("Lỗi kết nối server!");
+                    }
+                });
+            });
+        });
+    </script>
+}
