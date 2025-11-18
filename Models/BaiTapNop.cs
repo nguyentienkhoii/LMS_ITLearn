@@ -41,29 +41,34 @@ namespace WebBaiGiang_CKC.Models
         public virtual HocVien HocVien { get; set; }
     }
 
-        public static class SubmissionStatus
+         public static class SubmissionStatus
         {
-            public const string MoiNop = "MOI_NOP";
+            public const string ReOpened   = "REOPENED";
             public const string DaChotSoft = "DA_CHOT_SOFT"; // chưa xác nhận hẳn
             public const string DaChamChot = "DA_CHOT";      // đã công bố & khóa
 
             public static readonly TimeSpan Grace = TimeSpan.FromHours(1);
+
+            public static bool IsReopened(string s)
+                => string.Equals(s, ReOpened, StringComparison.OrdinalIgnoreCase);
 
             public static bool IsSoftLocked(string s)
                 => string.Equals(s, DaChotSoft, StringComparison.OrdinalIgnoreCase);
         
             public static bool IsWithinGrace(string status, DateTime? ngayCham)
             {
-                if (!string.Equals(status, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
+                if (!string.Equals(status, DaChotSoft, StringComparison.OrdinalIgnoreCase)) return false;
                 if (ngayCham == null) return false;
                 return DateTime.Now < ngayCham.Value.Add(Grace);
         
             }
             public static bool IsLocked(string s, DateTime? ngayCham)
             {
+                // if (!(string.Equals(s, DaChotSoft, StringComparison.OrdinalIgnoreCase) ||
+                //     string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase))) return false;
                 if (!string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
-                if (ngayCham == null) return false;
-                return DateTime.Now >= ngayCham.Value.Add(Grace);
+                    if (ngayCham == null) return false;
+                    return DateTime.Now >= ngayCham.Value.Add(Grace);
             } 
         }
 }

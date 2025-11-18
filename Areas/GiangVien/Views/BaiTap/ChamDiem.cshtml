@@ -7,6 +7,8 @@
     var softLocked  = SubmissionStatus.IsSoftLocked(Model?.TrangThai);
     var withinGrace = SubmissionStatus.IsWithinGrace(Model?.TrangThai, Model?.NgayCham);
     var hardLocked  = SubmissionStatus.IsLocked(Model?.TrangThai, Model?.NgayCham);
+    var isReopened  = SubmissionStatus.IsReopened(Model?.TrangThai);
+
     bool locked = string.Equals(Model?.TrangThai, SubmissionStatus.DaChamChot, StringComparison.OrdinalIgnoreCase);
     //bool withinGrace = locked && Model?.NgayCham != null && DateTime.Now < Model.NgayCham.Value.Add(SubmissionStatus.Grace);
     //bool hardLocked  = locked && Model?.NgayCham != null && DateTime.Now >= Model.NgayCham.Value.Add(SubmissionStatus.Grace);
@@ -19,7 +21,7 @@
         ? Model.NgayCham.Value.Add(SubmissionStatus.Grace).ToUniversalTime().ToString("o")
         : null;
 
-    bool disableInputs = softLocked || withinGrace || hardLocked;
+    bool disableInputs = softLocked || withinGrace || hardLocked || isReopened;
 }
 
 <div class="row">
@@ -96,11 +98,7 @@
                                         <i class="fa fa-check-circle mr-2"></i> Chấm điểm
                                     </span>
 
-                                @if (softLocked)
-                                {
-                                    <span class="badge badge-warning ml-3 badge-locked">Có thể sửa</span>
-                                }
-                                else if ( withinGrace)
+                                @if (withinGrace)
                                 {
                                     @* <span class="badge badge-info ml-3 badge-locked">
                                     Còn @Math.Floor(remain.Value.TotalHours)h @remain.Value.Minutes' để chỉnh
@@ -124,6 +122,10 @@
                                         <i class="fa fa-lock mr-1"></i> ĐÃ CHỐT ĐIỂM
                                     </span>
                                 }
+                                else if (isReopened)
+                                {
+                                    <span class="badge badge-warning ml-3 badge-locked">Đã mở lại</span>
+                                }
                                 </h5>
 
                                 <!-- Khi locked = true, toàn bộ input trong fieldset bị disable -->
@@ -144,34 +146,46 @@
                                 </fieldset>
                                 
                                 <div class="text-end mt-4 d-flex justify-content-end">
-                                       <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = Model.MaBaiTap })"
+                                    <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = Model.MaBaiTap })"
                                         class="btn btn-secondary me-2">
                                             <i class="fa fa-arrow-left"></i> Quay lại
                                         </a>
                                         @* <button type="submit" class="btn btn-primary" @(locked ? "disabled" : null)>
                                             <i class="fa fa-save"></i> Lưu kết quả
                                         </button> *@
-                                        @if (!softLocked && !withinGrace && !hardLocked)
+                                        @if (!softLocked && !withinGrace && !hardLocked && !isReopened)
                                         {
                                             <button type="submit" class="btn btn-success">
-                                            <i class="fa fa-check"></i> Xác nhận
+                                                <i class="fa fa-check"></i> Xác nhận
                                             </button>
                                         }
-                                         @if (softLocked)
+                                        @if (softLocked || withinGrace)
                                         {
                                             <button type="button" class="btn btn-warning" id="btnEditSoft">
                                                 <i class="fa fa-edit"></i> Chỉnh sửa
                                             </button>
-                                            <button type="submit"
+                                             <button type="submit" class="btn btn-success ml-2 d-none" id="btnSaveGrace">
+                                                <i class="fa fa-save"></i> Lưu
+                                            </button>
+                                            @* <button type="submit"
                                                     id="btnConfirmSoft"
                                                     class="btn btn-success ml-2 d-none"
                                                     formaction="@Url.Action("BatDauCapNhat","BaiTap",new { area="GiangVien" })"
                                                     formmethod="post"
                                                     formnovalidate>
                                             <i class="fa fa-check"></i> Xác nhận
+                                            </button> *@
+                                        }
+                                        @if (isReopened)
+                                        {
+                                            <button type="button" class="btn btn-warning" id="btnEditReopen">
+                                                <i class="fa fa-edit"></i> Chỉnh sửa
+                                            </button>
+                                            <button type="submit" class="btn btn-success ml-2 d-none" id="btnSaveReopen">
+                                                <i class="fa fa-save"></i> Lưu
                                             </button>
                                         }
-                                        else if(withinGrace){
+                                        @* else if(withinGrace){
                                            <button type="button" class="btn btn-warning" id="btnEditGrace">
                                                 <i class="fa fa-edit"></i> Cập nhật
                                             </button>
@@ -179,8 +193,7 @@
                                             <button type="submit" class="btn btn-success ml-2 d-none" id="btnSaveGrace">
                                                 <i class="fa fa-save"></i> Lưu
                                             </button>
-                                        }
-            
+                                        } *@
                                  </div>
                             </form>
                             @* Thông điệp & hành động khi bài đã chốt *@
@@ -310,34 +323,36 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   if (closeBtn) closeBtn.onclick = function(){ modal.style.display = "none"; };
-  window.onclick = function(e){ if (e.target === modal) modal.style.display = "none"; };
+  window.onclick = function(e){ if (e.target === modal) modal.style.display = "none"; 
+  };
+  
+    // ===== Toggle SOFT: Cập nhật -> mở fieldset + hiện "Xác nhận" =====
+    var fs = document.getElementById('fsGrade');
+    function wireEdit(openId, saveId) {
+        var btnOpen = document.getElementById(openId);
+        var btnSave = document.getElementById(saveId);
+        if (!btnOpen || !fs) return;
 
-  // ===== Toggle SOFT: Cập nhật -> mở fieldset + hiện "Xác nhận" =====
-  var fs       = document.getElementById('fsGrade');      // <fieldset id="fsGrade"> ... </fieldset>
-  var btnEdit  =  document.getElementById('btnEditSoft') || document.getElementById('btnEditGrace'); // nút "Cập nhật" (SOFT)
-  var btnConf  =  document.getElementById('btnConfirmSoft') || document.getElementById('btnSaveGrace'); // nút "Xác nhận" (post -> XacNhanChot)
-
-  if (btnEdit && fs) {
-    btnEdit.addEventListener('click', function(){
-      // Mở form tại client (chưa bắt đầu đếm)
-      fs.removeAttribute('disabled');
-      fs.classList.remove('is-locked');
-
-      // Đổi nút: ẩn "Cập nhật", hiện "Xác nhận"
-      btnEdit.classList.add('d-none');
-      if (btnConf) btnConf.classList.remove('d-none');
-
-      // Focus trường đầu tiên
-      var first = fs.querySelector('input, textarea, select');
-      if (first) first.focus();
-    });
-  }
-
-  // ===== Countdown (chỉ chạy khi đã có badge #countdown với data-deadline) =====
-  var el = document.getElementById('countdown');
-  var iso = el ? el.getAttribute('data-deadline') : null;
-  if (el && iso) {
-    var deadline = new Date(iso);
+        btnOpen.addEventListener('click', function () {
+        // mở fieldset để nhập
+        fs.removeAttribute('disabled');
+        fs.classList.remove('is-locked');
+        // ẩn nút mở, hiện nút Lưu
+        btnOpen.classList.add('d-none');
+        if (btnSave) btnSave.classList.remove('d-none');
+        // focus trường đầu tiên
+        var first = fs.querySelector('input, textarea, select');
+        if (first) first.focus();
+        });
+    }
+    wireEdit('btnEditSoft',   'btnSaveGrace');   // SOFT hoặc trong thời gian đếm
+    wireEdit('btnEditReopen', 'btnSaveReopen');  // sau khi Admin mở lại
+    
+    // ===== Countdown (chỉ chạy khi đã có badge #countdown với data-deadline) =====
+    var el = document.getElementById('countdown');
+    var iso = el ? el.getAttribute('data-deadline') : null;
+    if (el && iso) {
+        var deadline = new Date(iso);
 
     function pad(n){ return n < 10 ? ('0' + n) : n; }
 
@@ -349,18 +364,48 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Khoá fieldset + nút submit cập nhật
       if (fs) { fs.setAttribute('disabled',''); fs.classList.add('is-locked'); }
+
       var btns = document.querySelectorAll('button[type="submit"].btn-success, button[type="submit"].btn-primary');
       btns.forEach(function(b){ b.disabled = true; });
-
+        
+        @* var btnEdit = document.getElementById(btnEditSoft || 'btnEditReopen' );
+        var btnConf = document.getElementById(btnSaveGrace || 'btnSaveReopen' ); *@
       // Ẩn các nút SOFT nếu còn
-      if (btnEdit) btnEdit.classList.add('d-none');
-      if (btnConf) btnConf.classList.add('d-none');
+      @* if (btnEdit) btnEdit.classList.add('d-none');
+        if (btnConf) btnConf.classList.add('d-none'); *@
+
+        @* // Khóa mọi nút lưu/chỉnh sửa mà bạn đang dùng
+        ['btnEditSoft','btnSaveGrace','btnEditReopen','btnSaveReopen']
+            .forEach(function (id) {
+            var b = document.getElementById(id);
+            if (b) { b.disabled = true; b.classList.add('d-none'); }
+            }); *@
+       var form = document.getElementById('formChamDiem');
+        if (form) {
+            form.addEventListener('submit', function () {
+            // khoá các nút lưu để tránh bấm liên tục
+            ['btnEditSoft','btnSaveGrace','btnEditReopen','btnSaveReopen'].forEach(function(id){
+                var b = document.getElementById(id); 
+                if (b) 
+                {
+                    b.disabled = true;
+                    b.classList.add('d-none');
+                }
+            }); 
+            });
+        }
+
     } 
 
     function tick(){
       var now  = new Date();
       var diff = deadline - now;
-      if (diff <= 0) { lockUI(); clearInterval(timer); return; }
+      if (diff <= 0) 
+      { 
+        lockUI(); 
+        clearInterval(timer); 
+        return; 
+     }
 
       var total = Math.floor(diff / 1000);
       var h = Math.floor(total / 3600);

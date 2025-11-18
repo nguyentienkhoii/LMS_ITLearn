@@ -14,14 +14,16 @@ namespace WebBaiGiang_CKC.Controllers
         private readonly INotyfService _notyf;
         private readonly IWebHostEnvironment _env;
         private readonly NotificationService _noti;
+        private readonly ILogger<BaiTapController> _logger;
 
 
-        public BaiTapController(WebBaiGiangContext context, INotyfService notyf, IWebHostEnvironment env, NotificationService noti)
+        public BaiTapController(WebBaiGiangContext context, INotyfService notyf, IWebHostEnvironment env, NotificationService noti,  ILogger<BaiTapController> logger)
         {
             _context = context;
             _notyf = notyf;
             _env = env;
             _noti = noti;
+            _logger = logger;
 
         }
 
@@ -98,9 +100,41 @@ namespace WebBaiGiang_CKC.Controllers
             DateTime? deadline = baiTap.HanNop;
             DateTime? lateDeadline = baiTap.LateSubmission;
 
+            if (lateDeadline.HasValue && deadline.HasValue && lateDeadline < deadline)
+            {
+                lateDeadline = null;
+            }
             string trangThaiThoiGian = "";   // text hiển thị
-            bool allowSubmit = true;          // điều khiển enable/disable nút nộp bài
+            //bool allowSubmit = true;   // điều khiển enable/disable nút nộp bài (CŨ)
 
+            bool allowSubmit;
+            if (!deadline.HasValue && !lateDeadline.HasValue)
+            {
+                // Không cấu hình hạn -> cho nộp
+                allowSubmit = true;
+            }
+            else if (lateDeadline.HasValue)
+            {
+                // Có hạn nộp muộn -> cho đến lateDeadline
+                allowSubmit = now <= lateDeadline.Value;
+            }
+            else
+            {
+                // Không có nộp muộn -> cho đến deadline
+                allowSubmit = now <= deadline.Value;
+            }
+            
+            string FormatDuration(TimeSpan t) {
+                t = t.Duration();
+                var parts = new List<string>();
+                if (t.Days > 0) parts.Add($"{t.Days} ngày");
+                if (t.Hours > 0) parts.Add($"{t.Hours} giờ");
+                if (t.Minutes > 0) parts.Add($"{t.Minutes} phút");
+                if (parts.Count == 0) parts.Add($"{t.Seconds} giây");
+                return string.Join(" ", parts);
+            }
+
+            
             if (deadline == null)
             {
                 trangThaiThoiGian = "Không có hạn chót";
@@ -111,22 +145,23 @@ namespace WebBaiGiang_CKC.Controllers
                 if (baiTapNop == null)
                 {
                     // CHƯA NỘP + còn hạn
-                    if (now < deadline)
+                    if (now < deadline.Value)
                     {
                         var remaining = deadline.Value - now;
-                        trangThaiThoiGian = $"Còn lại: <strong>{remaining.Hours} giờ {remaining.Minutes} phút</strong>";
+                        trangThaiThoiGian = $"Còn lại: <strong>{FormatDuration(remaining)}</strong>";
                     }
                     // Hết hạn chính nhưng có hạn nộp muộn
-                    else if (lateDeadline != null && now <= lateDeadline)
+                    else if (lateDeadline != null && now <= lateDeadline.Value)
                     {
                         var remainingLate = now - deadline.Value;
-                        trangThaiThoiGian = $"<span class='text-danger'>Bài tập bị quá hạn:{remainingLate.Hours} giờ {remainingLate.Minutes} phút</span>";
+                         trangThaiThoiGian = $"<span class='text-danger'>Bài tập bị quá hạn: {FormatDuration(remainingLate)}</span>";
                     }
                     // Quá hạn hoàn toàn
                     else
                     {
-                        trangThaiThoiGian = $"<span class='text-danger'>Bài tập bị quá hạn: {now.Subtract(deadline.Value).Hours} giờ {now.Subtract(deadline.Value).Minutes} phút</span>";
-                        allowSubmit = false;
+                        var over = now - (lateDeadline ?? deadline).Value;
+                        trangThaiThoiGian = $"<span class='text-danger'>Bài tập bị quá hạn: {FormatDuration(over)} - (Không thể nộp nữa)</span>";
+                       // allowSubmit = false;
                     }
                 }
                 else
@@ -138,14 +173,16 @@ namespace WebBaiGiang_CKC.Controllers
                     // -----------------------------------------
                     if (lateDeadline == null)
                     {
-                        if (submitTime < deadline)
+                        if (submitTime < deadline.Value)
                         {
                             var early = deadline.Value - submitTime;
-                            trangThaiThoiGian = $"<span class='text-success fw-semibold'>Bài tập đã nộp sớm: {early.Hours} giờ {early.Minutes} phút</span>";
+                            trangThaiThoiGian = $"<span class='text-success fw-semibold'>Bài tập đã nộp sớm: {FormatDuration(early)}</span>";
                         }
                         else
                         {
-                            allowSubmit = false; // ❗ KHÔNG CÓ NỘP MUỘN → KHÓA SỬA LUÔN
+                            var over = submitTime - deadline.Value;
+                            trangThaiThoiGian = $"<span class='text-danger fw-semibold'>Nộp sau hạn {FormatDuration(over)} (không cho phép nộp muộn)</span>";
+                            //allowSubmit = false; // ❗ KHÔNG CÓ NỘP MUỘN → KHÓA SỬA LUÔN
                         }
                     }
                     else
@@ -153,19 +190,21 @@ namespace WebBaiGiang_CKC.Controllers
                         // -----------------------------------------
                         // CASE 2: CÓ HẠN NỘP MUỘN
                         // -----------------------------------------
-                        if (submitTime < deadline)
+                        if (submitTime < deadline.Value)
                         {
                             var early = deadline.Value - submitTime;
-                            trangThaiThoiGian = $"<span class='text-success fw-semibold'>Bài tập đã nộp sớm: {early.Hours} giờ {early.Minutes} phút</span>";
+                             trangThaiThoiGian = $"<span class='text-success fw-semibold'>Bài tập đã nộp sớm: {FormatDuration(early)}</span>";
                         }
-                        else if (submitTime <= lateDeadline)
+                        else if (submitTime <= lateDeadline.Value)
                         {
                             var late = submitTime - deadline.Value;
-                            trangThaiThoiGian = $"<span class='text-warning fw-semibold'>Bài tập đã nộp muộn: {late.Hours} giờ {late.Minutes} phút</span>";
+                            trangThaiThoiGian = $"<span class='text-warning fw-semibold'>Bài tập đã nộp muộn: {FormatDuration(late)}</span>";
                         }
                         else
                         {
-                            allowSubmit = false;
+                            var overLate = submitTime - lateDeadline.Value;
+                            trangThaiThoiGian = $"<span class='text-danger fw-semibold'>Nộp sau thời gian cho phép: {FormatDuration(overLate)}</span>";
+                             //allowSubmit = false;
                         }
                     }
                 }
@@ -175,11 +214,9 @@ namespace WebBaiGiang_CKC.Controllers
             ViewBag.TrangThaiThoiGian = trangThaiThoiGian;
             ViewBag.AllowSubmit = allowSubmit;
 
-
             return View(baiTap);
         }
 
-        // ✅ Trang nộp bài
         // ✅ Trang nộp bài
         public async Task<IActionResult> NopBai(int baiTapId)
         {
@@ -216,7 +253,9 @@ namespace WebBaiGiang_CKC.Controllers
             ViewBag.TenBaiTap = baiTap.TenBaiTap;
             ViewBag.BaiTapId = baiTapId;
             ViewBag.MoTa = baiTap.MoTa;
+            
             return View();
+
         }
 
 
@@ -252,6 +291,43 @@ namespace WebBaiGiang_CKC.Controllers
                 return RedirectToAction("NopBai", new { baiTapId });
             }
 
+                // ========== KIỂM TRA HẠN NỘP ==========
+            DateTime now = DateTime.Now;
+            DateTime? hanChot = baiTap.HanNop;           // hạn đúng giờ
+            DateTime? hanMuon = baiTap.LateSubmission;   // hạn muộn
+
+            if (hanMuon.HasValue && hanChot.HasValue && hanMuon < hanChot)
+            {
+                hanMuon = null;
+            }    
+
+            bool isLate = false; // gắn nhãn cho trạng thái khi được phép nộp
+            // Trường hợp KHÔNG có LateSubmission
+            if (!hanMuon.HasValue)
+            {
+                if (hanChot.HasValue && now > hanChot.Value)
+                {
+                    _notyf.Error("Đã quá hạn nộp, hệ thống không chấp nhận bài nộp sau hạn chót.");
+                    return RedirectToAction("ChiTiet", new { baiTapId });
+                }
+                // else: now <= hanChot (đúng hạn) hoặc không có hanChot (không giới hạn) → cho nộp, isLate = false
+            }
+            else
+            {
+                // Có LateSubmission
+                if (now > hanMuon.Value)
+                {
+                    _notyf.Error("Đã quá hạn nộp muộn, hệ thống không chấp nhận bài nộp.");
+                    return RedirectToAction("ChiTiet", new { baiTapId });
+                }
+
+                // Nếu có HanNop: now > HanNop và ≤ LateSubmission thì coi là nộp muộn
+                if (hanChot.HasValue && now > hanChot.Value)
+                {
+                    isLate = true; // nộp muộn nhưng vẫn cho nộp vì chưa quá LateSubmission
+                }
+            }
+
             string uploadDir = Path.Combine(_env.WebRootPath, "uploads", "bainop");
             if (!Directory.Exists(uploadDir))
                 Directory.CreateDirectory(uploadDir);
@@ -278,20 +354,17 @@ namespace WebBaiGiang_CKC.Controllers
                         MaBaiTap = baiTapId,
                         MaHocVien = maHocVien,
                         FileNop = $"/uploads/bainop/{fileName}",
-                        NgayNop = DateTime.Now,
+                        NgayNop = now,
                         LanNop = lanNop,
                         TrangThai = "Đã nộp"
-                    };
-
+                    };  
                     _context.BaiTapNops.Add(baiTapNop);
-
+                
                     // ⭐ SAU SAVECHANGE() mới lấy được ID
                     await _context.SaveChangesAsync();
-
                     lastNopBaiId = baiTapNop.MaBaiTapNop; // ⭐ LƯU ID bài nộp
                 }
             }
-
 
             // =============================
             // 🛎 GỬI THÔNG BÁO — NOTI2
@@ -312,7 +385,7 @@ namespace WebBaiGiang_CKC.Controllers
             {
                 var giangVien = lop.GiangVien;
 
-                // 🎯 Dùng MÃ TÀI KHOẢN để gửi SignalR (UserId login)
+                //  Dùng MÃ TÀI KHOẢN để gửi SignalR (UserId login)
                 int? teacherAccountId = giangVien.MaTaiKhoan;
 
                 if (teacherAccountId == null || teacherAccountId == 0)
@@ -336,13 +409,16 @@ namespace WebBaiGiang_CKC.Controllers
                         $"/GiangVien/BaiTap/ChamDiem/{lastNopBaiId}"
                    );
 
-
                 }
             }
-
-            _notyf.Success("Nộp bài thành công!");
+            if (isLate){
+                _notyf.Warning("Bạn đã nộp muộn so với hạn chót, bài vẫn được ghi nhận.");
+            }
+            else{
+                _notyf.Success("Nộp bài thành công!"); 
+            }
+           //_notyf.Success("Nộp bài thành công!");
             return RedirectToAction("ChiTiet", new { baiTapId });
-
         }
 
     }

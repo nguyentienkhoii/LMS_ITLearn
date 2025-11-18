@@ -291,7 +291,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
 
         //Cập nhật thêm thông báo và chốt điểm
-        [HttpPost]
+             [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChamDiem(int id, double? diem, string nhanXet)
         {
@@ -308,6 +308,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             var softLocked = SubmissionStatus.IsSoftLocked(baiNop.TrangThai);
             var withinGrace = SubmissionStatus.IsWithinGrace(baiNop.TrangThai, baiNop.NgayCham);
             var lockedHard = SubmissionStatus.IsLocked(baiNop.TrangThai, baiNop.NgayCham);
+            var isReopen    = SubmissionStatus.IsReopened(baiNop.TrangThai);
 
             // ĐÃ Chốt điểm → chặn
             if (lockedHard)
@@ -332,12 +333,12 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 createdAt = DateTime.UtcNow
             };
 
-            if (!softLocked && !withinGrace)
+            if (!softLocked && !isReopen && !withinGrace)
             {
                 baiNop.Diem = diem;
                 baiNop.NhanXet = (nhanXet ?? "").Trim();
                 baiNop.TrangThai = SubmissionStatus.DaChotSoft;
-                baiNop.NgayCham = null;
+                baiNop.NgayCham = DateTime.Now;
 
                 _context.Update(baiNop);
                 await _context.SaveChangesAsync();
@@ -347,9 +348,9 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                     await _hub.Clients.User(hocVienUserId.ToString())
                         .SendAsync("ReceiveNotification",
                           BuildPayload("Điểm bài tập đã được công bố",
-                                       $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem:0.##}/10"));
+                                       $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem: 0.##}/10"));
                 }
-                _notyf.Success("Chấm điểm thành công. Giảng viên có thể chỉnh sửa thêm nếu cần !");
+                _notyf.Success("Chấm điểm thành công. Giảng viên có thể chỉnh sửa trong thời gian cho phép !");
                 return RedirectToAction("DanhSachBaiNop", new { id = baiNop.MaBaiTap });
             }
 
@@ -375,59 +376,34 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 return RedirectToAction(nameof(ChamDiem), new { id });
             }
 
+            if (isReopen)
+            {
+                baiNop.Diem     = diem;
+                baiNop.NhanXet  = (nhanXet ?? "").Trim();
+                baiNop.TrangThai = SubmissionStatus.DaChamChot;
+
+                // Mẹo để khóa ngay: set NgayCham lùi quá khoảng ân hạn
+                baiNop.NgayCham  = DateTime.Now.Subtract(SubmissionStatus.Grace);
+
+                _context.Update(baiNop);
+                await _context.SaveChangesAsync();
+
+                if (hocVienUserId > 0)
+                {
+                    await _hub.Clients.User(hocVienUserId.ToString())
+                        .SendAsync("ReceiveNotification",
+                            BuildPayload("Điểm bài tập đã được phúc khảo lại",
+                                        $"{baiNop.BaiTap?.TenBaiTap}: {baiNop.Diem:0.##}/10 "));
+                }
+
+                _notyf.Success("Đã chốt lại điểm sau khi mở khóa.");
+                return RedirectToAction(nameof(ChamDiem), new { id });
+            }
+
                 // Phòng hờ (không rơi vào nhánh nào)
             _notyf.Warning("Không thể cập nhật nữa");
             return RedirectToAction(nameof(ChamDiem), new { id });
 
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BatDauCapNhat(int id, double? diem, string nhanXet)
-        {
-            var b = await _context.BaiTapNops
-                .Include(x => x.BaiTap)
-                .FirstOrDefaultAsync(x => x.MaBaiTapNop == id);
-            if (b == null) return NotFound();
-
-            if (!SubmissionStatus.IsSoftLocked(b.TrangThai))
-            {
-                _notyf.Warning("Trạng thái không hợp lệ để xác nhận.");
-                return RedirectToAction(nameof(ChamDiem), new { id });
-            }
-
-            // lưu giá trị mới & bắt đầu đếm
-            b.Diem      = diem;
-            b.NhanXet   = (nhanXet ?? "").Trim();
-            b.TrangThai = SubmissionStatus.DaChamChot;
-            b.NgayCham  = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-
-            // notify công bố
-            var hocVienUserId = await _context.HocViens
-                .Where(h => h.MaHocVien == b.MaHocVien)
-                .Select(h => h.MaTaiKhoan)
-                .FirstOrDefaultAsync();
-
-            if (hocVienUserId > 0)
-            {
-                object BuildPayload(string title, string msg) => new {
-                    title,
-                    message   = msg,
-                    link      = Url.Action("ChiTiet","BaiTap", new { area="", baiTapId = b.MaBaiTap }, Request.Scheme),
-                    createdAt = DateTime.UtcNow
-                };
-
-                await _hub.Clients.User(hocVienUserId.ToString()).SendAsync(
-                    "ReceiveNotification",
-                    BuildPayload("Điểm bài tập đã được công bố",
-                                $"{b.BaiTap?.TenBaiTap}: {b.Diem:0.##}/10")
-                );
-            }
-
-            _notyf.Success("Đã xác nhận & bắt đầu đếm thời gian cập nhật.");
-            return RedirectToAction(nameof(ChamDiem), new { id });
         }
 
 
@@ -441,7 +417,6 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
     
         }
 
-
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
@@ -450,7 +425,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             var b = await _context.BaiTapNops.FindAsync(id);
             if (b == null) return NotFound();
 
-            b.TrangThai = SubmissionStatus.MoiNop; // mở để chấm lại
+            b.TrangThai = SubmissionStatus.ReOpened; // mở để chấm lại
             b.NgayCham = null;                                               
             await _context.SaveChangesAsync();
 
