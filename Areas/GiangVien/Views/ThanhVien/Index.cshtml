@@ -5,14 +5,14 @@
 }
 
 <div class="row">
-    <!-- Sidebar trái -->
+
     <div class="col-md-2 border-end bg-white">
         @await Html.PartialAsync("~/Areas/GiangVien/Views/Shared/_SidebarGiangVien.cshtml")
     </div>
 
-    <!-- Nội dung chính -->
     <div class="col-md-10">
         <div class="container mt-4">
+
             <h4 class="fw-bold text-primary mb-4">
                 <i class="fa fa-users"></i> Danh sách thành viên lớp:
                 <span class="text-dark">@ViewBag.TenLop</span>
@@ -20,14 +20,10 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-semibold text-secondary mb-0">
-                            <i class="fa fa-list me-2"></i> Học viên hiện tại trong lớp
-                        </h5>
-                        <button class="btn btn-primary btn-sm" id="btnThemHocVien">
-                            <i class="fa fa-user-plus me-1"></i> Thêm học viên
-                        </button>
-                    </div>
+
+                    <h5 class="fw-semibold text-secondary mb-3">
+                        <i class="fa fa-list me-2"></i> Học viên hiện tại trong lớp
+                    </h5>
 
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -35,8 +31,8 @@
                                 <th width="50" class="text-center">#</th>
                                 <th>Họ tên</th>
                                 <th>Email</th>
+                                <th>Số điện thoại</th>
                                 <th width="150" class="text-center">Trạng thái</th>
-                                <th width="100" class="text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -47,9 +43,11 @@
                                 {
                                     <tr>
                                         <td class="text-center fw-semibold">@i</td>
+
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:38px;height:38px;">
+                                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                     style="width:38px;height:38px;">
                                                     @hv.HoTen?.FirstOrDefault()
                                                 </div>
                                                 <div>
@@ -58,7 +56,11 @@
                                                 </div>
                                             </div>
                                         </td>
+
                                         <td>@hv.Email</td>
+
+                                        <td>@hv.SoDienThoai</td>
+
                                         <td class="text-center">
                                             @if (hv.TaiKhoan != null)
                                             {
@@ -76,11 +78,6 @@
                                                 <span class="badge bg-warning text-dark px-3 py-2">Chưa có tài khoản</span>
                                             }
                                         </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-outline-danger btn-sm btn-xoa-hv" data-id="@hv.MaHocVien" title="Xóa khỏi lớp">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                        </td>
                                     </tr>
                                     i++;
                                 }
@@ -95,131 +92,18 @@
                             }
                         </tbody>
                     </table>
+
+
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Modal chứa danh sách học viên -->
-<div id="modalThemHocVien" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fa fa-user-plus me-2"></i>Chọn học viên để thêm vào lớp</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="modalHocVienBody">
-                <div class="text-center text-muted py-3">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Đang tải danh sách học viên...</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
-                    <i class="fa fa-times me-1"></i> Đóng
-                </button>
-                <button class="btn btn-success rounded-pill px-3" id="btnLuuHocVien">
-                    <i class="fa fa-save me-1"></i> Lưu thay đổi
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        const maLopHoc = @ViewBag.MaLopHoc;
-
-        // 🔹 Mở modal chọn học viên
-        $('#btnThemHocVien').click(function () {
-            $('#modalHocVienBody').load(`/GiangVien/ThanhVien/ThemHocVien_Partial?maLop=${maLopHoc}`, function () {
-                $('#modalThemHocVien').modal('show');
-            });
-        });
-
-        // 🔹 Lưu thay đổi danh sách học viên
-        $('#btnLuuHocVien').click(function () {
-            const checkedIds = [];
-            $('input[name="hocvien"]:checked').each(function () {
-                checkedIds.push(parseInt($(this).val()));
-            });
-
-            $.ajax({
-                url: '/GiangVien/ThanhVien/CapNhatHocVienLop',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ MaLopHoc: maLopHoc, MaHocViens: checkedIds }),
-                success: function (res) {
-                    if (res.success) {
-                        notyf.success(res.message);
-                        setTimeout(() => location.reload(), 800);
-                    } else {
-                        notyf.error(res.message);
-                    }
-                }
-            });
-        });
-
-        // 🔹 Xóa học viên
-        $(document).on('click', '.btn-xoa-hv', function () {
-            const maHocVien = $(this).data('id');
-            if (!confirm('Bạn có chắc muốn xóa học viên này khỏi lớp?')) return;
-
-            $.ajax({
-                url: '/GiangVien/ThanhVien/XoaHocVien_Ajax',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ MaHocVien: maHocVien, MaLopHoc: maLopHoc }),
-                success: function (res) {
-                    if (res.success) {
-                        notyf.success(res.message);
-                        setTimeout(() => location.reload(), 700);
-                    } else {
-                        notyf.error(res.message);
-                    }
-                }
-            });
-        });
-
-        // ✅ Bổ sung chọn tất cả (dành cho modal load AJAX)
-        $(document).on('change', '#checkAllHV', function () {
-            $('.chkHocVien').prop('checked', this.checked);
-        });
-
-        $(document).on('change', '.chkHocVien', function () {
-            const allChecked = $('.chkHocVien').length === $('.chkHocVien:checked').length;
-            $('#checkAllHV').prop('checked', allChecked);
-        });
-    </script>
-}
 
 <style>
     .avatar {
         font-weight: 600;
     }
-
-    .btn-primary {
-        background-color: #126f9a;
-        border-color: #126f9a;
-    }
-
-        .btn-primary:hover {
-            background-color: #0d5a7d;
-            border-color: #0d5a7d;
-        }
-
-    .btn-xoa-hv {
-        transition: 0.2s;
-    }
-
-        .btn-xoa-hv:hover {
-            background-color: #dc3545;
-            color: white;
-            transform: scale(1.1);
-        }
 
     .col-md-10 {
         background-color: #f8f9fa;

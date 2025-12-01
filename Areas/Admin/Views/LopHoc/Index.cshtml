@@ -51,19 +51,26 @@
                             <td>@item.KhoaHoc?.TenKhoaHoc</td>
                             <td>@item.GiangVien?.HoTen</td>
                             <td class="text-center">
-                                @if (item.TrangThai?.ToLower() == "đang mở" || item.TrangThai?.ToLower() == "mở")
+                                @if (item.TrangThai?.Trim() == "Hoạt động")
                                 {
-                                    <span class="badge bg-success">Đang mở</span>
+                                    <span class="badge bg-success px-3 py-2">
+                                        Đang hoạt động
+                                    </span>
                                 }
-                                else if (item.TrangThai?.ToLower() == "đã đóng")
+                                else if (item.TrangThai?.Trim() == "Không hoạt động")
                                 {
-                                    <span class="badge bg-secondary">Đã đóng</span>
+                                    <span class="badge bg-danger px-3 py-2">
+                                        Không hoạt động
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-warning text-dark">@item.TrangThai</span>
+                                    <span class="badge bg-warning text-dark px-3 py-2">
+                                        @item.TrangThai
+                                    </span>
                                 }
                             </td>
+
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
                                     <a asp-action="ChiTiet" asp-route-id="@item.MaLopHoc"

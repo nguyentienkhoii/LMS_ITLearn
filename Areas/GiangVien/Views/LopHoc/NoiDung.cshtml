@@ -249,12 +249,23 @@
     <!-- Sidebar phải -->
     <div class="col-md-2 sidebar-right">
         <div class="card mb-3">
-            <div class="card-body text-center">
-                <h6 class="fw-bold">Tình trạng lớp học</h6>
-                <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố</button>
-                <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button>
-            </div>
+        <div class="card-body text-center">
+            <h6 class="fw-bold">Tình trạng lớp học</h6>
+
+            @if(Model.TrangThai == "Hoạt động")
+            {
+                <button class="btn btn-success w-100">
+                    <i class="fa fa-check me-1"></i> Đang hoạt động
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-danger w-100">
+                    <i class="fa fa-ban me-1"></i> Không hoạt động
+                </button>
+            }
         </div>
+    </div>
 
         <div class="list-group small">
             <a href="#" class="list-group-item list-group-item-action"><i class="fa fa-home me-2"></i>Chọn trang chủ</a>

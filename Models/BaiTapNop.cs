@@ -47,9 +47,10 @@ namespace WebBaiGiang_CKC.Models
             public const string DaChotSoft = "DA_CHOT_SOFT"; // chưa xác nhận hẳn
             public const string DaChamChot = "DA_CHOT";      // đã công bố & khóa
 
-            public static readonly TimeSpan Grace = TimeSpan.FromHours(1);
+        public static readonly TimeSpan Grace = TimeSpan.FromMinutes(1);
 
-            public static bool IsReopened(string s)
+
+        public static bool IsReopened(string s)
                 => string.Equals(s, ReOpened, StringComparison.OrdinalIgnoreCase);
 
             public static bool IsSoftLocked(string s)

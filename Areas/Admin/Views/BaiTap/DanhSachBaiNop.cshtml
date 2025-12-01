@@ -1,0 +1,102 @@
+﻿@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@using X.PagedList
+@model IPagedList<WebBaiGiang_CKC.Models.BaiTapNop>
+
+@{
+    ViewData["Title"] = "Danh sách bài nộp";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+
+    var baitap = ViewBag.BaiTap as WebBaiGiang_CKC.Models.BaiTap;
+}
+
+<ol class="breadcrumb mt-3">
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="BaiTap" asp-action="Index">Quản lý bài tập</a></li>
+    <li class="breadcrumb-item active">Danh sách bài nộp</li>
+</ol>
+
+<h2 class="text-center">DANH SÁCH BÀI NỘP</h2>
+<h5 class="text-center text-primary">@baitap.TenBaiTap</h5>
+<hr />
+<br />
+
+<table class="table table alert-light">
+    <thead class="table-dark text-center">
+        <tr>
+            <th>Học viên</th>
+            <th>Ngày nộp</th>
+            <th>Lần nộp</th>
+            <th>File nộp</th>
+            <th>Điểm</th>
+            <th>Trạng thái</th>
+            <th width="140px"></th>
+        </tr>
+    </thead>
+
+    <tbody class="text-center">
+        @foreach (var item in Model)
+        {
+
+
+            <tr>
+                <td>@item.HocVien?.HoTen</td>
+
+                <td>
+                    @item.NgayNop?.ToString("dd/MM/yyyy HH:mm")
+                </td>
+
+                <td>@item.LanNop</td>
+
+                <td>
+                    @if (!string.IsNullOrEmpty(item.FileNop))
+                    {
+                        <a href="@item.FileNop" target="_blank">Xem file</a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Không có</span>
+                    }
+                </td>
+
+                <td>@item.Diem</td>
+
+                <td>
+                    
+                </td>
+
+                <td>
+                    <a asp-action="ChiTietBaiNop" asp-route-id="@item.MaBaiTapNop"
+                       class="action-icon">
+                        <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
+                    </a>
+
+                    <a asp-action="ChamDiem" asp-route-id="@item.MaBaiTapNop"
+                       class="action-icon">
+                        <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="row">
+    <ul class="pagination justify-content-end">
+        @Html.PagedListPager(Model,
+                 page => Url.Action("DanhSachBaiNop", new { id = baitap.MaBaiTap, page }),
+                 new PagedListRenderOptions()
+        {
+            ActiveLiElementClass = "active",
+            PageClasses = new[] { "page-link" },
+            LiElementClasses = new[] { "page-item" },
+            UlElementClasses = new[] { "pagination", "justify-content-center", "mt-3" },
+            LinkToNextPageFormat = "Sau",
+            LinkToPreviousPageFormat = "Trước",
+            MaximumPageNumbersToDisplay = 3,
+            DisplayLinkToPreviousPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
+            DisplayLinkToNextPage = X.PagedList.Web.Common.PagedListDisplayMode.Always
+        })
+    </ul>
+</div>
