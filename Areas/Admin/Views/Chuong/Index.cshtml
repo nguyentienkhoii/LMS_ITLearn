@@ -4,6 +4,7 @@
     ViewData["Title"] = "Index";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
     var MonHocId = @ViewBag.MaLopHoc;
+    var lopList = ViewBag.LopHocList as IEnumerable<dynamic>;
 }
 
 <ol class="breadcrumb">
@@ -12,50 +13,66 @@
     <li class="breadcrumb-item"><a asp-controller="Chuong" asp-action="Index">Quản lý chương</a></li>
 
 </ol>
-<br />
+<br/>
 <h1 style="text-align: center;">QUẢN LÝ CHƯƠNG </h1>
-<hr />
-<br />
+<hr/>
+<br/>
 <div class="row" id="form-container">
-    <form id="create-form" asp-action="@((Model.Detail.MaChuong == 0) ? "Create" : "Edit")" asp-route-id="@Model.Detail?.MaChuong">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <br>
-        <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="Detail.MaLopHoc" class="control-label"></label>
-            <select asp-for="Detail.MaLopHoc" class="form-control w-100" asp-items="@MonHocId"></select>
-        </div>
-     
+    <form id="create-form"
+          asp-action="@((Model?.Detail?.MaChuong ?? 0) == 0 ? "Create" : "Edit")"
+          asp-route-id="@Model?.Detail?.MaChuong">
 
-        <br />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group flex-grow-1 mx-4">
+            @* Ghi nhãn “Lớp học” thay vì “Mã lớp học” *@
+            <label class="control-label">Lớp học</label>
+            <select asp-for="Detail.MaLopHoc"
+                    class="form-control w-100"
+                    asp-items="ViewBag.TenLopHoc"
+                    id="TenLopHocSelect"></select>
+            <span asp-validation-for="Detail.MaLopHoc" class="text-danger"></span>
+        </div>
+        <br/>
+
         <div class="form-group flex-grow-1 mx-4">
             <label asp-for="Detail.TenChuong" class="control-label"></label>
-            <input asp-for="Detail.TenChuong" class="form-control w-100" />
+            <input asp-for="Detail.TenChuong" class="form-control w-100" placeholder="Nhập tên chương..." id="TenChuongInput"/>
             <span asp-validation-for="Detail.TenChuong" class="text-danger"></span>
-        </div>   
-        <br />
-        @if (Model.Detail.MaChuong == 0)
-        {
-            <div class="form-group  flex-grow-1 mx-4">
-                <label asp-for="Detail.MaChuong" class="control-label"></label>
-                <input asp-for="Detail.MaChuong" class="form-control w-100" />
-                <span asp-validation-for="Detail.MaChuong" class="text-danger"></span>
-            </div>
-        }
-        else
-        {
-            <input type="hidden" asp-for="Detail.MaChuong" />
-        }
-        <br />
-        <div class="d-flex justify-content-end flex-grow-1 mx-4 mb-2">
-            <input type="submit" value="@((Model.Detail.MaChuong == 0) ? "Thêm" : "Lưu")" class="btn btn-success mb-2" />
-           
-           
         </div>
-    </form>
-   
 
+        @* KHÔNG cho nhập MaChuong vì Identity *@
+            <input type="hidden" asp-for="Detail.MaChuong" id="MaChuongHidden" />
+
+        <br/>
+        <div class="d-flex justify-content-end align-items-center gap-2 mx-4 mb-2">
+            <!-- Thêm mới (ẩn mặc định, chỉ hiện khi đang Sửa) -->
+
+            <!-- Nút submit: sẽ hiển thị “Thêm” hoặc “Lưu” -->
+            <button type="submit" class="btn btn-success" id="btnSubmitChuong">
+                <i class="mdi mdi-content-save-outline me-1"></i>
+                <span id="btnSubmitLabel">@((Model?.Detail?.MaChuong ?? 0) == 0 ? "Thêm" : "Lưu")</span>
+            </button>
+
+            <!-- (tuỳ chọn) Huỷ/Reset về chế độ Thêm -->
+            <button type="button" class="btn btn-light d-none" id="btnCancel">
+                <i class="mdi mdi-close-thick me-1"></i><span>Huỷ</span>
+            </button>
+        </div>
+
+    </form>
 </div>
 
+<hr/>
+<select id="lopFilterTemplate" class="d-none">
+  <option value="">Tất cả lớp học</option>
+  @if (lopList != null)
+  {
+      foreach (var lop in lopList)
+      {
+          <option value="@lop.MaLopHoc">@lop.TenLopHoc</option>  <!-- value = MaLopHoc -->
+      }
+  }
+</select>
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -63,7 +80,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Mã chương</th>
-                        <th>Tên môn học</th>
+                        <th>Tên lớp học</th>
                         <th>Tên chương</th>
                         <th>Số chương</th>
                         <th style="width: 120px;"></th>
@@ -72,7 +89,7 @@
                 <tbody>
                     @foreach (var item in Model.ListChuong)
                     {
-                        <tr>
+                         <tr data-lop="@item.MaLopHoc" data-trangthai="@item.LopHoc?.TrangThai" > 
                             <td>
                                 @Html.DisplayFor(modelItem => item.MaChuong)
                             </td>
@@ -86,13 +103,22 @@
                                 @Html.DisplayFor(modelItem => item.MaChuong)
                             </td>
                             <td class="table-action">
-                                <a href="#" class="modal-view-button" data-chuongid="@item.MaChuong">
+                                <a href="#" class="js-view" data-chuongid="@item.MaChuong" title="Xem"> 
                                     <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
                                 </a>
-                                <a asp-action="Index" asp-route-id="@item.MaChuong" class="action-icon edit-button">
+                                @* <a asp-action="Index" asp-route-id="@item.MaChuong" class="action-icon edit-button">
                                     <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
                                 </a>
                                 <a href="#" class="modal-view-button-dl" data-chuongid="@item.MaChuong">
+                                    <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
+                                </a> *@
+                                    <!-- Sửa (điền vào form trên cùng) -->
+                                <a href="#" class="js-edit" data-chuongid="@item.MaChuong" title="Sửa">
+                                    <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
+                                </a>
+
+                                <!-- Xoá -->
+                                <a href="#" class="js-delete" data-chuongid="@item.MaChuong" title="Xoá">
                                     <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
                                 </a>
                             </td>
@@ -106,134 +132,90 @@
 </div> <!-- end card-->
 
 <!-- Large modal -->
-@*<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#bs-example-modal-lg">Large Modal</button>*@
-<div class="modal fade" id="bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myLargeModalLabel">XEM CHI TIẾT</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
-            </div>
-            <div class="modal-body">
-                <dl class="row">
-                    <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.LopHoc.TenLopHoc)
-                    </dt>
-                    <dd class="col-sm-10" data-monhoc></dd>
-                    <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.TenChuong)
-                    </dt>
-                    <dd class="col-sm-10" data-tenchuong></dd>
-                    <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.MaChuong)
-                    </dt>
-                   <dd class="col-sm-10" data-chuongid></dd>
-                </dl>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
-               
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<div class="modal fade" id="viewChuongModal" tabindex="-1" aria-labelledby="viewChuongLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="viewChuongLabel" class="modal-title">Chi tiết chương</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Thông tin Chương -->
+        <h6 class="fw-bold mb-2">Thông tin chương</h6>
+        <dl class="row mb-3">
+          <dt class="col-sm-3">Mã chương</dt>
+          <dd class="col-sm-9" id="v-maChuong">—</dd>
 
+          <dt class="col-sm-3">Tên chương</dt>
+          <dd class="col-sm-9" id="v-tenChuong">—</dd>
+        </dl>
 
-<div class="modal fade" id="bs-example-modal-lg1" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myLargeModalLabel">  Bạn có chắc chắn muốn xóa chương học không?</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
-            </div>
-            <div class="modal-body">
-                <dl class="row">
-                    <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.LopHoc.TenLopHoc)
-                    </dt>
-                    <dd class="col-sm-10" data-monhoc></dd>
-                    <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.TenChuong)
-                    </dt>
-                    <dd class="col-sm-10" data-tenchuong></dd>
-                    <dt class="col-sm-2">
-                        @Html.DisplayNameFor(model => model.Detail.MaChuong)
-                    </dt>
-                    <dd class="col-sm-10" data-chuongid></dd>
-                </dl>
-            </div>
-            <div class="modal-footer">
+        <hr class="my-3" />
 
-                <form asp-action="Delete">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
-                    <div style="float: right; padding-left:20px">
-                        <input type="hidden" name="id" value="" />
-                        <input type="submit" value="Xóa" class="btn btn-danger" />
-                    </div>
-                   
-                </form>
+        <!-- Thông tin Lớp -->
+        <h6 class="fw-bold mb-2">Lớp học</h6>
+
+        <div class="row g-3 align-items-start mb-2">
+          <div class="col-md-8">
+            <dl class="row mb-0">
+              <dt class="col-sm-4">Tên lớp học</dt>
+              <dd class="col-sm-8" id="v-tenLopHoc">—</dd>
+
+              <dt class="col-sm-4">Tên viết tắt</dt>
+              <dd class="col-sm-8" id="v-tenVietTat">—</dd>
+
+              <dt class="col-sm-4">Trạng thái</dt>
+              <dd class="col-sm-8" id="v-trangThai">—</dd>
+
+              <dt class="col-sm-4">Mã khoá học</dt>
+              <dd class="col-sm-8" id="v-maKhoaHoc">—</dd>
+
+              <dt class="col-sm-4">Tên khoá học</dt>
+              <dd class="col-sm-8" id="v-tenKhoaHoc">—</dd>
+
+              <dt class="col-sm-4">Giảng viên</dt>
+              <dd class="col-sm-8" id="v-tenGiangVien">—</dd>
+            </dl>
+          </div>
+          <div class="col-md-4 text-center">
+            <img id="v-anh" src="" alt="Ảnh lớp" class="img-fluid rounded border d-none" />
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <div class="fw-semibold">Mô tả</div>
+          <div id="v-moTa" class="text-muted">—</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-2 border rounded">
+              <div class="small text-muted">Số lượng đăng ký</div>
+              <div id="v-soLuongDangKy" class="fw-bold">0</div>
             </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+          </div>
+          <div class="col-md-6">
+            <div class="p-2 border rounded">
+              <div class="small text-muted">Tổng số bài</div>
+              <div id="v-tongSoBai" class="fw-bold">0</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 @section scripts{
-      <script>
-        $(document).ready(function () {
-            // Xử lý sự kiện khi nhấn vào nút xem chi tiết
-            $(".modal-view-button").click(function (e) {
-                e.preventDefault();
-                var chuongId = $(this).data("chuongid");
-                $.ajax({
-                    url: "/Admin/Chuong/GetDetail/" + chuongId,
-                    type: "GET",
-                    success: function (data) {
-                        // Hiển thị dữ liệu lên modal
-                        $("#bs-example-modal-lg .modal-title").text("XEM CHI TIẾT");
-                        $("#bs-example-modal-lg [data-monhoc]").text(data.monHoc.tenMonHoc);
-                        $("#bs-example-modal-lg [data-tenchuong]").text(data.tenChuong);
-                        $("#bs-example-modal-lg [data-chuongid]").text(data.chuongId);
-                        // Mở modal
-                        $("#bs-example-modal-lg").modal("show");
-                    },
-                    error: function () {
-                        alert("Lỗi khi tải dữ liệu.");
-                    }
-                });
-            });
-        });
-        $(document).ready(function () {
-            // Xử lý sự kiện khi nhấn vào nút xem chi tiết
-            $(".modal-view-button-dl").click(function (e) {
-                e.preventDefault();
-                var chuongId = $(this).data("chuongid");
-                $.ajax({
-                    url: "/Admin/Chuong/GetDetail/" + chuongId,
-                    type: "GET",
-                    success: function (data) {
-                        // Hiển thị dữ liệu lên modal
-                        $("#bs-example-modal-lg .modal-title").text("XÓA CHƯƠNG");
-                        $("#bs-example-modal-lg1 [data-monhoc]").text(data.monHoc.tenMonHoc);
-                        $("#bs-example-modal-lg1 [data-tenchuong]").text(data.tenChuong);
-                        $("#bs-example-modal-lg1 [data-chuongid]").text(data.chuongId);
-                        // Đặt giá trị của chuongId vào thuộc tính value của input trong form
-                        $('form[action="/Admin/Chuong/Delete"] input[name="id"]').val(data.chuongId);
-                        // Mở modal
-                        $("#bs-example-modal-lg1").modal("show");
-                    },
-                    error: function () {
-                        alert("Lỗi khi tải dữ liệu.");
-                    }
-                });
-            });
-        });
-
-          </script>
     <link rel="shortcut icon" href="~/AdminAssets/images/favicon.ico">
 
     <!-- third party css -->
-    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css"> 
     <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
     <!-- third party css end -->
     <!-- App css -->
@@ -252,5 +234,340 @@
     <!-- third party js ends -->
     <!-- demo app -->
     <script src="~/AdminAssets/js/pages/demo.products.js"></script>
+    
+<script>
+  const escapeHtml = (s) => $('<div/>').text(s ?? '').html();
 
+  $(function () {
+    const dt = $('#products-datatable').DataTable(); // đã init ở demo.products.js
+
+    // Tạo label + select từ template
+    var $select = $('#lopFilterTemplate')
+                  .clone().removeAttr('id').removeClass('d-none')
+                  .attr('id','lopFilter')
+                  .addClass('form-select form-select-sm ms-2');
+
+    var $label = $('<label class="form-label ms-3 mb-0">Lớp:</label>').append($select);
+    // Nhét vào CÙNG HÀNG với "Hiển thị..."
+    // -> BÊN TRÁI: .dataTables_length ; BÊN PHẢI: .dataTables_filter
+    $('#products-datatable_wrapper .dataTables_length').append($label);
+    // Nếu muốn nằm cạnh Search: dùng .dataTables_filter và đổi append -> prepend để đứng trước ô Search
+    $('#lopFilter').val(''); // Mặc định: Tất cả lớp học (không lọc)
+        // Filter theo lớp + chỉ hiển thị lớp "Đang hoạt động"
+    const lopFilter = function (settings, data, dataIndex) {
+      if (settings.nTable.id !== 'products-datatable') return true; // chỉ áp cho bảng này
+
+      const rowNode = settings.aoData[dataIndex].nTr; // <tr>
+      const st = (rowNode.dataset.trangthai || '').trim().toLowerCase();
+      if (st !== 'đang hoạt động') return false;
+
+      const picked = $('#lopFilter').val();
+      if (!picked) return true; // tất cả lớp
+
+      return String(rowNode.dataset.lop) === String(picked);
+    };
+      @* $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        var picked = $('#lopFilter').val();
+        var rowNode = dt.row(dataIndex).node();     // Lấy <tr> của hàng
+       
+        var st  = (rowNode.getAttribute('data-trangthai') || '').toLowerCase();
+          // Loại bỏ mọi hàng không "Đang hoạt động"
+        if (st !== 'đang hoạt động') return false;
+
+        if (!picked) return true;                   // Tất cả lớp học
+        @* var rowLop = $(rowNode).data('lop');        // lấy data-lop (MaLopHoc) đã gắn *@
+        @* var rowLop = rowNode.getAttribute('data-lop'); // hoặc $(rowNode).attr('data-lop')
+        return String(rowLop) === String(picked);   //So sánh 
+      }); *@ 
+
+   // Chỉ push một lần
+    if (!window.__lopFilterHook) {
+      $.fn.dataTable.ext.search.push(lopFilter);
+      window.__lopFilterHook = true;
     }
+     $('#lopFilter').on('change', function () {
+        dt.draw();
+      });
+
+    // SCRIPT XỬ LÝ AJAX SỬA, XÓA CHƯƠNG
+    const GET_URL    = '@Url.Action("GetDetail","Chuong", new { area="Admin" })';
+    const CREATE_URL = '@Url.Action("CreateAjax","Chuong", new { area="Admin" })';
+    const EDIT_URL   = '@Url.Action("EditAjax","Chuong", new { area="Admin" })';
+    const DEL_URL    = '@Url.Action("DeleteAjax","Chuong", new { area="Admin" })';
+
+      function textOrDash(v) {
+    return (v === null || v === undefined || (typeof v === 'string' && v.trim() === '')) ? '—' : v;
+  }
+
+//XEM CHI TIẾT CHƯƠNG
+  $(document).on('click', '.js-view, .modal-view-button', function (e) {
+    e.preventDefault();
+    const id = $(this).data('chuongid');
+    if (!id) return;
+
+    $.getJSON(GET_URL, { id })
+      .done(res => {
+        if (!res || !res.ok) {
+          Toast && Toast.fire?.({ icon: 'error', title: (res && res.message) || 'Không tải được chi tiết' });
+          return;
+        }
+        const d = res.data || {};
+        const l = d.lop || {};
+
+        // Chương
+        $('#v-maChuong').text(textOrDash(d.maChuong));
+        $('#v-tenChuong').text(textOrDash(d.tenChuong));
+
+        // Lớp
+        $('#v-tenLopHoc').text(textOrDash(l.tenLopHoc));
+        $('#v-tenVietTat').text(textOrDash(l.tenVietTat));
+        $('#v-trangThai').text(textOrDash(l.trangThai));
+        $('#v-maKhoaHoc').text(textOrDash(l.maKhoaHoc));
+        $('#v-tenKhoaHoc').text(textOrDash(l.tenKhoaHoc));
+        $('#v-tenGiangVien').text(textOrDash(l.tenGiangVien));
+        $('#v-moTa').text(textOrDash(l.moTa));
+
+        // Ảnh lớp (ẩn nếu không có)
+        const $img = $('#v-anh');
+        if (l.anhLopHoc && l.anhLopHoc.trim() !== '') {
+          $img.attr('src', l.anhLopHoc).removeClass('d-none');
+        } else {
+          $img.attr('src', '').addClass('d-none');
+        }
+
+        // Chỉ số
+        $('#v-soLuongDangKy').text(l.soLuongDangKy ?? 0);
+        $('#v-tongSoBai').text(l.tongSoBai ?? 0);
+
+        // Show modal
+        const el = document.getElementById('viewChuongModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(el);
+        modal.show();
+      })
+      .fail(() => {
+        Toast && Toast.fire?.({ icon: 'error', title: 'Lỗi mạng' });
+      });
+  });
+
+    // Lấy AntiForgery token từ form (đang có trong trang)
+    function anti() {
+        return $('input[name="__RequestVerificationToken"]').val();
+    }
+      // Toast cấu hình sẵn
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1800,
+        timerProgressBar: true
+    });
+        // ===== Helpers (mode Thêm/Sửa) =====
+    function clearValidation($form) {
+      $form.find('.field-validation-error')
+        .empty()
+        .removeClass('field-validation-error')
+        .addClass('field-validation-valid');
+      $form.find('.input-validation-error').removeClass('input-validation-error');
+    }
+    function clearTempOptions() {
+      $('#TenLopHocSelect option[data-temp="1"]').remove();
+    }
+  
+    function enterEditMode() {
+      $('#btnCancel').removeClass('d-none');          // hiện "Thêm mới"
+      $('#btnSubmitLabel').text('Lưu');            // đổi nhãn
+    }
+    function resetFormToCreate() {
+      const $form = $('#create-form');
+      clearTempOptions();
+      clearValidation($form);
+
+      $('#MaChuongHidden').val('');
+      $('#TenChuongInput').val('');
+
+      const picked = $('#lopFilter').val();
+      if (picked) $('#TenLopHocSelect').val(picked).trigger('change');
+
+       $('#btnSubmitLabel').text('Thêm');
+       $('#btnCancel').addClass('d-none'); 
+      $('#TenChuongInput').trigger('focus');
+      Toast.fire({ icon:'info', title:'Đã chuyển về chế độ thêm mới' });
+    }
+
+    // Khởi tạo mode ban đầu
+    (function initMode(){
+      const isCreate = !parseInt($('#MaChuongHidden').val() || '0', 10);
+      if (isCreate) {
+        $('#btnSubmitLabel').text('Thêm');
+        $('#btnCancel').addClass('d-none');
+      } else {
+        enterEditMode();
+      }
+    })();
+
+
+    // Submit form : Nếu có MaChuong => Sửa, ngược lại Tạo
+    $('#create-form').on('submit', function(e){
+        e.preventDefault();
+
+        const id        = parseInt($('#MaChuongHidden').val() || '0' , 10);
+        const maLopHoc  = parseInt($('#TenLopHocSelect').val() || '0', 10);
+        const tenChuong = ($('#TenChuongInput').val() || '').trim();
+
+        const url = id > 0 ? EDIT_URL : CREATE_URL;
+        const payload = id > 0  
+            ? { __RequestVerificationToken: anti(), maChuong: id, maLopHoc, tenChuong }
+            : { __RequestVerificationToken: anti(),           maLopHoc, tenChuong };
+
+            
+        $.post(url, payload)
+        .done(res => {
+            if(!res || !res.ok){
+            Toast.fire({ icon:'error', title: (res && res.message) || 'Lỗi lưu dữ liệu' });
+            return;
+            }
+
+        if (id === 0) {
+          // ====== THÊM HÀNG MỚI
+          const actionsHtml = `
+            <a href="#" class="js-view" data-chuongid="${res.id}" title="Xem">
+              <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
+            </a>
+            <a href="#" class="js-edit" data-chuongid="${res.id}" title="Sửa">
+              <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
+            </a>
+            <a href="#" class="js-delete" data-chuongid="${res.id}" title="Xoá">
+              <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
+            </a>`;
+
+              @* const row = dt.row.add([
+                res.id,               // Mã chương
+                res.tenLopHoc,        // Tên lớp
+                res.tenChuong,        // Tên chương
+                res.id,               // Số chương (đang hiển thị theo MaChuong)
+                actionsHtml
+            ]).draw(false).node(); *@
+
+             const $tr = $(`
+            <tr data-lop="${res.maLopHoc}" data-trangthai="Đang hoạt động">
+                <td>${res.id}</td>
+                <td>${escapeHtml(res.tenLopHoc)}</td>
+                <td>${escapeHtml(res.tenChuong)}</td>
+                <td>${res.id}</td>
+                <td>${actionsHtml}</td>
+            </tr>
+            `); 
+            // Gắn data-* để filter vẫn chạy
+            @* $(row).attr('data-lop', res.maLopHoc)
+                    .attr('data-trangthai', 'Đang hoạt động');
+            dt.row(row).invalidate().draw(false); *@
+            dt.row.add($tr[0]).draw(false);
+            Toast.fire({ icon:'success', title: res.message || 'Thêm chương thành công' });
+
+            // Reset về trạng thái Thêm
+            $('#MaChuongHidden').val('');
+            $('#TenChuongInput').val('');
+            $('#btnSubmitLabel').text('Thêm');
+            // Giữ nguyên lớp đang chọn để thêm tiếp
+        }else{
+             // ====== CẬP NHẬT HÀNG
+          const $row = $('.js-edit[data-chuongid="'+ res.id +'"]').closest('tr');
+          if ($row.length){
+            const idx = dt.row($row).index();
+            dt.cell(idx, 1).data(escapeHtml(res.tenLopHoc));
+            dt.cell(idx, 2).data(escapeHtml(res.tenChuong));
+            $row[0].dataset.lop = String(res.maLopHoc);
+            dt.row($row).invalidate().draw(false);
+          }
+
+          Toast.fire({ icon:'success', title: res.message || 'Cập nhật thành công' });
+
+          // Reset về trạng thái Thêm
+          $('#MaChuongHidden').val('');
+          $('#TenChuongInput').val('');
+          $('#btnSubmitLabel').text('Thêm'); 
+
+        }
+     })
+     .fail(() => Toast.fire({ icon:'error', title:'Lỗi mạng' }));
+    });
+
+      // 2) SỬA → đổ dữ liệu vào form trên cùng, đổi nút thành "Lưu"
+        $(document).on('click', '.js-edit', function(e){
+        e.preventDefault();
+        const id = $(this).data('chuongid');
+
+        $.getJSON(GET_URL, { id })
+            .done(res => {
+            if (!res.ok) { Toast.fire({ icon:'error', title: res.message || 'Không tìm thấy chương' }); return; }
+
+            const d = res.data || {};
+            const form = $('#create-form');
+
+            // Gán vào form (SCOPED SELECTOR)
+            form.find('#MaChuongHidden').val(d.maChuong ?? '');
+            form.find('#TenChuongInput').val(d.tenChuong ?? '');
+
+            const $sel = form.find('#TenLopHocSelect');
+            const val  = d.maLopHoc != null ? String(d.maLopHoc) : '';
+
+            // Nếu option chưa có (vd: lớp không hoạt động), thêm tạm để set được
+            if (val) {
+                if ($sel.find('option[value="'+val+'"]').length === 0) {
+                   const txt = d.tenLopHoc ? (d.tenLopHoc + ' (tạm thêm)') : ('Lớp #' + val + ' (tạm thêm)');
+                   $sel.append($('<option/>', { value: val, text: txt, 'data-temp': '1'}));
+              }
+                $sel.val(val).trigger('change');
+                }
+
+            //form.attr('action', EDIT_URL + '/' + (d.maChuong ?? d.MaChuong));
+            // Đổi nút thành Lưu (đã có id sẵn)
+            enterEditMode();
+
+            // Cuộn lên form
+            $('html, body').animate({ scrollTop: $('#form-container').offset().top - 80 }, 300);
+            Toast.fire({ icon:'info', title:'Đã nạp dữ liệu để sửa' });
+            })
+            .fail(() => Toast.fire({ icon:'error', title:'Lỗi mạng' }));
+        });
+         $(document).on('keydown', function(e){ if (e.key === 'Escape') resetFormToCreate(); });
+         $(document).on('click', '#btnCancel', resetFormToCreate);
+    // 3) XÓA → hiện modal xác nhận
+    $(document).on('click', '.js-delete', function(e){
+        const id = $(this).data('chuongid');
+        Swal.fire({
+        title: 'Xoá chương?',
+        text: 'Hành động không thể hoàn tác.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Xoá',
+        cancelButtonText: 'Huỷ'
+        }).then((result) => {
+        if (result.isConfirmed) {
+            $.post(DEL_URL, { __RequestVerificationToken: anti(), id })
+            .done(res => {
+                if (!res || !res.ok) {
+                    Toast.fire({ icon:'error', title: (res && res.message) || 'Lỗi xoá chương' });
+                    return;
+                }
+
+                // Xoá hàng khỏi DataTable
+                const $row = $('.js-delete[data-chuongid="'+ id +'"]').closest('tr');
+                if ($row.length) {
+                    const dt = $('#products-datatable').DataTable();
+                    dt.row($row).remove().draw(false);
+                }
+
+                Toast.fire({ icon:'success', title: res.message || 'Đã xoá chương' });
+            })
+            .fail(() => Toast.fire({ icon:'error', title:'Lỗi mạng' }));
+        }
+        else{
+            return;
+        }
+       });
+    });
+  });
+</script>
+
+}

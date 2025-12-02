@@ -98,7 +98,6 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             // Quan trọng để background service biết chưa gửi
             baiTap.ReminderSent = false;
 
-
             _notyf.Success("✅ Đã thêm bài tập mới thành công!");
             return RedirectToAction("NoiDung", "LopHoc", new { area = "GiangVien", id = maLopHoc });
         }
@@ -283,6 +282,13 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 return RedirectToAction("Index");
             }
 
+            // if (baiNop.TrangThai == SubmissionStatus.DaChotSoft &&
+            //     baiNop.NgayCham != null &&
+            //     DateTime.Now >= baiNop.NgayCham.Value.Add(SubmissionStatus.Grace))
+            // {
+            //     baiNop.TrangThai = SubmissionStatus.DaChamChot;
+            //     await _context.SaveChangesAsync();
+            // }
             // ✅ Lấy mã lớp học cho view và menu
             ViewBag.MaLopHoc = baiNop.BaiTap?.Bai?.Chuong?.MaLopHoc;
 
@@ -291,7 +297,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
 
         //Cập nhật thêm thông báo và chốt điểm
-             [HttpPost]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChamDiem(int id, double? diem, string nhanXet)
         {

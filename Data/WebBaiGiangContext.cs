@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBaiGiang_CKC.Models;
 
 namespace WebBaiGiang_CKC.Data
@@ -39,15 +40,11 @@ namespace WebBaiGiang_CKC.Data
 
 
 
-
-
-
         // Đã thêm DbSet cho DangKyMonHoc
         public DbSet<HocVien_LopHoc> HocVien_LopHoc { get; set; }
 
 
         public DbSet<Notification> Notifications { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -65,6 +62,23 @@ namespace WebBaiGiang_CKC.Data
                 .HasForeignKey<HocVien>(h => h.MaTaiKhoan)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //Mới     
+            // var trangThaiConverter = new ValueConverter<TrangThaiLopHoc, string>(
+            //     toDb => (toDb == TrangThaiLopHoc.ChuaHoatDong) ? "Chưa hoạt động"
+            //             : (toDb == TrangThaiLopHoc.DangHoatDong) ? "Đang hoạt động"
+            //             : (toDb == TrangThaiLopHoc.DaKetThuc) ? "Đã kết thúc"
+            //             : "Đang hoạt động",
+            //     fromDb => (fromDb == "Chưa hoạt động") ? TrangThaiLopHoc.ChuaHoatDong
+            //             : (fromDb == "Đang hoạt động") ? TrangThaiLopHoc.DangHoatDong
+            //             : (fromDb == "Đã kết thúc") ? TrangThaiLopHoc.DaKetThuc
+            //             : TrangThaiLopHoc.DangHoatDong
+            // );
+            // modelBuilder.Entity<LopHoc>()
+            //     .Property(x => x.TrangThai)
+            //     .HasConversion(trangThaiConverter)       // lưu chuỗi VN
+            //     .HasColumnType("nvarchar(50)")           // cột chữ
+            //     .HasMaxLength(50);
+            //Hết mới
             modelBuilder.Entity<LopHoc>()
                 .HasOne(l => l.KhoaHoc)
                 .WithMany(k => k.LopHocs)

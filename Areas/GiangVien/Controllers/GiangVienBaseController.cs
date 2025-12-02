@@ -8,7 +8,7 @@ using WebBaiGiang_CKC.Data;
 namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 {
     [Area("GiangVien")]
-    [Authorize(Roles = "GiangVien")]
+    //[Authorize(Roles = "GiangVien")]
     public class GiangVienBaseController : Controller
     {
         protected readonly WebBaiGiangContext _context;
@@ -27,7 +27,6 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             {
                 // Lấy ID đăng nhập của giảng viên
                 var teacherId = User.FindFirstValue("MaTaiKhoan");
-
                 if (!string.IsNullOrEmpty(teacherId))
                 {
                     int id = int.Parse(teacherId);

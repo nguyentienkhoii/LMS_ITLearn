@@ -1,10 +1,9 @@
 ﻿@model WebBaiGiang_CKC.Models.Muc
-
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var ChuongId = @ViewBag.ChuongId;
-    var BaiId = @ViewBag.BaiId;
+    @* var ChuongId = @ViewBag.ChuongId;
+    var BaiId = @ViewBag.BaiId; *@
 }
 <ol class="breadcrumb">
 
@@ -23,19 +22,27 @@
         <input type="hidden" asp-for="MucId" />
         <br />
         <div class="form-group flex-grow-1 mx-4">
+            <label class="form-label">Lớp học</label>
+            <select id="LopId" class="form-select w-100" asp-items="@(ViewBag.LopList as SelectList)">
+                <option value="">-- Chọn lớp học --</option>
+            </select>
+        </div>
+        <br />
+        <div class="form-group flex-grow-1 mx-4">
             <label class="form-label">Chương <span id="ChuongDisplay"></span></label>
-            <select asp-items="ChuongId" class="form-select w-100" onchange="showChuongInfo(this)">
+            <select id="ChuongId" name="ChuongId" class="form-select w-100" asp-items="ViewBag.ChuongId" onchange="showChuongInfo(this)">
                 <option value="">-- Chọn chương học --</option>
             </select>
         </div>
         <br />
         <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="BaiId" class="form-label">Bài <span id="ChuongDisplay"></span></label>
-            <select asp-for="BaiId" asp-items="BaiId" class="form-select w-100">
+            <label asp-for="BaiId" class="form-label">Bài</label>
+            <select asp-for="BaiId" asp-items="ViewBag.BaiId" class="form-select w-100">
                 <option value="">-- Chọn bài học --</option>
             </select>
+            <span asp-validation-for="BaiId" class="text-danger"></span>
         </div>
-        <br>
+        <br/>
         <div class="form-group flex-grow-1 mx-4">
             <label asp-for="TenMuc" class="control-label"></label>
             <input asp-for="TenMuc" class="form-control w-100" />
@@ -53,7 +60,83 @@
             <textarea name="NoiDung" id="htmlelementid" style="max-width:auto" class="form-control">@Model.NoiDung</textarea>
             <span asp-validation-for="NoiDung" class="text-danger"></span>
         </div>
+        <br />
+            <div class="form-group flex-grow-1 mx-4">
+                <label class="form-label">Tài liệu đính kèm</label>
 
+                <!-- Upload file -->
+                <div class="input-group mb-2">
+                    <input type="file" id="taiLieuFiles" multiple class="form-control" />
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            onclick="uploadTaiLieu(@Model.MucId)">
+                        Tải lên
+                    </button>
+                </div>
+                <div class="mb-2">
+                    <small id="taiLieuInfo" class="text-muted d-block">Chưa chọn tệp nào.</small>
+
+                    <ul id="taiLieuSelectedList"
+                        class="list-unstyled small text-muted mb-1">
+                        @* danh sách file đã chọn sẽ được JS đổ vào đây *@
+                    </ul>
+
+                    <button type="button"
+                            id="toggleSelectedFiles"
+                            class="btn btn-link btn-sm p-0 d-none">
+                        Thu gọn danh sách
+                    </button>
+                </div>
+               
+               <div class="mt-3">
+                <!-- Danh sách tài liệu -->
+                <label class="form-label">Tài liệu hiện có </label>
+                <ul class="list-group" id="taiLieuList">
+                    @if (Model.TaiLieus != null && Model.TaiLieus.Any())
+                    {
+                        foreach (var tl in Model.TaiLieus)
+                        {
+                             
+                            var fileName = !string.IsNullOrEmpty(tl.FileTaiLieu) ? System.IO.Path.GetFileName(tl.FileTaiLieu) : "(Không có tên)" ;
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="mdi mdi-file" style="font-size:18px;"></i>
+
+                                    @if (!string.IsNullOrEmpty(tl.FileTaiLieu))
+                                    {
+                                        <a href="@tl.FileTaiLieu" target="_blank">@fileName</a>
+                                    }
+                                    else
+                                    {
+                                        @fileName
+                                    }
+                                </div>
+                                <div>
+                                    @* nút cờ lê *@
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary me-1 btn-tool-toggle"
+                                            data-id="@tl.MaTaiLieu">
+                                        <i class="mdi mdi-wrench"></i>
+                                    </button>
+
+                                    <!-- nút thùng rác (ẩn lúc đầu) -->
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger d-none btn-delete-file"
+                                            data-id="@tl.MaTaiLieu"
+                                            data-name="@fileName">
+                                        <i class="mdi mdi-delete"></i>
+                                    </button>
+                                </div>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="list-group-item">Chưa có tài liệu nào.</li>
+                    }
+                </ul>
+             </div>
+            </div>
         <br>
         <div class="form-group flex-grow-1 mx-4">
             <div style="float: left; padding-right:10px">
@@ -65,118 +148,215 @@
 
 </div>
 
+
 @section scripts{
     <script>
-        (function (factory) {
-            if (typeof define === 'function' && define.amd) {
-                define(['jquery'], factory);
-            }
-            else if (typeof module === 'object' && module.exports) {
-                module.exports = factory(require('jquery'));
-            } else {
-                factory(window.jQuery);
-            }
-        }(function ($) {
-            $.extend($.summernote.plugins, {
-                // Tạo plugin tên elfinder
-                'elfinder': function (context) {
-                    var self = this;
-                    // ui has renders to build ui elements.
-                    var ui = $.summernote.ui;
-                    // Tạo nút bấm
-                    context.memo('button.elfinder', function () {
-                        var button = ui.button({
-                            contents: '<i class="note-icon-picture"/> elFinder',
-                            tooltip: 'Quản lý file',
-                            click: function () {
-                                // Bấm vào nút bấm gọi hàm elfinderDialog
-                                elfinderDialog(context);
-                            }
-                        });
-                        // create jQuery object from button instance.
-                        var $elfinder = button.render();
-                        return $elfinder;
-                    });
-                    // This methods will be called when editor is destroyed by $('..').summernote('destroy');
-                    // You should remove elements on `initialize`.
-                    this.destroy = function () {
-                        this.$panel.remove();
-                        this.$panel = null;
-                    };
-                }
-
+    /* ==== Summernote + elFinder (GIỮ NGUYÊN) ==== */
+    (function (factory) {
+    if (typeof define === 'function' && define.amd) { define(['jquery'], factory); }
+    else if (typeof module === 'object' && module.exports) { module.exports = factory(require('jquery')); }
+    else { factory(window.jQuery); }
+    }(function ($) {
+    $.extend($.summernote.plugins, {
+        'elfinder': function (context) {
+        var ui = $.summernote.ui;
+        context.memo('button.elfinder', function () {
+            var button = ui.button({
+            contents: '<i class="note-icon-picture"/> elFinder',
+            tooltip: 'Quản lý file',
+            click: function () { elfinderDialog(context); }
             });
-        }));
-        function elfinderDialog(editor) {
-            var fm = $('<div/>').dialogelfinder({
-                baseUrl: "@Url.Content("~/lib/elfinder/")",
-                url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
-                lang: 'vi',
-                width: 840,
-                height: 450,
-                destroyOnClose: true,
-                getFileCallback: function (files, fm) {
-                    console.log(files);
-                    editor.invoke('editor.insertImage', files.url);
-                },
-                commandsOptions: {
-                    getfile: {
-                        oncomplete: 'close',
-                        folders: false
-                    }
-                }
-            }).dialogelfinder('instance');
-        }
-        $(document).ready(function () {
-            $('#htmlelementid').summernote({
-
-                height: 700,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['fontname', ['fontname']],
-                    ['fontsize', ['fontsize']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video', 'elfinder']],
-                    ['view', ['fullscreen', 'codeview', 'help']],
-                ],
-
-            });
+            return button.render();
         });
-        function showChuongInfo(selectElement) {
-            var selectedChuong = selectElement.options[selectElement.selectedIndex].text;
-            document.getElementById("ChuongDisplay").innerHTML = " - " + selectedChuong;
-            var chuongId = selectElement.value;
-            var baiSelect = $("#BaiId");
-            baiSelect.empty();
-            if (!chuongId || chuongId === "-- Chọn chương học --") {
-                baiSelect.append($('<option></option>').val('').text('-- Chọn bài học --'));
-                baiSelect.attr('disabled', true);
-                return;
-            } else {
-                baiSelect.attr('disabled', false);
-                $.ajax({
-                    type: "GET",
-                    url: "/Admin/Muc/GetBaiByChuongId",
-                    data: { chuongId: chuongId },
-                    success: function (data) {
-                        if (data.length === 0) {
-                            baiSelect.append($('<option></option>').val('').text('-- Không có bài học --'));
-                        } else {
-
-                            $.each(data, function (index, bai) {
-                                baiSelect.append($('<option></option>').val(bai.baiId).html(bai.tenBai));
-                            });
-                        }
-                    },
-                    error: function () {
-                        alert("Failed to get Bai by Chuong");
-                    }
-                });
-            }
+        this.destroy = function () { this.$panel?.remove(); this.$panel = null; };
         }
+    });
+    }));
 
+    function elfinderDialog(editor) {
+    var fm = $('<div/>').dialogelfinder({
+        baseUrl: "@Url.Content("~/lib/elfinder/")",
+        url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
+        lang: 'vi', width: 840, height: 450, destroyOnClose: true,
+        getFileCallback: function (files) { editor.invoke('editor.insertImage', files.url); },
+        commandsOptions: { getfile: { oncomplete: 'close', folders: false } }
+    }).dialogelfinder('instance');
+    }
+
+    $(document).ready(function () {
+    $('#htmlelementid').summernote({
+        height: 700,
+        toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['fontname', ['fontname']], ['fontsize', ['fontsize']],
+        ['color', ['color']], ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']], ['insert', ['link', 'picture', 'video', 'elfinder']],
+        ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+    });
+
+    var chuongSelect = document.getElementById("ChuongId");
+    if (chuongSelect && chuongSelect.value) {
+        var selectedChuong = chuongSelect.options[chuongSelect.selectedIndex].text;
+        document.getElementById("ChuongDisplay").innerHTML = " - " + selectedChuong;
+    }
+
+    /* ==== NEW: Cascade Lớp -> Chương -> Bài ==== */
+    const $lop    = $('#LopId');       // <select> Lớp học (THÊM ở View)
+    const $chuong = $('#ChuongId');    // <select> Chương (đã có)
+    const $bai    = $('#BaiId');       // <select> Bài (đã có)
+    const currentBaiId = @Model?.BaiId ?? 0; // id bài đang sửa (để re-select sau AJAX)
+
+    function rebuildChuongByLop(lopId, keepCurrent=false) {
+        const prevChuong = keepCurrent ? $chuong.val() : '';
+        $chuong.empty().append(new Option('-- Chọn chương học --', ''));
+        $bai.empty().append(new Option('-- Chọn bài học --', '')).prop('disabled', true);
+        $('#ChuongDisplay').html('');
+
+        if (!lopId) return;
+
+        $.get('/Admin/Muc/GetChuongByLop', { lopHocId: lopId }, function(list){
+        (list || []).forEach(c => $chuong.append(new Option(c.tenChuong, c.maChuong)));
+        if (keepCurrent && prevChuong && $chuong.find(`option[value="${prevChuong}"]`).length){
+            $chuong.val(prevChuong).trigger('change'); // sẽ tự load lại Bài
+        }
+        });
+    }
+
+    // Khi đổi Lớp: nạp lại Chương
+    if ($lop.length) {
+        $lop.on('change', function(){
+        rebuildChuongByLop(this.value, /*keepCurrent*/ false);
+        });
+    }
+
+    // Nếu đang vào trang lần đầu mà đã có Chương hiện tại -> nạp Bài để re-select
+    if ($chuong.val()) {
+        showChuongInfo($chuong[0]); // sẽ gọi AJAX lấy Bài
+    }
+
+    }); // end document.ready
+
+    /* ==== GIỮ + NÂNG NHẸ: load Bài theo Chương và re-select BaiId ==== */
+    function showChuongInfo(selectElement) {
+    var selectedChuong = selectElement.options[selectElement.selectedIndex]?.text || '';
+    document.getElementById("ChuongDisplay").innerHTML =
+        (selectedChuong && selectedChuong !== '-- Chọn chương học --') ? " - " + selectedChuong : "";
+
+    var chuongId = selectElement.value;
+    var baiSelect = $("#BaiId");
+    baiSelect.empty();
+
+    if (!chuongId || chuongId === "-- Chọn chương học --") {
+        baiSelect.append($('<option></option>').val('').text('-- Chọn bài học --'));
+        baiSelect.prop('disabled', true);
+        return;
+    }
+    baiSelect.prop('disabled', false)
+            .append($('<option></option>').val('').text('-- Chọn bài học --'));
+
+    $.ajax({
+        type: "GET",
+        url: "/Admin/Muc/GetBaiByChuongId",
+        data: { chuongId: chuongId },
+        success: function (data) {
+        if (!data || !data.length) {
+            baiSelect.find('option:first').text('-- Không có bài học --');
+            return;
+        }
+        $.each(data, function (i, bai) {
+            baiSelect.append($('<option></option>').val(bai.baiId).html(bai.tenBai));
+        });
+
+        // NEW: re-select Bài hiện tại sau khi load
+        var currentBaiId = @Model?.BaiId ?? 0;
+        if (currentBaiId) {
+            baiSelect.val(String(currentBaiId));
+        }
+        },
+        error: function () { alert("Failed to get Bai by Chuong"); }
+    });
+    }
+
+    /* ==== Toggle/xoá/Upload tài liệu (GIỮ NGUYÊN) ==== */
+    $(document).on('click', '.btn-tool-toggle', function () {
+    $(this).siblings('.btn-delete-file').toggleClass('d-none');
+    });
+
+    $(document).on('click', '.btn-delete-file', function () {
+    var id = $(this).data('id');
+    var name = $(this).data('name');
+    var $row = $(this).closest('li');
+
+    Swal.fire({
+        title: 'Xóa tài liệu?', text: `Bạn có chắc muốn xóa "${name}" không?`,
+        icon: 'warning', showCancelButton: true,
+        confirmButtonText: 'Có, xóa', cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+        $.post('/Admin/Muc/DeleteTaiLieu', { id: id }, function (res) {
+            if (res.success) { $row.remove(); Swal.fire('Đã xóa!', '', 'success'); }
+            else { Swal.fire('Lỗi', res.message || 'Xóa thất bại', 'error'); }
+        }).fail(function () { Swal.fire('Lỗi', 'Không thể xóa tài liệu.', 'error'); });
+        }
+    });
+    });
+
+    function uploadTaiLieu(mucId) {
+    var filesInput = document.getElementById('taiLieuFiles');
+    if (!filesInput) return;
+    var count = filesInput.files.length;
+    if (!count) { Swal.fire('Thông báo', 'Vui lòng chọn ít nhất một file.', 'info'); return; }
+
+    var formData = new FormData();
+    formData.append('mucId', mucId);
+    for (var i = 0; i < count; i++) formData.append('files', filesInput.files[i]);
+
+    $.ajax({
+        url: '/Admin/Muc/UploadTaiLieu', type: 'POST', data: formData,
+        processData: false, contentType: false,
+        success: function (res) {
+        if (res.success) {
+            Swal.fire('Thành công', 'Đã tải lên ' + count + ' liệu thành công.', 'success')
+                .then(() => location.reload());
+        } else { Swal.fire('Lỗi', res.message || 'Tải lên thất bại.', 'error'); }
+        },
+        error: function () { Swal.fire('Lỗi', 'Không thể tải lên tài liệu.', 'error'); }
+    });
+    }
+
+    (function attachFileChange(){
+    var el = document.getElementById('taiLieuFiles');
+    if (!el) return;
+    el.addEventListener('change', function () {
+        var info = document.getElementById('taiLieuInfo');
+        var list = document.getElementById('taiLieuSelectedList');
+        var toggleBtn = document.getElementById('toggleSelectedFiles');
+        var files = this.files;
+
+        list.innerHTML = '';
+        if (!files.length) { info.textContent = 'Chưa chọn tệp nào.'; toggleBtn.classList.add('d-none'); return; }
+
+        info.textContent = 'Đã chọn ' + files.length + ' tệp.';
+        for (var i = 0; i < files.length; i++) {
+        var li = document.createElement('li'); li.className = 'file-item';
+        var iconWrapper = document.createElement('div'); iconWrapper.className = 'file-icon-wrapper';
+        var icon = document.createElement('i'); icon.className = 'fa-solid fa-file-lines';
+        iconWrapper.appendChild(icon);
+        var nameSpan = document.createElement('span'); nameSpan.className = 'file-name'; nameSpan.textContent = files[i].name;
+        li.appendChild(iconWrapper); li.appendChild(nameSpan); list.appendChild(li);
+        }
+        toggleBtn.classList.remove('d-none');
+        toggleBtn.textContent = 'Thu gọn danh sách';
+        list.style.display = 'block';
+        toggleBtn.onclick = function () {
+        if (list.style.display === 'none') { list.style.display = 'block'; toggleBtn.textContent = 'Thu gọn danh sách'; }
+        else { list.style.display = 'none'; toggleBtn.textContent = 'Xem danh sách tệp'; }
+        };
+    });
+    })();
     </script>
-}
+    }
+
+

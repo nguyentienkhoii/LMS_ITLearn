@@ -28,186 +28,178 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         }
 
         // GET: Admin/ChuongNew
-        public async Task<IActionResult> Index(int? id)
+        public async Task<IActionResult> Index(int? maLopHoc = null, int? editId = null)
         {
-            if (id == null)
+            const string ACTIVE = "Đang hoạt động";
+
+            // Dropdown lọc: chỉ lớp đang hoạt động
+            var lopList = await _context.LopHocs
+                .Where(l => l.TrangThai == ACTIVE)
+                .OrderBy(x => x.TenLopHoc)
+                .Select(x => new { x.MaLopHoc, x.TenLopHoc })
+                .ToListAsync();
+
+            var selectedLop = maLopHoc ?? (lopList.Count > 0 ? lopList[0].MaLopHoc : 0);
+
+            ChuongNew detail;
+            if (editId.HasValue)
             {
-                ViewBag.MaLopHoc = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc");
-                var chuong = new ChuongNew()
-                {
-                    TenChuong = "",
-                    MaChuong = 0,
-                    MaLopHoc = 1,
-                };
+                detail = await _context.ChuongNews
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.MaChuong == editId.Value) ?? new ChuongNew();
 
-                var viewModel = new ChuongViewModel
-                {
-                    ListChuong = await _context.ChuongNews.Include(c => c.LopHoc).ToListAsync(),
-                    Detail = chuong
-                };
-
-                return View(viewModel);
+                if (detail.MaChuong != 0) selectedLop = detail.MaLopHoc;
+                else detail.MaLopHoc = selectedLop;
             }
             else
             {
-                ViewBag.LopHocId = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc");
-                List<ChuongNew> DsChuong = await _context.ChuongNews.Include(c => c.LopHoc).ToListAsync();
-
-                var chuong = new ChuongNew()
-                {
-                    TenChuong = DsChuong.FirstOrDefault(c => c.MaChuong == id)?.TenChuong ?? "",
-                    MaChuong = DsChuong.FirstOrDefault(c => c.MaChuong == id)?.MaChuong ?? 0,
-                    MaLopHoc = 1,
-                };
-                var viewModel = new ChuongViewModel
-                {
-                    ListChuong = DsChuong,
-                    Detail = chuong
-                };
-
-                return View(viewModel);
+                detail = new ChuongNew { TenChuong = "", MaChuong = 0, MaLopHoc = selectedLop };
             }
+
+            ViewBag.TenLopHoc  = new SelectList(lopList, "MaLopHoc", "TenLopHoc", selectedLop);
+            ViewBag.LopHocList = lopList;
+
+            var vm = new ChuongViewModel
+            {
+                Detail = detail,
+                // Chỉ load chương thuộc lớp đang hoạt động
+                ListChuong = await _context.ChuongNews
+                    .Include(c => c.LopHoc)
+                    .Where(c => c.LopHoc.TrangThai == ACTIVE)
+                    .OrderBy(c => c.MaLopHoc).ThenBy(c => c.TenChuong)
+                    .ToListAsync()
+            };
+
+            return View(vm);
         }
 
         public IActionResult GetDetail(int id)
         {
             var chuong = _context.ChuongNews
                 .Include(c => c.LopHoc)
+                    .ThenInclude(l => l.KhoaHoc)
+                .Include(c => c.LopHoc)
+                    .ThenInclude(l => l.GiangVien)
                 .SingleOrDefault(c => c.MaChuong == id);
 
             if (chuong == null)
             {
-                return NotFound();
+                return Json(new { success = false, message = "Không tìm thấy chương." });
             }
 
-            var data = new
+            var tongSoBai = _context.Bai?.Count(b => b.MaChuong == id) ?? 0;
+            var soLuongDangKy = _context.HocVien_LopHoc?.Count(h => h.MaLopHoc == chuong.MaLopHoc) ?? 0;
+            var l = chuong.LopHoc;
+             return Json(new
             {
-                lopHoc = new { tenLopHoc = chuong.LopHoc.TenLopHoc },
-                tenChuong = chuong.TenChuong,
-                chuongId = chuong.MaChuong
-            };
-
-            try
-            {
-                var jsonData = JsonConvert.SerializeObject(data);
-                return Content(jsonData, "application/json");
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ChuongViewModel chuong)
-        {
-            if (ModelState.IsValid)
-            {
-                var existingChuong = await _context.ChuongNews
-                    .FirstOrDefaultAsync(c =>
-                        c.MaChuong == chuong.Detail.MaChuong ||
-                        (c.TenChuong.Trim() == chuong.Detail.TenChuong.Trim() && c.MaLopHoc == chuong.Detail.MaLopHoc)
-                    );
-
-                if (existingChuong != null)
+                ok = true,
+                data = new
                 {
-                    if (existingChuong.MaChuong == chuong.Detail.MaChuong)
+                    maChuong = chuong.MaChuong,
+                    tenChuong = chuong.TenChuong,
+                    maLopHoc = chuong.MaLopHoc,
+                    lop = new
                     {
-                        ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
-                        _notyfService.Error("Số chương đã tồn tại");
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                    {
-                        ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
-                        _notyfService.Error("Tên chương đã tồn tại");
-                        return RedirectToAction(nameof(Index));
+                        maLopHoc = l?.MaLopHoc,
+                        tenLopHoc = l?.TenLopHoc,
+                        tenVietTat = l?.TenVietTat,
+                        moTa = l?.MoTa,
+                        trangThai = l?.TrangThai,
+                        anhLopHoc = l?.AnhLopHoc,
+                        maKhoaHoc = l?.MaKhoaHoc,
+                        tenKhoaHoc = l?.KhoaHoc?.TenKhoaHoc,      // nếu có
+                        maGiangVien = l?.MaGiangVien,
+                        tenGiangVien = l?.GiangVien?.HoTen, // nếu có
+                        soLuongDangKy,
+                        tongSoBai
                     }
                 }
-
-                _context.Add(chuong.Detail);
-                _notyfService.Success("Thêm thành công");
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
-            var viewModel = new ChuongViewModel
-            {
-                Detail = chuong.Detail,
-                ListChuong = await _context.ChuongNews.ToListAsync()
-            };
-            return View("Index", viewModel);
+            });
         }
 
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ChuongViewModel chuong)
+        public async Task<IActionResult> CreateAjax(int maLopHoc, string tenChuong)
         {
-            if (id != chuong.Detail.MaChuong)
-            {
-                return NotFound();
-            }
+            tenChuong = (tenChuong ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(tenChuong))
+                return Json(new { ok = false, message = "Tên chương không được để trống." });
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var existingChuong = await _context.ChuongNews
-                        .FirstOrDefaultAsync(c => c.TenChuong.Trim() == chuong.Detail.TenChuong.Trim() && c.MaLopHoc == chuong.Detail.MaLopHoc);
+            var exists = await _context.ChuongNews
+                .AnyAsync(x => x.MaLopHoc == maLopHoc && x.TenChuong == tenChuong);
+            if (exists)
+                return Json(new { ok = false, message = "Tên chương đã tồn tại trong lớp này." });
 
-                    if (existingChuong != null)
-                    {
-                        ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
-                        _notyfService.Error("Tên chương đã tồn tại");
-                        return RedirectToAction(nameof(Index));
-                    }
-
-                    _context.Update(chuong.Detail);
-                    _notyfService.Success("Cập nhật thành công");
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ChuongExists(chuong.Detail.MaChuong))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewData["LopHocId"] = new SelectList(_context.LopHocs, "MaLopHoc", "TenLopHoc", chuong.Detail.MaLopHoc);
-            var viewModel = new ChuongViewModel
-            {
-                Detail = chuong.Detail,
-                ListChuong = await _context.ChuongNews.ToListAsync()
-            };
-            return View("Index", viewModel);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
-        {
-            if (_context.ChuongNews == null)
-            {
-                return Problem("Entity set 'WebBaiGiangContext.ChuongNew' is null.");
-            }
-
-            var chuong = await _context.ChuongNews.FindAsync(id);
-            if (chuong != null)
-            {
-                _context.ChuongNews.Remove(chuong);
-            }
-            _notyfService.Success("Xóa thành công");
+            var c = new ChuongNew { MaLopHoc = maLopHoc, TenChuong = tenChuong };
+            _context.ChuongNews.Add(c);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            var tenLopHoc = await _context.LopHocs
+                .Where(l => l.MaLopHoc == maLopHoc)
+                .Select(l => l.TenLopHoc)
+                .FirstOrDefaultAsync();
+
+            return Json(new
+            {
+                ok = true,
+                id = c.MaChuong,
+                tenChuong = c.TenChuong,
+                maLopHoc = c.MaLopHoc,
+                tenLopHoc,
+                message = "Thêm chương thành công."
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAjax(int maChuong, int maLopHoc, string tenChuong)
+        {
+            tenChuong = (tenChuong ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(tenChuong))
+                return Json(new { ok = false, message = "Tên chương không được để trống." });
+
+            var exists = await _context.ChuongNews.AnyAsync(cn =>
+                cn.MaChuong != maChuong &&
+                cn.MaLopHoc == maLopHoc &&
+                cn.TenChuong == tenChuong);
+            if (exists)
+                return Json(new { ok = false, message = "Tên chương đã tồn tại trong lớp này." });
+
+            var c = await _context.ChuongNews.FirstOrDefaultAsync(x => x.MaChuong == maChuong);
+            if (c == null)
+                return Json(new { ok = false, message = "Không tìm thấy chương." });
+
+            c.TenChuong = tenChuong;
+            c.MaLopHoc = maLopHoc;
+            await _context.SaveChangesAsync();
+
+            var tenLopHoc = await _context.LopHocs
+                .Where(l => l.MaLopHoc == maLopHoc)
+                .Select(l => l.TenLopHoc)
+                .FirstOrDefaultAsync();
+
+            return Json(new
+            {
+                ok = true,
+                id = c.MaChuong,
+                tenChuong = c.TenChuong,
+                maLopHoc = c.MaLopHoc,
+                tenLopHoc,
+                message = "Cập nhật chương thành công."
+            });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAjax(int id)
+        {
+            var c = await _context.ChuongNews.FindAsync(id);
+            if (c == null) return Json(new { ok = false, message = "Không tìm thấy chương." });
+
+            _context.ChuongNews.Remove(c);
+            await _context.SaveChangesAsync();
+            return Json(new { ok = true, message = "Đã xoá chương." });
         }
 
         private bool ChuongExists(int id)

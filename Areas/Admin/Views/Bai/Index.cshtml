@@ -3,7 +3,35 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var lopList = ViewBag.LopHocList as IEnumerable<dynamic>;
+    var chuongList = ViewBag.ChuongList as IEnumerable<dynamic>;
 }
+<div id="baiFiltersTemplate" class="d-none">
+  <div class="dt-extra-filters d-inline-flex align-items-center flex-nowrap">
+    <label class="form-label mb-0">Lớp:
+      <select id="lopFilterBaiTemplate" class="form-select form-select-sm w-auto">
+        <option value="">Tất cả lớp học</option>
+        @if (lopList != null) {
+          foreach (var l in lopList) {
+            <option value="@l.MaLopHoc">@l.TenLopHoc</option>
+          }
+        }
+      </select>
+    </label>
+
+    <label class="form-label mb-0 ms-2">Chương:
+      <select id="chuongFilterBaiTemplate" class="form-select form-select-sm w-auto">
+        <option value="">Tất cả chương</option>
+        @if (chuongList != null) {
+          foreach (var c in chuongList) {
+            <option value="@c.MaChuong" data-lop="@c.MaLopHoc">@c.TenChuong</option>
+          }
+        }
+      </select>
+    </label>
+  </div>
+</div>
+
 <ol class="breadcrumb">
 
     <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
@@ -15,13 +43,13 @@
         text-align: center;
     }
 </style>
-<h1>QUẢN LÝ ĐỀ BÀI</h1>
+<h1>QUẢN LÝ BÀI HỌC</h1>
 <hr />
 <br />
 
 <a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
 
-<table class="table table alert-light">
+@* <table class="table table alert-light">
     <thead class="table-dark">
         <tr style="text-align: center;">
             <th>
@@ -57,5 +85,191 @@
             </tr>
         }
     </tbody>
-</table>
+</table> *@
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-centered w-100 dt-responsive nowrap" id="bai-datatable">
+        <thead class="table-dark">
+            <tr>
+            <th>Mã bài</th>
+            <th>Tên chương</th>
+            <th>Tên bài</th>
+            <th>Số bài</th>
+            <th style="width:120px;" class="text-center"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr class="align-middle"
+             data-lop="@item.Chuong?.MaLopHoc"
+             data-chuong="@item.Chuong?.MaChuong">
+                <td>@item.BaiId</td>
+                <td>@item.Chuong?.TenChuong</td>
+                <td>@item.TenBai</td>
+                <td>@item.SoBai</td>
+                <td class="table-action text-center">
+                <a asp-action="Details" asp-route-id="@item.BaiId" class="action-icon" title="Xem">
+                    <i class="mdi mdi-eye" style="font-size:25px;color:#19b6ff;"></i>
+                </a>
+                <a asp-action="Edit" asp-route-id="@item.BaiId" class="action-icon" title="Sửa">
+                    <i class="mdi mdi-square-edit-outline" style="font-size:25px;color:#ffd83b;"></i>
+                </a>
+                <a asp-action="Delete" asp-route-id="@item.BaiId" class="action-icon" title="Xoá">
+                    <i class="mdi mdi-delete" style="font-size:25px;color:#e75555;"></i>
+                </a>
+                </td>
+            </tr>
+            }
+        </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+
+<style>
+  .table-action a { display:inline-block; margin: 0 4px; }
+  .dataTables_wrapper .dataTables_length label { margin-bottom: 0; }
+</style>
+
+<!-- Pagination with icons -->
+@section scripts{
+       <!-- third party css -->
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css"> 
+    <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
+    <!-- third party css end -->
+    <!-- App css -->
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
+
+  <!-- DataTables JS (đảm bảo jQuery đã được nạp trước đó) -->
+  <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
+  <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
+  <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
+  <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
+
+ <style>
+    /* giữ 2 dropdown luôn thẳng hàng cùng “Hiển thị …” */
+    #bai-datatable_wrapper .dataTables_length{
+      display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;
+    }
+    #bai-datatable_wrapper .dataTables_length .form-label
+    { 
+        margin-left: 1.5rem;
+        margin-bottom:0; 
+    }
+  </style>
+  <script>
+    $(function () {
+    if (!$.fn.DataTable) { console.error('DataTables chưa sẵn sàng'); return; }
+    // --- KHỞI TẠO DATATABLE và GIỮ instance vào biến dt
+    const dt = $('#bai-datatable').DataTable({
+        dom:
+        '<"row align-items-center mb-2"'
+            +'<"col-md-6"l>'
+            +'<"col-md-6 text-md-end"f>'
+        +'>'
+        +'rt'
+        +'<"row align-items-center mt-2"'
+            +'<"col-md-6"i>'
+            +'<"col-md-6"p>'
+        +'>',
+        responsive: true,
+        autoWidth: false,
+        language: {
+        paginate: { previous: "<i class='mdi mdi-chevron-left'></i>", next: "<i class='mdi mdi-chevron-right'></i>" },
+        info: "Hiển thị _START_ đến _END_ trong _TOTAL_ bài",
+        lengthMenu:
+            "Hiển thị <select class='form-select form-select-sm ms-1 me-1'>"
+            +"<option value='5'>5</option>"
+            +"<option value='10'>10</option>"
+            +"<option value='20'>20</option>"
+            +"<option value='-1'>All</option>"
+            +"</select> bài"
+        },
+        pageLength: 5,
+        columnDefs: [
+        { targets: -1, orderable: false, className: 'text-center' },
+        { targets: '_all', className: 'align-middle' }
+        ],
+        order: [[1, "asc"]],
+        drawCallback: function () {
+        $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
+        $("#bai-datatable_length label").addClass("form-label");
+        }
+    });
+
+   
+    // --- filter cho bảng Bài (push 1 lần)
+    function baiFilter(settings, data, dataIndex) {
+        if (settings.nTable.id !== 'bai-datatable') return true;
+
+        const row = settings.aoData[dataIndex].nTr;
+        const pickedLop    = $('#lopFilterBai').val();
+        const pickedChuong = $('#chuongFilterBai').val();
+
+        if (pickedLop    && String(row.dataset.lop)    !== String(pickedLop))    return false;
+        if (pickedChuong && String(row.dataset.chuong) !== String(pickedChuong)) return false;
+        return true;
+    }
+    if (!window.__baiFilterHook) {
+        $.fn.dataTable.ext.search.push(baiFilter);
+        window.__baiFilterHook = true;
+    }
+
+    const $filters = $('#baiFiltersTemplate .dt-extra-filters').clone();
+    $filters.find('#lopFilterBaiTemplate').attr('id','lopFilterBai');
+    $filters.find('#chuongFilterBaiTemplate').attr('id','chuongFilterBai');
+    $('#bai-datatable_wrapper .dataTables_length').append($filters);
+    // --- Thêm dropdown Lớp & Chương vào hàng "Hiển thị ..."
+    @* const $lopSelect = $('#lopFilterBaiTemplate').clone().removeAttr('id').removeClass('d-none')
+                        .attr('id','lopFilterBai').addClass('form-select form-select-sm ms-2');
+    const $lopLabel  = $('<label class="form-label ms-3 mb-0">Lớp:</label>').append($lopSelect);
+
+    const $chuongSelect = $('#chuongFilterBaiTemplate').clone().removeAttr('id').removeClass('d-none')
+                            .attr('id','chuongFilterBai').addClass('form-select form-select-sm ms-2'); *@
+    @* const $chuongLabel  = $('<label class="form-label ms-3 mb-0">Chương:</label>').append($chuongSelect);
+
+    $('#bai-datatable_wrapper .dataTables_length').append($lopLabel, $chuongLabel); *@
+
+
+    // --- Cascade: rebuild Chương theo Lớp
+    function rebuildChuongOptions(maLop) {
+        const $tpl = $('#baiFiltersTemplate #chuongFilterBaiTemplate');
+        const $cur = $('#chuongFilterBai');
+        const curVal = $cur.val();
+
+        $cur.empty().append($('<option/>', { value: '', text: 'Tất cả chương' }));
+
+        $tpl.find('option').each(function(){
+        const v = this.value;
+        if (!v) return; // bỏ option "Tất cả chương" của template
+        const txt         = $(this).text();
+        const lopOfChuong = $(this).data('lop');
+        if (!maLop || String(lopOfChuong) === String(maLop)) {
+            $cur.append($('<option/>', { value: v, text: txt, 'data-lop': lopOfChuong }));
+        }
+        });
+
+        $cur.val($cur.find(`option[value="${curVal}"]`).length ? curVal : '');
+    }
+
+    // --- Events: đổi dropdown -> redraw
+    $('#lopFilterBai').on('change', function () {
+        rebuildChuongOptions(this.value);
+        dt.draw();
+    });
+    $('#chuongFilterBai').on('change', function () {
+        dt.draw();
+    });
+
+    // init lần đầu
+    $('#lopFilterBai').val('');
+    $('#chuongFilterBai').val('');
+    rebuildChuongOptions('');
+    });
+    </script>
+}
+
 <!-- Pagination with icons -->

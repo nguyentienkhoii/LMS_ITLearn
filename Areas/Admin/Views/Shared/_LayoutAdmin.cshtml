@@ -17,6 +17,9 @@
     <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
     <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
     <link href="~/AdminAssets/css/app-dark.min.css" rel="stylesheet" type="text/css" id="dark-style">
+
+    <link href="~/AdminAssets/css/custom-admin.css" rel="stylesheet" type="text/css">  <!-- css trang ở đây -->
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Tích hợp summernote và elfinder -->
     <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/theme.css" />
@@ -27,6 +30,10 @@
     @*  summernote*@
     <link rel="stylesheet" href="~/lib/summernote/summernote-bs5.css" />
     <link rel="stylesheet" href="~/lib/summernote/summernote-lite.css" />
+     
+     @* CSS bảng trong Chương, Mục *@
+    @* <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">  *@
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -332,6 +339,7 @@
 
     <script src="~/lib/summernote/summernote-bs5.js"></script>
     <script src="~/lib/summernote/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @await Component.InvokeAsync("Notyf")
     @RenderSection("scripts",required: false);

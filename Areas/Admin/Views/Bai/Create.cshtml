@@ -1,160 +1,127 @@
 ﻿@model WebBaiGiang_CKC.Models.Bai
-
 @{
     ViewData["Title"] = "Create";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var MaChuong = @ViewBag.MaChuong;
 }
 
 <ol class="breadcrumb">
-
-    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Index">Quản lý bài học</a></li>
-    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Create">Thêm</a></li>
+  <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+  <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Index">Quản lý bài học</a></li>
+  <li class="breadcrumb-item active">Thêm</li>
 </ol>
-<h1 style="text-align: center;">THÊM BÀI HỌC</h1>
 
-
+<h1 class="text-center">THÊM BÀI HỌC</h1>
 <hr />
+
 <div class="row">
+  <form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <form asp-action="Create" method="post">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <br />
-        <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="MaChuong" class="form-label">Chương <span id="ChuongDisplay"></span></label>
-            <select asp-for="MaChuong" asp-items="MaChuong" class="form-select" onchange="showChuongInfo(this)">
-                <option value="">-- Chọn chương học --</option>
-            </select>
-        </div>
-        <br />
-        <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="TenBai" class="control-label"></label>
-            <input asp-for="TenBai" class="form-control w-100" />
-            <span asp-validation-for="TenBai" class="text-danger"></span>
-        </div>
-        <br />
-        <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="SoBai" class="control-label"></label>
-            <input asp-for="SoBai" class="form-control w-100" />
-            <span asp-validation-for="SoBai" class="text-danger"></span>
-        </div>
-        <br />
-        <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="MoTa" class="control-label" for="htmlelementid"></label>
-            <textarea id="htmlelementid" style="max-width:auto" asp-for="MoTa" class="form-control"></textarea>
-            <span asp-validation-for="MoTa" class="text-danger"></span>
-        </div>
-        <br />
-        <div class="form-group flex-grow-1 mx-4">
-            <input type="submit" value="Thêm" class="btn btn-primary" />
-            <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
-        </div>
-    </form>
+    <div class="form-group flex-grow-1 mx-4">
+      <label class="form-label">Lớp học</label>
+      <select id="MaLopHoc" class="form-select w-100" asp-items="ViewBag.MaLopHoc">
+        <option value="">-- Chọn lớp học --</option>
+      </select>
+      <small class="text-muted">Chỉ hiển thị lớp “Đang hoạt động”.</small>
+    </div>
 
+    <br />
+
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="MaChuong" class="form-label">Chương <span id="ChuongDisplay"></span></label>
+      <select asp-for="MaChuong" class="form-select w-100" asp-items="ViewBag.MaChuong" id="MaChuong">
+        <option value="">-- Chọn chương học --</option>
+      </select>
+      <span asp-validation-for="MaChuong" class="text-danger"></span>
+    </div>
+
+    <br />
+
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="TenBai" class="control-label"></label>
+      <input asp-for="TenBai" class="form-control w-100" />
+      <span asp-validation-for="TenBai" class="text-danger"></span>
+    </div>
+
+    <br />
+
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="SoBai" class="control-label"></label>
+      <input asp-for="SoBai" class="form-control w-100" />
+      <span asp-validation-for="SoBai" class="text-danger"></span>
+    </div>
+
+    <br />
+
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="MoTa" class="control-label" for="htmlelementid"></label>
+      <textarea id="htmlelementid" asp-for="MoTa" class="form-control" style="max-width:auto"></textarea>
+      <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+
+    <br />
+
+    <div class="form-group flex-grow-1 mx-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Thêm</button>
+      <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
+    </div>
+  </form>
 </div>
 
 @section scripts{
-    <script>
-        (function (factory) {
-            if (typeof define === 'function' && define.amd) {
-                define(['jquery'], factory);
-            }
-            else if (typeof module === 'object' && module.exports) {
-                module.exports = factory(require('jquery'));
-            } else {
-                factory(window.jQuery);
-            }
-        }(function ($) {
-            $.extend($.summernote.plugins, {
-                // Tạo plugin tên elfinder
-                'elfinder': function (context) {
-                    var self = this;
-                    // ui has renders to build ui elements.
-                    var ui = $.summernote.ui;
-                    // Tạo nút bấm
-                    context.memo('button.elfinder', function () {
-                        var button = ui.button({
-                            contents: '<i class="note-icon-picture"/> elFinder',
-                            tooltip: 'Quản lý file',
-                            click: function () {
-                                // Bấm vào nút bấm gọi hàm elfinderDialog
-                                elfinderDialog(context);
-                            }
-                        });
-                        // create jQuery object from button instance.
-                        var $elfinder = button.render();
-                        return $elfinder;
-                    });
-                    // This methods will be called when editor is destroyed by $('..').summernote('destroy');
-                    // You should remove elements on `initialize`.
-                    this.destroy = function () {
-                        this.$panel.remove();
-                        this.$panel = null;
-                    };
-                }
+<script>
+  // Summernote giữ nguyên cấu hình của bạn
+  $(function(){
+    $('#htmlelementid').summernote({
+      height: 700,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['fontsize', ['fontsize']],
+        ['fontname', ['fontname']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link', 'picture', 'video', 'elfinder']],
+        ['view', ['fullscreen', 'codeview', 'help']],
+      ],
+    });
+  });
 
-            });
-        }));
-        function elfinderDialog(editor) {
-            var fm = $('<div/>').dialogelfinder({
-                baseUrl: "@Url.Content("~/lib/elfinder/")",
-                url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
-                lang: 'vi',
-                width: 840,
-                height: 450,
-                destroyOnClose: true,
-                getFileCallback: function (files, fm) {
-                    console.log(files);
-                    editor.invoke('editor.insertImage', files.url);
-                },
-                commandsOptions: {
-                    getfile: {
-                        oncomplete: 'close',
-                        folders: false
-                    }
-                }
-            }).dialogelfinder('instance');
+  // Khi đổi Lớp -> lấy Chương của lớp đó
+  $(document).on('change', '#MaLopHoc', function () {
+    const maLopHoc = $(this).val();
+    const $chuong  = $('#MaChuong');
+
+    // clear display
+    $('#ChuongDisplay').empty();
+
+    if (!maLopHoc) {
+      // không chọn lớp => clear chương
+      $chuong.empty().append($('<option/>',{value:'',text:'-- Chọn chương học --'}));
+      return;
+    }
+
+    $.getJSON('@Url.Action("GetChuongByLop","Bai", new { area="Admin" })', { maLopHoc })
+      .done(res => {
+        $chuong.empty().append($('<option/>',{value:'',text:'-- Chọn chương học --'}));
+        if (res && res.ok && Array.isArray(res.data)) {
+          res.data.forEach(x => {
+            $chuong.append($('<option/>', { value: x.id, text: x.text }));
+          });
         }
-        $(document).ready(function () {
-            $('#htmlelementid').summernote({
+      })
+      .fail(() => {
+        console.error('Không tải được danh sách chương.');
+        $chuong.empty().append($('<option/>',{value:'',text:'-- Chọn chương học --'}));
+      });
+  });
 
-                height: 700,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['fontsize', ['fontsize']],
-                    ['fontname', ['fontname']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video', 'elfinder']],
-                    ['view', ['fullscreen', 'codeview', 'help']],
-                ],
-
-            });
-        });
-        function showChuongInfo(select) {
-            var SoChuong = select.value;
-            if (SoChuong) {
-                $.ajax({
-                    url: "/Admin/Bai/GetChuongInfo",
-                    type: "GET",
-                    data: { chuongId: SoChuong },
-                    success: function (chuong) {
-                        $("#ChuongDisplay").html(chuong.tenChuong + " (Chương " + chuong.id + ")");
-                    },
-                    error: function (xhr, textStatus, errorThrown) {
-                        console.log("Error: " + errorThrown);
-                    }
-                });
-            } else {
-                $("#ChuongDisplay").html("");
-            }
-        }
-
-
-    </script>
-
+  // (Tuỳ chọn) Hiển thị nhãn chương đã chọn
+  $(document).on('change', '#MaChuong', function(){
+    const txt = $('#MaChuong option:selected').text();
+    $('#ChuongDisplay').text(txt ? `– ${txt}` : '');
+  });
+</script>
 }
-

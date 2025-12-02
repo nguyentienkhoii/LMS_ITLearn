@@ -1,167 +1,173 @@
 ﻿@model WebBaiGiang_CKC.Models.Bai
-
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var ChuongId = @ViewBag.ChuongId;
+    var lop = Model.Chuong?.LopHoc;
+    var khoa = lop?.KhoaHoc;
+    var gv = lop?.GiangVien;
 }
 
 <ol class="breadcrumb">
-
-    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Index">Quản lý bài học</a></li>
-    <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Edit">Sửa</a></li>
+  <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+  <li class="breadcrumb-item"><a asp-controller="Bai" asp-action="Index">Quản lý bài học</a></li>
+  <li class="breadcrumb-item active">Sửa</li>
 </ol>
 
-<style>
-    h1 {
-        text-align: center;
-    }
-</style>
-<h1>SỬA BÀI HỌC  </h1>
+<h1 class="text-center">SỬA BÀI HỌC</h1>
 <hr />
-<br/>
-<div class="row">
-   
-        <form asp-action="Edit">
-            <input type="hidden" asp-action="LessonId" />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="BaiId" />
-            <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="MaChuong" class="form-label">Chương <span id="ChuongDisplay"></span></label>
-            <select asp-for="MaChuong" asp-items="ChuongId" class="form-select w-100" onchange="showChuongInfo(this)">
-                    <option value="">-- Chọn chương học --</option>
-                </select>
-            <span asp-validation-for="MaChuong" class="text-danger"></span>
-            </div>
 
-            <br />
-            <div class="form-group flex-grow-1 mx-4">
-                <label asp-for="TenBai" class="control-label"></label>
-                <input asp-for="TenBai" class="form-control w-100" />
-                <span asp-validation-for="TenBai" class="text-danger"></span>
-            </div>
-            <br />
-            <div class="form-group flex-grow-1 mx-4">
-                <label asp-for="SoBai" class="control-label"></label>
-                <input asp-for="SoBai" class="form-control w-100" />
-                <span asp-validation-for="SoBai" class="text-danger"></span>
-            </div>
-            <br />
-            <div class="form-group flex-grow-1 mx-4">
-                <label asp-for="MoTa" class="control-label" for="htmlelementid"></label>
-                <textarea id="htmlelementid" style="max-width:auto" asp-for="MoTa" class="form-control"></textarea>
-                <span asp-validation-for="MoTa" class="text-danger"></span>
-            </div>
-            <br />
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-light">
+    <strong>Thông tin lớp & chương</strong>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 align-items-start">
+      <div class="col-md-8">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Lớp học</dt>
+          <dd class="col-sm-8">
+            @if (lop != null) {
+              @lop.TenLopHoc
+              @if(!string.IsNullOrEmpty(lop.TenVietTat)) { <span class="text-muted">(@lop.TenVietTat)</span> }
+            } else {
+              <span class="text-muted">—</span>
+            }
+          </dd>
 
-            <div class="form-group flex-grow-1 mx-4">
-                <div style="float: left; padding-right:10px">
-                    <input type="submit" value="Lưu" class="btn btn-primary" />
-                </div>
-                <a class="btn btn-secondary" asp-action="Index">Quay Lại</a>
-            </div>
-        </form>
-   
+          <dt class="col-sm-4">Trạng thái</dt>
+          <dd class="col-sm-8">@((lop?.TrangThai) ?? "—")</dd>
+
+          <dt class="col-sm-4">Chương</dt>
+          <dd class="col-sm-8">
+            @Model.Chuong?.TenChuong <span class="text-muted">(Mã: @Model.MaChuong)</span>
+          </dd>
+
+          <dt class="col-sm-4">Khoá học</dt>
+          <dd class="col-sm-8">@((khoa?.TenKhoaHoc) ?? "—")</dd>
+
+          <dt class="col-sm-4">Giảng viên</dt>
+          <dd class="col-sm-8">@((gv?.HoTen) ?? "—")</dd>
+        </dl>
+      </div>
+      <div class="col-md-4 text-center">
+        @if (!string.IsNullOrEmpty(lop?.AnhLopHoc)) {
+          <img src="@lop.AnhLopHoc" class="img-fluid rounded border" alt="Ảnh lớp" />
+        } else {
+          <div class="border rounded p-4 text-muted">Không có ảnh lớp</div>
+        }
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="row">
+  <form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <input type="hidden" asp-for="BaiId" />
+
+    <!-- NEW: Chọn Lớp & Chương -->
+    <div class="card border-0 shadow-sm mx-4 mb-3">
+      <div class="card-header bg-light"><strong>Di chuyển bài sang lớp/chương khác (tuỳ chọn)</strong></div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Lớp</label>
+            <select id="LopId" class="form-select" asp-items="ViewBag.LopList">
+              <option value="">-- Chọn lớp học --</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Chương</label>
+            <select id="ChuongId" asp-for="MaChuong" class="form-select" asp-items="ViewBag.ChuongId">
+              <option value="">-- Chọn chương học --</option>
+            </select>
+            <span asp-validation-for="MaChuong" class="text-danger"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="TenBai" class="control-label"></label>
+      <input asp-for="TenBai" class="form-control w-100" />
+      <span asp-validation-for="TenBai" class="text-danger"></span>
+    </div>
+
+    <br />
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="SoBai" class="control-label"></label>
+      <input asp-for="SoBai" class="form-control w-100" />
+      <span asp-validation-for="SoBai" class="text-danger"></span>
+    </div>
+
+    <br />
+    <div class="form-group flex-grow-1 mx-4">
+      <label asp-for="MoTa" class="control-label"></label>
+      <textarea asp-for="MoTa" class="form-control" id="htmlelementid"></textarea>
+      <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+
+    <br />
+    <div class="form-group flex-grow-1 mx-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Lưu</button>
+      <a class="btn btn-secondary" asp-action="Index">Quay lại</a>
+    </div>
+  </form>
+</div>
+
 @section scripts{
-    <script>
-        (function (factory) {
-            if (typeof define === 'function' && define.amd) {
-                define(['jquery'], factory);
-            }
-            else if (typeof module === 'object' && module.exports) {
-                module.exports = factory(require('jquery'));
-            } else {
-                factory(window.jQuery);
-            }
-        }(function ($) {
-            $.extend($.summernote.plugins, {
-                // Tạo plugin tên elfinder
-                'elfinder': function (context) {
-                    var self = this;
-                    // ui has renders to build ui elements.
-                    var ui = $.summernote.ui;
-                    // Tạo nút bấm
-                    context.memo('button.elfinder', function () {
-                        var button = ui.button({
-                            contents: '<i class="note-icon-picture"/> elFinder',
-                            tooltip: 'Quản lý file',
-                            click: function () {
-                                // Bấm vào nút bấm gọi hàm elfinderDialog
-                                elfinderDialog(context);
-                            }
-                        });
-                        // create jQuery object from button instance.
-                        var $elfinder = button.render();
-                        return $elfinder;
-                    });
-                    // This methods will be called when editor is destroyed by $('..').summernote('destroy');
-                    // You should remove elements on `initialize`.
-                    this.destroy = function () {
-                        this.$panel.remove();
-                        this.$panel = null;
-                    };
-                }
+<script>
+  $(function(){
+    // Summernote giữ nguyên
+    $('#htmlelementid').summernote({
+      height: 700,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['fontsize', ['fontsize']],
+        ['fontname', ['fontname']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link', 'picture', 'video']],
+        ['view', ['fullscreen', 'codeview', 'help']],
+      ],
+    });
 
-            });
-        }));
-        function elfinderDialog(editor) {
-            var fm = $('<div/>').dialogelfinder({
-                baseUrl: "@Url.Content("~/lib/elfinder/")",
-                url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
-                lang: 'vi',
-                width: 840,
-                height: 450,
-                destroyOnClose: true,
-                getFileCallback: function (files, fm) {
-                    console.log(files);
-                    editor.invoke('editor.insertImage', files.url);
-                },
-                commandsOptions: {
-                    getfile: {
-                        oncomplete: 'close',
-                        folders: false
-                    }
-                }
-            }).dialogelfinder('instance');
+    // ===== Cascade Lớp -> Chương =====
+    const $lop = $('#LopId');
+    const $chuong = $('#ChuongId');
+
+    function resetChuong() {
+      $chuong.empty().append(new Option('-- Chọn chương học --',''));
+    }
+
+    $lop.on('change', function(){
+      const lopId = $(this).val();
+      resetChuong();
+
+      if(!lopId){
+        $chuong.prop('disabled', true);
+        return;
+      }
+      $chuong.prop('disabled', true);
+
+      $.getJSON('/Admin/Bai/GetChuongByLop', { lopId: lopId }, function(items){
+        if(items && items.length){
+          items.forEach(c => $chuong.append(new Option(c.text, c.id)));
+        } else {
+          $chuong.append(new Option('-- Không có chương --',''));
         }
-        $(document).ready(function () {
-            $('#htmlelementid').summernote({
+        $chuong.prop('disabled', false);
+      });
+    });
 
-                height: 700,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['fontsize', ['fontsize']],
-                    ['fontname', ['fontname']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video', 'elfinder']],
-                    ['view', ['fullscreen', 'codeview', 'help']],
-                ],
-
-            });
-        });
-        function showChuongInfo(select) {
-            var SoChuong = select.value;
-            if (SoChuong) {
-                $.ajax({
-                    url: "/Admin/Bai/GetChuongInfo",
-                    type: "GET",
-                    data: { chuongId: SoChuong },
-                    success: function (chuong) {
-                        $("#ChuongDisplay").html(chuong.tenChuong + " (Chương " + chuong.id + ")");
-                    },
-                    error: function (xhr, textStatus, errorThrown) {
-                        console.log("Error: " + errorThrown);
-                    }
-                });
-            } else {
-                $("#ChuongDisplay").html("");
-            }
-        }
-    </script>
+    // Trạng thái ban đầu
+    if(!$lop.val() && !$chuong.val()){
+      $chuong.prop('disabled', true);
+    }
+  });
+</script>
 }
-

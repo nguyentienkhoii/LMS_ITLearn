@@ -50,8 +50,24 @@
                             </td>
                             <td>@item.KhoaHoc?.TenKhoaHoc</td>
                             <td>@item.GiangVien?.HoTen</td>
+                             @* @functions{
+                                string AdminBadge(TrangThaiLopHoc st) => st switch
+                                {
+                                    TrangThaiLopHoc.DangHoatDong => "badge bg-success",
+                                    TrangThaiLopHoc.DaKetThuc    => "badge bg-secondary",
+                                    _                            => "badge bg-warning text-dark"
+                                };
+                                string AdminText(TrangThaiLopHoc st) => st switch
+                                {
+                                    TrangThaiLopHoc.DangHoatDong => "Đang mở",
+                                    TrangThaiLopHoc.DaKetThuc    => "Đã đóng",
+                                    _                            => "Chưa hoạt động"
+                                };
+                            } *@
+
                             <td class="text-center">
-                                @if (item.TrangThai?.ToLower() == "đang mở" || item.TrangThai?.ToLower() == "mở")
+                            @* <span class="@AdminBadge(item.TrangThai)">@AdminText(item.TrangThai)</span> *@
+                             @if (item.TrangThai?.ToLower() == "đang mở" || item.TrangThai?.ToLower() == "mở")
                                 {
                                     <span class="badge bg-success">Đang mở</span>
                                 }
@@ -62,7 +78,7 @@
                                 else
                                 {
                                     <span class="badge bg-warning text-dark">@item.TrangThai</span>
-                                }
+                                } 
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">

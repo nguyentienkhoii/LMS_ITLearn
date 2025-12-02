@@ -87,6 +87,14 @@
                         </div>
 
                         <div class="text-end">
+                        <a class ="btn btn-outline-secondary" href ="@Url.Action("NoiDung", "LopHoc", new { area = "GiangVien", id = ViewBag.MaLopHoc })"
+                            onclick="if (history.length > 1) 
+                                {
+                                    history.back(); 
+                                    return false; 
+                                }">
+                            <i class="fa fa-arrow-left me-1"></i> Quay lại
+                        </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fa fa-save me-1"></i> Cập nhật mục
                             </button>
@@ -115,6 +123,8 @@
             plugins: 'lists link image table code emoticons',
             toolbar: 'undo redo | bold italic underline | bullist numlist | link image | alignleft aligncenter alignright | code emoticons',
             branding: false,
+            statusbar : true,
+            elementpath: false, // ẨN dòng hiển thị p/div/span...
             content_style: "body { font-family: Arial, sans-serif; font-size: 14px; }",
 
             // ✅ Cho phép dán / kéo ảnh

@@ -5,7 +5,7 @@
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
             },
-            info: "Hiển thị chương _START_ to _END_ of _TOTAL_",
+            info: "Hiển thị _START_ đến _END_ trong _TOTAL_ chương",
             lengthMenu: 'Hiển thị <select class=\'form-select form-select-sm ms-1 me-1\'><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="-1">All</option></select> chương'
         },
         pageLength: 5,

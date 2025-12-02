@@ -250,9 +250,25 @@
     <div class="col-md-2 sidebar-right">
         <div class="card mb-3">
             <div class="card-body text-center">
-                <h6 class="fw-bold">Tình trạng lớp học</h6>
-                <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố</button>
-                <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button>
+                
+                @* <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố</button>
+                <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button> *@
+                 @if (User.IsInRole("GiangVien"))
+                {
+                    <h6 class="fw-bold">Tác vụ của giảng viên</h6>
+                    <!-- Nút Rời lớp học (chỉ GV thấy) -->
+                    <a class="btn btn-outline-danger w-100"
+                    href="@Url.Action("Index","Home", new { area = "GiangVien" })">
+                        <i class="fa fa-door-open me-1"></i> Ra ngoài lớp học
+                    </a>
+                }
+                else if (User.IsInRole("Admin"))
+                {
+                    <h6 class="fw-bold">Tình trạng lớp học</h6>
+                    <!-- Admin giữ nguyên 2 nút bạn gửi -->
+                    <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố </button>
+                    <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button>
+                }
             </div>
         </div>
 

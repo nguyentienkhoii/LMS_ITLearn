@@ -1,8 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebBaiGiang_CKC.Models
 {
+
+    // public enum TrangThaiLopHoc
+    // {
+    //     [Display(Name = "Chưa hoạt động")] ChuaHoatDong = 0,
+    //     [Display(Name = "Đang hoạt động")] DangHoatDong = 1,
+    //     [Display(Name = "Đã kết thúc")] DaKetThuc = 2
+    // }
+    
     [Table("LOPHOC")]
     public class LopHoc
     {
@@ -10,7 +19,8 @@ namespace WebBaiGiang_CKC.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MaLopHoc { get; set; }
 
-        [Required, StringLength(100)]
+        [Required]
+        [DisplayName("Tên lớp học")]
         public string TenLopHoc { get; set; }
 
         // ✅ Thêm trường Tên viết tắt
@@ -19,8 +29,10 @@ namespace WebBaiGiang_CKC.Models
 
         public string? MoTa { get; set; }
 
-        [Required, StringLength(50)]
+        [Required, DefaultValue("Đang hoạt động")]
         public string TrangThai { get; set; }
+        //public TrangThaiLopHoc TrangThai { get; set; } = TrangThaiLopHoc.DangHoatDong;
+
 
         // ✅ Thêm thuộc tính ảnh lớp học (banner)
         [StringLength(255)]

@@ -242,8 +242,8 @@
 
 
     <!-- ======= SignalR ========== -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-
+    @* <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script> *@
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
         window.conn = new signalR.HubConnectionBuilder()
             .withUrl("/hubs/notifications")
@@ -257,7 +257,7 @@
                 let badge = document.getElementById("notiCount");
                 if (badge) {
                     let current = parseInt(badge.innerText || "0");
-                    badge.innerText = current + 1;
+                    badge.innerText = current + 1; 
                     badge.style.display = "inline-block";
                 }
             }
@@ -290,9 +290,6 @@
             }
         });
 
-
-
-
         conn.start()
             .then(() => console.log("SignalR connected!"))
             .catch(err => console.error("SignalR error:", err));
@@ -314,7 +311,6 @@
                         if (current - 1 <= 0) badge.style.display = "none";
                     }
                 }
-
                 // Mark as read
                 fetch('/GiangVien/Notification/MarkAsRead?id=' + id, { method: 'POST' });
 
@@ -322,19 +318,15 @@
                 $(this).removeClass("unread-noti").addClass("read-noti");
             });
 
-
         });
 
     </script>
-
-
 
     <style>
         .notify-item {
             pointer-events: auto !important;
         }
     </style>
-
 
 </body>
 </html>

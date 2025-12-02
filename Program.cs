@@ -72,7 +72,6 @@ app.UseAuthorization();
 app.UseSession();
 app.MapHub<NotificationsHub>("/hubs/notifications");
 
-
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllerRoute(

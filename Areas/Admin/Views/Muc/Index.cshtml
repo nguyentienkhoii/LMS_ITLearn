@@ -1,91 +1,268 @@
-﻿@using X.PagedList.Mvc.Core;
-@using X.PagedList.Web.Common;
-@using X.PagedList;
-@model IPagedList<WebBaiGiang_CKC.Models.Muc>
-
+﻿@model IEnumerable<WebBaiGiang_CKC.Models.Muc>
 @{
-   
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Quản lý nội dung";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var lopList    = ViewBag.LopHocList as IEnumerable<dynamic>;
+    var chuongList = ViewBag.ChuongList as IEnumerable<dynamic>;
+    var baiList    = ViewBag.BaiList as IEnumerable<dynamic>;
 }
 
 <ol class="breadcrumb">
-
-    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-    <li class="breadcrumb-item"><a asp-controller="Muc" asp-action="Index">Quản lý nội dung</a></li>
-
+  <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+  <li class="breadcrumb-item active">Quản lý nội dung</li>
 </ol>
-<h1 style="text-align: center;">QUẢN LÝ NỘI DUNG</h1>
-<hr />
-<br />
 
+<h1 class="text-center">QUẢN LÝ NỘI DUNG</h1>
+<hr />
 <a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
 
-<table class="table table alert-light">
-    <thead class="table-dark">
-        <tr style="text-align: center;">
-            <th>
-                Chương
-            </th>
-            <th>
-                Tên Bài
-            </th>
-            <th>
-                Tên Mục
-            </th>
-            <th>
-                Số Mục
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody style="text-align: center;">
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Bai.Chuong.TenChuong)
-                </td>
-                  <td>
-                    @Html.DisplayFor(modelItem => item.Bai.TenBai)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TenMuc)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MucSo)
-                </td>
-                <td>
-
-                    <a asp-action="Details" asp-route-id="@item.MucId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
-                    <a asp-action="Edit" asp-route-id="@item.MucId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
-                    <a asp-action="Delete" asp-route-id="@item.MucId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
-                </td>
-            </tr>
+<!-- Templates cho dropdown filters -->
+<div id="mucFiltersTemplate" class="d-none">
+  <div class="dt-extra-filters d-inline-flex align-items-center flex-nowrap">
+    <label class="form-label mb-0 me-2">Lớp:
+      <select id="lopFilterMucTemplate" class="form-select form-select-sm w-auto ms-1">
+        <option value="">Tất cả lớp học</option>
+        @if (lopList != null) {
+          foreach (var l in lopList) {
+            <option value="@l.MaLopHoc">@l.TenLopHoc</option>
+          }
         }
-    </tbody>
-</table>
-<!-- Pagination with icons -->
-<div class="row">
+      </select>
+    </label>
 
-    <div class="row ">
+    <label class="form-label mb-0 ms-3 me-2">Chương:
+      <select id="chuongFilterMucTemplate" class="form-select form-select-sm w-auto ms-1">
+        <option value="">Tất cả chương</option>
+        @if (chuongList != null) {
+          foreach (var c in chuongList) {
+            <option value="@c.MaChuong" data-lop="@c.MaLopHoc">@c.TenChuong</option>
+          }
+        }
+      </select>
+    </label>
 
-        <ul class="pagination justify-content-end ">
-            @Html.PagedListPager(Model, page => Url.Action("Index", new {page = page}), new PagedListRenderOptions()
-            {
-            ActiveLiElementClass = "active",
-            PageClasses = new[]{ "page-link"},
-            LiElementClasses=new[] { "page-item" },
-            UlElementClasses = new[] { "pagination","justify-content-center", "mt-3" },
-            LinkToNextPageFormat = "Sau",
-            LinkToPreviousPageFormat = "Trước",
-            MaximumPageNumbersToDisplay = 3,
-            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
-            DisplayLinkToNextPage = PagedListDisplayMode.Always
-            })
-        </ul>
-
-    </div>
-
+    <label class="form-label mb-0 ms-3">Bài:
+      <select id="baiFilterMucTemplate" class="form-select form-select-sm w-auto ms-1">
+        <option value="">Tất cả bài</option>
+        @if (baiList != null) {
+          foreach (var b in baiList) {
+            <option value="@b.BaiId" data-chuong="@b.MaChuong">@b.TenBai</option>
+          }
+        }
+      </select>
+    </label>
+  </div>
 </div>
-<!-- End Right/End Aligned Pagination -->
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-centered w-100 dt-responsive nowrap" id="muc-datatable">
+        <thead class="table-dark">
+          <tr>
+            <th>Mã mục</th>
+            <th>Lớp học</th>
+            <th>Chương</th>
+            <th>Bài</th>
+            <th>Tên mục</th>
+            <th>Mục số</th>
+            <th style="width:120px;" class="text-center"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var item in Model)
+          {
+            var lop = item.Bai?.Chuong?.LopHoc;
+            var chuong = item.Bai?.Chuong;
+            var bai = item.Bai;
+
+            <tr class="align-middle"
+                data-lop="@lop?.MaLopHoc"
+                data-chuong="@chuong?.MaChuong"
+                data-bai="@bai?.BaiId">
+              <td>@item.MucId</td>
+              <td>@lop?.TenLopHoc</td>
+              <td>@chuong?.TenChuong</td>
+              <td>@bai?.TenBai</td>
+              <td>@item.TenMuc</td>
+              <td>@item.MucSo</td>
+              <td class="table-action text-center">
+                <a asp-action="Details" asp-route-id="@item.MucId" class="action-icon" title="Xem">
+                  <i class="mdi mdi-eye" style="font-size:22px;color:#19b6ff;"></i>
+                </a>
+                <a asp-action="Edit" asp-route-id="@item.MucId" class="action-icon" title="Sửa">
+                  <i class="mdi mdi-square-edit-outline" style="font-size:22px;color:#ffd83b;"></i>
+                </a>
+                <a asp-action="Delete" asp-route-id="@item.MucId" class="action-icon" title="Xoá">
+                  <i class="mdi mdi-delete" style="font-size:22px;color:#e75555;"></i>
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@section scripts{
+  <!-- giữ bộ JS/CSS DataTables giống các trang Chương/Bài -->
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css"> 
+    <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
+    <!-- third party css end -->
+    <!-- App css -->
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
+
+  <!-- DataTables JS (đảm bảo jQuery đã được nạp trước đó) -->
+  <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
+  <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
+  <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
+  <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
+  <script>
+    $(function () {
+      if (!$.fn.DataTable) { console.error('DataTables chưa sẵn sàng'); return; }
+
+      // --- Filter function áp cho bảng Mục
+      function mucFilter(settings, data, dataIndex) {
+        if (settings.nTable.id !== 'muc-datatable') return true;
+
+        const row = settings.aoData[dataIndex].nTr;
+        const pickedLop    = $('#lopFilterMuc').val();
+        const pickedChuong = $('#chuongFilterMuc').val();
+        const pickedBai    = $('#baiFilterMuc').val();
+
+        if (pickedLop    && String(row.dataset.lop)    !== String(pickedLop))    return false;
+        if (pickedChuong && String(row.dataset.chuong) !== String(pickedChuong)) return false;
+        if (pickedBai    && String(row.dataset.bai)    !== String(pickedBai))    return false;
+
+        return true;
+      }
+      if (!window.__mucFilterHook) {
+        $.fn.dataTable.ext.search.push(mucFilter);
+        window.__mucFilterHook = true;
+      }
+
+      // --- Init DataTable
+    // 1) Init DataTable: tách 2 hàng rõ ràng
+    const dt = $('#muc-datatable').DataTable({
+    dom:
+        // Hàng 1: length + search
+        '<"row align-items-center mb-2"'
+        + '<"col-md-6 dt-left"l>'
+        + '<"col-md-6 text-md-end"f>'
+        + '>'
+        // Hàng 2: thanh lọc (đặt vào .dt-filterbar, canh trái trùng cột length)
+        + '<"row align-items-center mb-2"'
+        + '<"col-md-6 dt-filterbar">'
+        + '>'
+        // Bảng + hàng 3: info + paginate
+        + 'rt'
+        + '<"row align-items-center mt-2"'
+        + '<"col-md-6"i>'
+        + '<"col-md-6"p>'
+        + '>',
+    responsive: true,
+    autoWidth: false,
+    language: {
+        paginate: { previous: "<i class='mdi mdi-chevron-left'></i>", next: "<i class='mdi mdi-chevron-right'></i>" },
+        info: "Hiển thị _START_ đến _END_ trong _TOTAL_ mục",
+        lengthMenu:
+        "Hiển thị <select class='form-select form-select-sm ms-1 me-1'>"
+        + "<option value='5'>5</option>"
+        + "<option value='10'>10</option>"
+        + "<option value='20'>20</option>"
+        + "<option value='-1'>All</option>"
+        + "</select> mục"
+    },
+    pageLength: 5,
+    columnDefs: [
+        { targets: -1, orderable: false, className: 'text-center' },
+        { targets: '_all', className: 'align-middle' }
+    ],
+    order: [[1,'asc'],[2,'asc'],[3,'asc'],[5,'asc']],
+    drawCallback: function () {
+        $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
+        $("#muc-datatable_length label").addClass("form-label");
+    }
+    });
+
+    // 2) Đưa nhóm filters vào hàng 2 (dt-filterbar)
+    const $group = $('#mucFiltersTemplate .dt-extra-filters').clone();
+    $('#muc-datatable_wrapper .dt-filterbar').empty().append($group);
+
+    // 3) Đặt id thật cho 3 select (nếu bạn dùng template có id *Template*)
+    const $lop    = $('#lopFilterMucTemplate', $group).attr('id','lopFilterMuc');
+    const $chuong = $('#chuongFilterMucTemplate', $group).attr('id','chuongFilterMuc');
+    const $bai    = $('#baiFilterMucTemplate', $group).attr('id','baiFilterMuc');
+
+    // 4) Mặc định giá trị rỗng và gọi lại các hàm cascade + vẽ
+     $lop.val('');
+     $chuong.val(''); 
+     $bai.val('');
+        // --- Cascade helpers
+      function rebuildChuong(maLop) {
+        const $tpl = $('#chuongFilterMucTemplate'); // template gốc
+        $chuong.empty().append($('<option/>', { value:'', text:'Tất cả chương' }));
+        $tpl.find('option').each(function(){
+          const v = this.value; if (!v) return;
+          const txt = $(this).text();
+          const lopOfCh = $(this).data('lop');
+          if (!maLop || String(lopOfCh) === String(maLop)) {
+            $chuong.append($('<option/>', { value: v, text: txt, 'data-lop': lopOfCh }));
+          }
+        });
+      }
+      function rebuildBai(maChuong) {
+        const $tpl = $('#baiFilterMucTemplate');
+        $bai.empty().append($('<option/>', { value:'', text:'Tất cả bài' }));
+        $tpl.find('option').each(function(){
+          const v = this.value; if (!v) return;
+          const txt = $(this).text();
+          const chOfBai = $(this).data('chuong');
+          if (!maChuong || String(chOfBai) === String(maChuong)) {
+            $bai.append($('<option/>', { value: v, text: txt, 'data-chuong': chOfBai }));
+          }
+        });
+      }
+
+    // 5) Sự kiện chọn
+    $lop.on('change', function(){
+    rebuildChuong(this.value);
+    rebuildBai('');
+    dt.draw();
+    });
+    $chuong.on('change', function(){
+    rebuildBai(this.value);
+    dt.draw();
+    });
+    $bai.on('change', function(){
+    dt.draw();
+    });
+
+      // init lần đầu
+      rebuildChuong('');
+      rebuildBai('');
+      dt.draw();
+
+    });
+  </script>
+
+  <style>
+    /* Chỉ áp cho bar lọc của Mục */
+    #muc-datatable_wrapper .dt-filterbar { display:flex; align-items:center; }
+    #muc-datatable_wrapper .dt-extra-filters {
+    display:inline-flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+    }
+
+    /* Giữ "Lớp:" và <select> luôn chung 1 dòng */
+    #muc-datatable_wrapper .dt-extra-filters label.form-label{
+    display:inline-flex; align-items:center; gap:.5rem; margin-bottom:0; white-space:nowrap;
+    }
+
+    /* Select gọn, không chiếm full width */
+    #muc-datatable_wrapper .dt-extra-filters .form-select{
+    width:auto; min-width:160px;
+    }
+  </style>
+}

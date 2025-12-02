@@ -36,7 +36,6 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
             noti.IsRead = true;
             await _context.SaveChangesAsync();
-
             return Ok();
         }
 

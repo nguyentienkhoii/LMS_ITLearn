@@ -21,7 +21,7 @@ namespace WebBaiGiang_CKC.Models
         [ForeignKey("BaiId")]
         public Bai Bai { get; set; }
 
-        [DisplayName("Số mục")]
+        [DisplayName("Mục số")]
         [Range(1, int.MaxValue, ErrorMessage = "Số mục phải lớn hơn 0")]
         public int MucSo { get; set; }
 

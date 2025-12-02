@@ -47,7 +47,7 @@ namespace WebBaiGiang_CKC.Models
             public const string DaChotSoft = "DA_CHOT_SOFT"; // chưa xác nhận hẳn
             public const string DaChamChot = "DA_CHOT";      // đã công bố & khóa
 
-            public static readonly TimeSpan Grace = TimeSpan.FromHours(1);
+            public static readonly TimeSpan Grace = TimeSpan.FromSeconds(10);
 
             public static bool IsReopened(string s)
                 => string.Equals(s, ReOpened, StringComparison.OrdinalIgnoreCase);
@@ -64,8 +64,8 @@ namespace WebBaiGiang_CKC.Models
             }
             public static bool IsLocked(string s, DateTime? ngayCham)
             {
-                // if (!(string.Equals(s, DaChotSoft, StringComparison.OrdinalIgnoreCase) ||
-                //     string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase))) return false;
+                // if (!(string.Equals(s, DaChotSoft, StringComparison.OrdinalIgnoreCase) || 
+                // string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase))) return false;
                 if (!string.Equals(s, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
                     if (ngayCham == null) return false;
                     return DateTime.Now >= ngayCham.Value.Add(Grace);

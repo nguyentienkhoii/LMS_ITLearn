@@ -3,8 +3,8 @@
 @{
     ViewData["Title"] = "Create";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var ChuongId = @ViewBag.ChuongId;
-    var BaiId = @ViewBag.BaiId;
+    @* var ChuongId = @ViewBag.ChuongId;
+    var BaiId = @ViewBag.BaiId; *@
 }
 <ol class="breadcrumb">
 
@@ -19,20 +19,30 @@
 
     <form asp-action="Create" asp-controller="Muc" asp-area="Admin" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <br />
 
+          <!-- LỚP -->
         <div class="form-group flex-grow-1 mx-4">
-            <label class="form-label">Chương <span id="ChuongDisplay"></span></label>
-            <select asp-items="ChuongId" class="form-select w-100" onchange="showChuongInfo(this)">
-                <option value="">-- Chọn chương học --</option>
+            <label class="form-label">Lớp học</label>
+            <select id="LopId" name="LopId" class="form-select w-100" asp-items="ViewBag.LopList">
+            <option value="">-- Chọn lớp học --</option>
             </select>
         </div>
         <br />
-        <div class="form-group flex-grow-1 mx-4">
-            <label asp-for="BaiId" class="form-label">Bài <span id="ChuongDisplay"></span></label>
-            <select asp-for="BaiId" asp-items="BaiId" class="form-select w-100">
-                <option value="">-- Chọn bài học --</option>
+
+         <div class="form-group flex-grow-1 mx-4">
+            <label class="form-label">Chương <span id="ChuongDisplay"></span></label>
+            <select id="ChuongId" name="ChuongId" class="form-select w-100" asp-items="ViewBag.ChuongId" onchange="showChuongInfo(this)">
+            <option value="">-- Chọn chương học --</option>
             </select>
+        </div>
+        <br />
+         <!-- BÀI -->
+        <div class="form-group flex-grow-1 mx-4">
+            <label asp-for="BaiId" class="form-label">Bài</label>
+            <select asp-for="BaiId" id="BaiId" class="form-select w-100" asp-items="ViewBag.BaiId">
+            <option value="">-- Chọn bài học --</option>
+            </select>
+            <span asp-validation-for="BaiId" class="text-danger"></span>
         </div>
 
         <br />
@@ -53,6 +63,15 @@
             <textarea name="NoiDung" id="htmlelementid" style="max-width:auto" class="form-control" asp-for="NoiDung"></textarea>
             <span asp-validation-for="NoiDung" class="text-danger"></span>
         </div>
+        <br />
+        <div class="form-group flex-grow-1 mx-4">
+          <label class="form-label">Tài liệu đính kèm</label>
+          <div class="input-group mb-2">
+            <input type="file" id="taiLieuFiles" name="files" multiple class="form-control" />
+          </div>
+          <small id="taiLieuInfo" class="text-muted">Chưa chọn tệp nào.</small>
+          <ul id="taiLieuSelectedList" class="list-unstyled small text-muted mt-2"></ul>
+        </div>
 
         <br>
         <div class="form-group flex-grow-1 mx-4">
@@ -65,117 +84,139 @@
 </div>
 
 @section scripts{
-    <script>
-        (function (factory) {
-            if (typeof define === 'function' && define.amd) {
-                define(['jquery'], factory);
-            }
-            else if (typeof module === 'object' && module.exports) {
-                module.exports = factory(require('jquery'));
-            } else {
-                factory(window.jQuery);
-            }
-        }(function ($) {
-            $.extend($.summernote.plugins, {
-                // Tạo plugin tên elfinder
-                'elfinder': function (context) {
-                    var self = this;
-                    // ui has renders to build ui elements.
-                    var ui = $.summernote.ui;
-                    // Tạo nút bấm
-                    context.memo('button.elfinder', function () {
-                        var button = ui.button({
-                            contents: '<i class="note-icon-picture"/> elFinder',
-                            tooltip: 'Quản lý file',
-                            click: function () {
-                                // Bấm vào nút bấm gọi hàm elfinderDialog
-                                elfinderDialog(context);
-                            }
-                        });
-                        // create jQuery object from button instance.
-                        var $elfinder = button.render();
-                        return $elfinder;
-                    });
-                    // This methods will be called when editor is destroyed by $('..').summernote('destroy');
-                    // You should remove elements on `initialize`.
-                    this.destroy = function () {
-                        this.$panel.remove();
-                        this.$panel = null;
-                    };
-                }
-
-            });
-        }));
-        function elfinderDialog(editor) {
-            var fm = $('<div/>').dialogelfinder({
-                baseUrl: "@Url.Content("~/lib/elfinder/")",
-                url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
-                lang: 'vi',
-                width: 840,
-                height: 450,
-                destroyOnClose: true,
-                getFileCallback: function (files, fm) {
-                    console.log(files);
-                    editor.invoke('editor.insertImage', files.url);
-                },
-                commandsOptions: {
-                    getfile: {
-                        oncomplete: 'close',
-                        folders: false
-                    }
-                }
-            }).dialogelfinder('instance');
-        }
-        $(document).ready(function () {
-            $('#htmlelementid').summernote({
-
-                height: 700,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['fontsize', ['fontsize']],
-                    ['fontname', ['fontname']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video', 'elfinder']],
-                    ['view', ['fullscreen', 'codeview', 'help']],
-                ],
-
-            });
+<script>
+  (function (factory) {
+    if (typeof define === 'function' && define.amd) { define(['jquery'], factory); }
+    else if (typeof module === 'object' && module.exports) { module.exports = factory(require('jquery')); }
+    else { factory(window.jQuery); }
+  }(function ($) {
+    $.extend($.summernote.plugins, {
+      'elfinder': function (context) {
+        var ui = $.summernote.ui;
+        context.memo('button.elfinder', function () {
+          var button = ui.button({
+            contents: '<i class="note-icon-picture"/> elFinder',
+            tooltip: 'Quản lý file',
+            click: function () { elfinderDialog(context); }
+          });
+          return button.render();
         });
+        this.destroy = function () { this.$panel?.remove(); this.$panel = null; };
+      }
+    });
+  }));
 
-        function showChuongInfo(selectElement) {
-            var selectedChuong = selectElement.options[selectElement.selectedIndex].text;
-            document.getElementById("ChuongDisplay").innerHTML = " - " + selectedChuong;
-            var chuongId = selectElement.value;
-            var baiSelect = $("#BaiId");
-            baiSelect.empty();
-            if (!chuongId || chuongId === "-- Chọn chương học --") {
-                baiSelect.append($('<option></option>').val('').text('-- Chọn bài học --'));
-                baiSelect.attr('disabled', true);
-                return;
-            } else {
-                baiSelect.attr('disabled', false);
-                $.ajax({
-                    type: "GET",
-                    url: "/Admin/Muc/GetBaiByChuongId",
-                    data: { chuongId: chuongId },
-                    success: function (data) {
-                        if (data.length === 0) {
-                            baiSelect.append($('<option></option>').val('').text('-- Không có bài học --'));
-                        } else {
+  function elfinderDialog(editor) {
+    var fm = $('<div/>').dialogelfinder({
+      baseUrl: "@Url.Content("~/lib/elfinder/")",
+      url: "@Url.Action("Connector","HinhAnh", new {Area ="Admin"})",
+      lang: 'vi',
+      width: 840,
+      height: 450,
+      destroyOnClose: true,
+      getFileCallback: function (files) { editor.invoke('editor.insertImage', files.url); },
+      commandsOptions: { getfile: { oncomplete: 'close', folders: false } }
+    }).dialogelfinder('instance');
+  }
 
-                            $.each(data, function (index, bai) {
-                                baiSelect.append($('<option></option>').val(bai.baiId).html(bai.tenBai));
-                            });
-                        }
-                    },
-                    error: function () {
-                        alert("Failed to get Bai by Chuong");
-                    }
-                });
-            }
+  $(document).ready(function () {
+    // Summernote giữ nguyên
+    $('#htmlelementid').summernote({
+      height: 700,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['fontsize', ['fontsize']],
+        ['fontname', ['fontname']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link', 'picture', 'video', 'elfinder']],
+        ['view', ['fullscreen', 'codeview', 'help']],
+      ],
+    });
+
+    var chuongSelect = document.getElementById("ChuongId");
+    if (chuongSelect && chuongSelect.value) {
+      var selectedChuong = chuongSelect.options[chuongSelect.selectedIndex].text;
+      document.getElementById("ChuongDisplay").innerHTML = " - " + selectedChuong;
+    }
+
+    // ====================== NEW: Cascade LỚP → CHƯƠNG ======================
+    const $lop    = $('#LopId');     // cần tồn tại trong View: <select id="LopId" name="LopId" ...>
+    const $chuong = $('#ChuongId');
+    const $bai    = $('#BaiId');
+
+    function resetChuong() {
+      $chuong.empty().append('<option value="">-- Chọn chương học --</option>');
+      $('#ChuongDisplay').text('');
+    }
+    function resetBai() {
+      $bai.empty().append('<option value="">-- Chọn bài học --</option>');
+    }
+
+    // Khi đổi LỚP => tải lại CHƯƠNG
+    $lop.on('change', function () {
+      const lopId = $(this).val();
+      resetChuong(); resetBai();
+
+      if (!lopId) {               // không chọn lớp
+        $chuong.prop('disabled', true);
+        $bai.prop('disabled', true);
+        return;
+      }
+      $chuong.prop('disabled', true);
+      $bai.prop('disabled', true);
+
+      $.getJSON('/Admin/Muc/GetChuongByLop', { lopHocId: lopId }, function (items) {
+        if (items && items.length) {
+          items.forEach(c => $chuong.append(new Option(c.tenChuong, c.maChuong)));
+          $chuong.prop('disabled', false);
+        } else {
+          $chuong.append(new Option('-- Không có chương --', ''));
         }
-    </script>
+      });
+    });
+
+    // Trạng thái ban đầu: nếu chưa có lớp/chương thì disable hợp lý
+    if (!$lop.val()) { $chuong.prop('disabled', true); $bai.prop('disabled', true); }
+    else if (!$chuong.val()) { $bai.prop('disabled', true); }
+
+    // Nếu đã có chương sẵn (server preselect) => load Bài luôn
+    if ($chuong.val()) { showChuongInfo($chuong[0]); }
+    // ==================== /NEW ====================
+  });
+
+  // Hàm cũ: đổi CHƯƠNG => tải BÀI (giữ nguyên)
+  function showChuongInfo(selectElement) {
+    var selectedChuong = selectElement.options[selectElement.selectedIndex].text;
+    document.getElementById("ChuongDisplay").innerHTML = " - " + selectedChuong;
+
+    var chuongId = selectElement.value;
+    var baiSelect = $("#BaiId");
+    baiSelect.empty();
+    if (!chuongId || chuongId === "-- Chọn chương học --") {
+      baiSelect.append($('<option></option>').val('').text('-- Chọn bài học --'));
+      baiSelect.attr('disabled', true);
+      return;
+    } else {
+      baiSelect.attr('disabled', false);
+      $.ajax({
+        type: "GET",
+        url: "/Admin/Muc/GetBaiByChuongId",
+        data: { chuongId: chuongId },
+        success: function (data) {
+          if (data.length === 0) {
+            baiSelect.append($('<option></option>').val('').text('-- Không có bài học --'));
+          } else {
+            $.each(data, function (index, bai) {
+              baiSelect.append($('<option></option>').val(bai.baiId).html(bai.tenBai));
+            });
+          }
+        },
+        error: function () { alert("Failed to get Bai by Chuong"); }
+      });
+    }
+  }
+</script>
 }

@@ -1,0 +1,48 @@
+/* --- Danh sách file đã chọn trong Edit Mục --- */
+#taiLieuSelectedList {
+    margin-top: 4px;
+}
+
+#taiLieuSelectedList .file-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background-color: #f8f9fa; /* nền xám nhạt */
+    margin-bottom: 4px;
+}
+
+/* Ô icon tài liệu */
+#taiLieuSelectedList .file-icon-wrapper {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    background: linear-gradient(135deg, #e3f2ff, #f0f7ff);
+    border: 1px solid #d0e3ff;
+}
+
+/* Icon bên trong (Font Awesome 6) */
+#taiLieuSelectedList .file-icon-wrapper i {
+    font-size: 14px;
+    color: #0d6efd; /* xanh primary */
+}
+
+/* Tên file */
+#taiLieuSelectedList .file-name {
+    font-size: 0.9rem;
+    color: #495057;
+    word-break: break-all;
+}
+
+  #form-container .btn {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.25;    /* tránh nút cao/thấp khác nhau */
+    padding: .5rem .75rem;/* đồng nhất đệm */
+    white-space: nowrap;  /* chữ không xuống hàng */
+  }
+  #form-container .btn i { vertical-align: middle; }
