@@ -8,7 +8,7 @@ using WebBaiGiang_CKC.Data;
 namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 {
     [Area("GiangVien")]
-    //[Authorize(Roles = "GiangVien")]
+    [Authorize(Roles = "GiangVien,Admin")]
     public class GiangVienBaseController : Controller
     {
         protected readonly WebBaiGiangContext _context;

@@ -23,3 +23,16 @@
 
 **Giảng viên có thể sửa sau lần chấm đầu tiên**
 <img width="3242" height="1674" alt="localhost_7258_GiangVien_BaiTap_ChamDiem_19 (1)" src="https://github.com/user-attachments/assets/78d3cad2-a433-4224-ac81-694262c5b3fa" />
+
+====================================================================================================================================================================================
+**CHỈNH SỬA CHƯƠNG(ADMIN)**
+Thêm lọc lớp ở chương
+<img width="1919" height="558" alt="image" src="https://github.com/user-attachments/assets/147c719a-6496-4cfd-a7c1-342676be8a24" />
+Sửa, Xóa cho Chương :
+<img width="2894" height="1674" alt="localhost_7258_Admin_Chuong" src="https://github.com/user-attachments/assets/5e3a5331-625d-449a-81ed-7a651e2d8f96" />
+
+**MỤC**
+<img width="1100" height="344" alt="image" src="https://github.com/user-attachments/assets/7184f804-22a5-472a-ae2d-3669381888af" />
+
+**Thêm chọn tài liệu cho Mục**
+ <img width="2894" height="1674" alt="localhost_7258_Admin_Muc_Edit_6" src="https://github.com/user-attachments/assets/c3e68b98-4ae2-4c5c-a328-d36379ec1ce9" />

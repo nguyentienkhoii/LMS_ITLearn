@@ -256,7 +256,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
         //         if (!string.Equals(status, DaChamChot, StringComparison.OrdinalIgnoreCase)) return false;
         //         if (ngayCham == null) return false;
         //         return DateTime.Now < ngayCham.Value.Add(Grace);
-        
+
         //     }
         //     public static bool IsLocked(string s, DateTime? ngayCham)
         //     {
@@ -282,18 +282,18 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 return RedirectToAction("Index");
             }
 
-            // if (baiNop.TrangThai == SubmissionStatus.DaChotSoft &&
-            //     baiNop.NgayCham != null &&
-            //     DateTime.Now >= baiNop.NgayCham.Value.Add(SubmissionStatus.Grace))
-            // {
-            //     baiNop.TrangThai = SubmissionStatus.DaChamChot;
-            //     await _context.SaveChangesAsync();
-            // }
-            // ✅ Lấy mã lớp học cho view và menu
-            ViewBag.MaLopHoc = baiNop.BaiTap?.Bai?.Chuong?.MaLopHoc;
+            if (baiNop.TrangThai == SubmissionStatus.DaChotSoft &&
+                baiNop.NgayCham != null &&
+                DateTime.Now >= baiNop.NgayCham.Value.Add(SubmissionStatus.Grace))
+            {
+                baiNop.TrangThai = SubmissionStatus.DaChamChot;
+                await _context.SaveChangesAsync();
+            }
 
+            ViewBag.MaLopHoc = baiNop.BaiTap?.Bai?.Chuong?.MaLopHoc;
             return View(baiNop);
         }
+
 
 
         //Cập nhật thêm thông báo và chốt điểm

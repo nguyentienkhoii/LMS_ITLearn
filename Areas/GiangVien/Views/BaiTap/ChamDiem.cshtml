@@ -250,62 +250,6 @@
   <link rel="stylesheet" href="~/assets/giangvien/chamdiem.css" asp-append-version="true" />
 }
 
-@* @section scripts {
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  // Lightbox
-  const modal = document.getElementById("imgModal");
-  const modalImg = document.getElementById("imgPreview");
-  const images = document.querySelectorAll(".preview-image");
-  const closeBtn = document.getElementsByClassName("close")[0];
-
-  images.forEach(img => {
-    img.onclick = function () { modal.style.display = "block"; modalImg.src = this.src; }
-  });
-  if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
-  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
-
-  // Countdown
-  var el = document.getElementById('countdown');
-  if (!el) return;
-
-  var iso = el.getAttribute('data-deadline');
-  if (!iso) return;
-
-  var deadline = new Date(iso);
-  function pad(n){ return n < 10 ? '0' + n : n; }
-
-  function lockUI() {
-    el.classList.remove('badge-info');
-    el.classList.add('badge-secondary');
-    el.innerHTML = '<i class="fa fa-lock mr-1"></i> ĐÃ CHỐT';
-
-    var fs = document.querySelector('.grade-form');
-    if (fs) { fs.setAttribute('disabled',''); fs.classList.add('is-locked'); }
-
-    var btns = document.querySelectorAll('button[type="submit"].btn-success, button[type="submit"].btn-primary');
-    btns.forEach(b => b.disabled = true);
-  }
-
-  function tick(){
-    var now = new Date();
-    var diff = deadline - now;
-    if (diff <= 0) { lockUI(); clearInterval(timer); return; }
-
-    var total = Math.floor(diff / 1000);
-    var h = Math.floor(total / 3600);
-    var m = Math.floor((total % 3600) / 60);
-    var s = total % 60;
-
-    el.textContent = 'Còn ' + pad(h) + ':' + pad(m) + ':' + pad(s) + ' để chỉnh';
-  }
-
-  tick();
-  var timer = setInterval(tick, 1000);
-});
-</script>
-} *@
-
  @section scripts {
 <script>
 document.addEventListener('DOMContentLoaded', function () {

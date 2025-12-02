@@ -1,12 +1,13 @@
 ﻿@section Scripts {
     <link rel="stylesheet" href="~/assets/css/BaiKiemTra.css" />
     <script src="~/assets/js/BaiKiemTra.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SWEETALERT2 -->
 }
 @{
     var tg_tim = ViewBag.TimThoigian;
     var cauhoi_baiLam = ViewBag.cauhoi_de_mssv as List<CauHoi_BaiLam>;
     var tenkykiemtra = ViewBag.TenKiKiemTra;
-    var hocVienId = ViewBag.kiemtrasv_id;   
+    var hocVienId = ViewBag.kiemtrasv_id;
     var idkykiemtra = ViewBag.IdKiKiemTra;
 }
 <form id="myForm" asp-controller="BaiGiangs" asp-action="NopBai" asp-route-id="@idkykiemtra">
@@ -214,7 +215,6 @@
         });
     };
 
-    // Giữ nguyên logic chuyển câu hỏi
     const questionContainers = document.querySelectorAll('.question-container');
     const prevButton = document.querySelector('#prevButton');
     const nextButton = document.querySelector('#nextButton');
@@ -279,24 +279,7 @@
         $('#confirm-btn-yes').focus();
     });
 
-    // ✅ Thêm lại hàm confirmSubmit gốc
-    function confirmSubmit() {
-        $('#confirm-dialog').modal('show');
-
-        $('#confirm-btn-yes').on('click', function () {
-            return true;
-        });
-
-        $('#confirm-dialog').on('hidden.bs.modal', function () {
-            return false;
-        });
-
-        return false;
-    }
-
-    // ================== Hiển thị đồng hồ đếm ngược dạng text ==================
     (function () {
-        // Lấy tổng thời gian làm bài (TimeSpan -> milliseconds)
         var totalMs = @(((int)tg_tim.TotalMilliseconds));
         var countdownEl = document.getElementById("thoigian-con-lai");
 
@@ -307,7 +290,7 @@
                 return;
             }
 
-            totalMs -= 1000; // Giảm 1 giây
+            totalMs -= 1000;
 
             var hours = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
             var minutes = Math.floor((totalMs / (1000 * 60)) % 60);
@@ -319,10 +302,135 @@
                 `${seconds.toString().padStart(2, '0')}`;
         }
 
-        updateCountdown(); // Hiển thị ngay ban đầu
+        updateCountdown();
         var timer = setInterval(updateCountdown, 1000);
     })();
 
+    /* =====================================================
+       🔥 FINAL FIX – CHẶN LÁCH F5 + ĐẾM TIẾP SAU RELOAD
+       ===================================================== */
+
+    const LIMIT_MS = 30000;
+    const WARNING_KEY = "exam_warning_count_" + hocVienId;
+    const PENDING_KEY = "exam_pending_warning_" + hocVienId;
+
+    let warningCount = parseInt(localStorage.getItem(WARNING_KEY) || "0");
+    let isShowingPopup = false;
+
+    // Phát hiện reload thật sự
+    let isReload = false;
+    window.addEventListener("beforeunload", () => {
+        isReload = true;
+        localStorage.setItem("reload_flag", "1");
+    });
+
+    // Sau khi load xong trang
+    window.addEventListener("load", () => {
+        if (localStorage.getItem("reload_flag") === "1") {
+            isReload = true;
+            localStorage.removeItem("reload_flag");
+        } else {
+            isReload = false;
+        }
+
+        // Nếu lần trước popup chưa được bấm → cộng cảnh báo
+        if (localStorage.getItem(PENDING_KEY) === "true") {
+            warningCount++;
+            localStorage.setItem(WARNING_KEY, warningCount);
+
+            localStorage.removeItem(PENDING_KEY);
+
+            if (warningCount >= 3) {
+                document.getElementById("myForm").submit();
+                return;
+            }
+        }
+    });
+
+    /* =====================================================
+       CẢNH BÁO
+       ===================================================== */
+    async function addWarning(message) {
+        warningCount++;
+        localStorage.setItem(WARNING_KEY, warningCount);
+
+        // Nếu đủ 3 → auto submit
+        if (warningCount >= 3) {
+            localStorage.removeItem(PENDING_KEY);
+            document.getElementById("myForm").submit();
+            return;
+        }
+
+        // Đánh dấu popup đang mở (phòng học viên F5)
+        localStorage.setItem(PENDING_KEY, "true");
+
+        isShowingPopup = true;
+
+        await Swal.fire({
+            icon: "warning",
+            title: "Cảnh báo vi phạm",
+            html: `${message}<br><strong>Cảnh báo ${warningCount}/3</strong>`,
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        });
+
+        // Popup đã bấm => xóa pending
+        localStorage.removeItem(PENDING_KEY);
+        isShowingPopup = false;
+    }
+
+    /* =====================================================
+       DETECT OUT > 30 GIÂY
+       ===================================================== */
+
+    let blurTime = null;
+
+    function onBlur() {
+        blurTime = Date.now();
+    }
+
+    function onFocus() {
+        if (!blurTime) return;
+
+        let diff = Date.now() - blurTime;
+
+        if (diff > LIMIT_MS) {
+            addWarning(`Bạn đã rời khỏi trang ${Math.floor(diff / 1000)} giây.`);
+        }
+
+        blurTime = null;
+    }
+
+    // Rời trang/cửa sổ
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+
+    // Rời tab
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) onBlur();
+        else onFocus();
+    });
+
+    /* =====================================================
+       CHẶN HÀNH VI
+       ===================================================== */
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("keydown", e => {
+        if (
+            e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && ["I", "C", "J"].includes(e.key)) ||
+            (e.ctrlKey && e.key === "U")
+        ) {
+            e.preventDefault();
+        }
+    });
+
+    // Reset khi nộp bài
+    document.getElementById("myForm").addEventListener("submit", () => {
+        localStorage.removeItem(WARNING_KEY);
+        localStorage.removeItem(PENDING_KEY);
+    });
 
 
 </script>

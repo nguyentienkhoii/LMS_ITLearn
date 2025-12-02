@@ -49,7 +49,8 @@ namespace WebBaiGiang_CKC.Models
 
             public static readonly TimeSpan Grace = TimeSpan.FromSeconds(10);
 
-            public static bool IsReopened(string s)
+
+        public static bool IsReopened(string s)
                 => string.Equals(s, ReOpened, StringComparison.OrdinalIgnoreCase);
 
             public static bool IsSoftLocked(string s)

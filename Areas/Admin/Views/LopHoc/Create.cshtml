@@ -34,9 +34,22 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="TrangThai" class="form-label"></label>
-                <input asp-for="TrangThai" class="form-control" />
+                <label class="form-label">Trạng thái lớp học</label>
+
+                <!-- Toggle -->
+                <div class="form-check form-switch">
+                    <input id="toggleTrangThai" class="form-check-input" type="checkbox" />
+
+                    <!-- Text hiển thị cạnh toggle -->
+                    <label class="form-check-label" for="toggleTrangThai" id="trangThaiLabel">
+                        Không hoạt động
+                    </label>
+                </div>
+
+                <!-- Hidden input để gửi giá trị về DB -->
+                <input type="hidden" asp-for="TrangThai" id="TrangThai" />
             </div>
+
 
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -56,3 +69,35 @@
         </form>
     </div>
 </div>
+@section Scripts{
+<script>
+    const toggle = document.getElementById("toggleTrangThai");
+    const trangThaiInput = document.getElementById("TrangThai");
+    const label = document.getElementById("trangThaiLabel");
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        let trangThai = "@(Model?.TrangThai ?? "Không hoạt động")";
+
+        if (trangThai === "Hoạt động") {
+            toggle.checked = true;
+            label.textContent = "Đang hoạt động";
+            trangThaiInput.value = "Hoạt động";
+        } else {
+            toggle.checked = false;
+            label.textContent = "Không hoạt động";
+            trangThaiInput.value = "Không hoạt động";
+        }
+    });
+
+    toggle.addEventListener("change", function () {
+        if (toggle.checked) {
+            label.textContent = "Đang hoạt động";
+            trangThaiInput.value = "Hoạt động";
+        } else {
+            label.textContent = "Không hoạt động";
+            trangThaiInput.value = "Không hoạt động";
+        }
+    });
+</script>
+}
