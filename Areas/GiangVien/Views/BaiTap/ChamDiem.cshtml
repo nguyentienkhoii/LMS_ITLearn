@@ -146,6 +146,14 @@
                                 </fieldset>
                                 
                                 <div class="text-end mt-4 d-flex justify-content-end">
+                                    <a href="@Url.Action("LichSuNop", "BaiTap",
+            new { area = "GiangVien",
+                  baiTapId = Model.BaiTap?.MaBaiTap,
+                  hocVienId = Model.HocVien?.MaHocVien })"
+                                       class="btn btn-outline-info me-2">
+                                        <i class="fa fa-history"></i> Lịch sử nộp
+                                    </a>
+
                                     <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = Model.MaBaiTap })"
                                         class="btn btn-secondary me-2">
                                             <i class="fa fa-arrow-left"></i> Quay lại

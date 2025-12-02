@@ -3,8 +3,15 @@
 @{
     ViewData["Title"] = "Sửa đề thi";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var danhSachChuong = ViewBag.DanhSachChuong as IEnumerable<dynamic> ?? new List<dynamic>();
+
+    // Danh sách lớp
     var dsLop = ViewBag.LopHoc as IEnumerable<WebBaiGiang_CKC.Models.LopHoc> ?? new List<WebBaiGiang_CKC.Models.LopHoc>();
+
+    // Danh sách lớp đã được chọn trước đó
+    var lopDaChon = ViewBag.LopDaChon as List<int> ?? new List<int>();
+
+    // Danh sách chương đã load trước (gồm mã lớp, mã chương, tên chương, số lượng câu hỏi, số câu đã chọn)
+    var danhSachChuong = ViewBag.DanhSachChuong as IEnumerable<dynamic> ?? new List<dynamic>();
 }
 
 <h2 class="text-center">SỬA ĐỀ THI</h2>
@@ -13,108 +20,217 @@
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="DeId" />
 
-    <div class="form-group">
-        <label asp-for="KyKiemTraId"></label>
-        <select asp-for="KyKiemTraId" class="form-control" asp-items="ViewBag.KyKiemTraId"></select>
-    </div>
-
-    <div class="form-group">
-        <label class="fw-bold">Lớp học</label>
-        <select id="LopHocSelect" class="form-control">
-            <option value="">-- Chọn lớp học --</option>
-            @foreach (var lop in dsLop)
-            {
-                <option value="@lop.MaLopHoc">@lop.TenLopHoc</option>
-            }
+    <!-- Kỳ kiểm tra -->
+    <div class="form-group mx-4 mb-3">
+        <label asp-for="KyKiemTraId" class="fw-bold"></label>
+        <select asp-for="KyKiemTraId" class="form-select" asp-items="ViewBag.KyKiemTraId">
+            <option value="">Chọn kỳ kiểm tra</option>
         </select>
     </div>
 
-    <div class="form-group">
-        <label asp-for="SoCauHoi"></label>
+    <!-- Dropdown chọn lớp -->
+    <div class="form-group mx-4 mb-3">
+        <label class="fw-bold">Nguồn câu hỏi</label>
+
+        <div class="dropdown w-100">
+            <div id="selectedLopHoc" class="dropdown-button-selected" data-bs-toggle="dropdown">
+                <span class="text-muted">Chọn lớp học</span>
+            </div>
+
+            <ul class="dropdown-menu p-2" id="dropdownLopHocList" style="max-height:250px; overflow-y:auto;">
+                @foreach (var lop in dsLop)
+                {
+                    <li>
+                        <label class="dropdown-item">
+                            <input type="checkbox"
+                                   class="chk-lop me-2"
+                                   value="@lop.MaLopHoc"
+                                   data-ten="@lop.TenLopHoc"
+                            @(lopDaChon.Contains(lop.MaLopHoc) ? "checked" : "") />
+                            @lop.TenLopHoc
+                        </label>
+                    </li>
+                }
+            </ul>
+        </div>
+        <small class="text-muted">Có thể chọn nhiều lớp.</small>
+    </div>
+
+    <!-- Tổng số câu hỏi -->
+    <div class="form-group mx-4 mb-3">
+        <label asp-for="SoCauHoi" class="fw-bold"></label>
         <input asp-for="SoCauHoi" class="form-control" />
     </div>
 
-    <div class="form-group">
-        <label asp-for="DoKhoDe"></label>
+    <!-- Độ khó -->
+    <div class="form-group mx-4 mb-4">
+        <label asp-for="DoKhoDe" class="fw-bold"></label>
         <input asp-for="DoKhoDe" class="form-control" />
     </div>
 
-    <hr />
-    <h5>Phân bổ số câu hỏi theo từng chương</h5>
+    <!-- Bảng chương -->
+    <div class="mx-4" id="DanhSachBangChuong">
+        <p class="text-muted">Danh sách chương</p>
+    </div>
 
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Chương</th>
-                <th>Số câu hỏi hiện có</th>
-                <th>Số câu muốn chọn</th>
-            </tr>
-        </thead>
-        <tbody id="ChuongTableBody">
-            @foreach (var chuong in danhSachChuong)
-            {
-                <tr>
-                    <td>@chuong.TenChuong</td>
-                    <td>@chuong.SoLuongCauHoi</td>
-                    <td>
-                        <input type="number"
-                               name="CauHoiChuong@(chuong.MaChuong)"
-                               class="form-control"
-                               min="0"
-                               max="@chuong.SoLuongCauHoi"
-                               value="0" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <div class="mt-3">
+    <div class="mt-3 mx-4">
         <button type="submit" class="btn btn-success">Lưu thay đổi</button>
         <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
     </div>
 </form>
+<style>
+    /* Style giống Select2 tags nhưng không dùng thư viện */
+    .dropdown-button-selected {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        min-height: 38px;
+        padding: 6px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        background: white;
+        cursor: pointer;
+        align-items: center;
+    }
+
+    .tag-item {
+        background: #e9f5ff;
+        color: #007bff;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #b9daff;
+    }
+
+        .tag-item i {
+            cursor: pointer;
+        }
+
+    .dropdown-menu {
+        width: 100% !important;
+    }
+
+    .dropdown-item input {
+        margin-right: 6px;
+    }
+</style>
 
 @section scripts {
     <script>
-        // Khi chọn lớp → load danh sách chương qua Ajax
-        $('#LopHocSelect').on('change', function () {
+        const container = $('#DanhSachBangChuong');
+        const selectedBox = $('#selectedLopHoc');
+
+        // Load lại tag lớp đã chọn khi mở Edit
+        function initSelectedTags() {
+            $(".chk-lop:checked").each(function () {
+                let ten = $(this).data("ten");
+                let ma = $(this).val();
+
+                selectedBox.append(`
+                        <div class="tag-item" data-id="${ma}">
+                            ${ten}
+                            <i class="fa fa-times remove-tag" data-id="${ma}"></i>
+                        </div>
+                    `);
+            });
+
+            if ($(".chk-lop:checked").length === 0)
+                selectedBox.html(`<span class="text-muted">Chọn lớp học</span>`);
+        }
+
+        // Cập nhật tag khi click checkbox
+        function updateSelectedTags() {
+            selectedBox.html("");
+            initSelectedTags();
+        }
+
+        // Bỏ chọn khi nhấn X
+        $(document).on("click", ".remove-tag", function (e) {
+            e.stopPropagation();
+            let ma = $(this).data("id");
+            $(`.chk-lop[value="${ma}"]`).prop("checked", false).trigger("change");
+        });
+
+        // Khi click checkbox lớp
+        $(document).on("change", ".chk-lop", function () {
             const maLop = $(this).val();
-            if (!maLop) {
-                $('#ChuongTableBody').html('<tr><td colspan="3" class="text-muted text-center">Vui lòng chọn lớp học để hiển thị chương</td></tr>');
-                return;
+
+            updateSelectedTags();
+
+            if ($(this).is(':checked')) {
+                loadBangChuong(maLop);
+            } else {
+                $("#BangChuong_" + maLop).remove();
             }
+        });
+
+        // Load bảng chương
+        function loadBangChuong(maLop) {
+            const blockId = "BangChuong_" + maLop;
+            const tenLop = $(".chk-lop[value=" + maLop + "]").data("ten");
+
+            container.append(`
+                    <div class="mb-4 border rounded p-3" id="${blockId}">
+                        <h5 class="fw-bold mb-2">${tenLop}</h5>
+                        <div class="text-muted">Đang tải...</div>
+                    </div>
+                `);
 
             $.ajax({
                 url: '/Admin/De/LayDanhSachChuongTheoLop',
                 type: 'GET',
-                data: { maLop: maLop },
-                success: function (data) {
-                    let html = '';
-                    if (data.length === 0) {
-                        html = '<tr><td colspan="3" class="text-center text-muted">Không có chương nào có câu hỏi trong lớp này.</td></tr>';
-                    } else {
-                        data.forEach(chuong => {
-                            html += `
-                                                <tr>
-                                                    <td>${chuong.tenChuong}</td>
-                                                    <td>${chuong.soLuongCauHoi ?? ''}</td>
-                                                    <td>
-                                                        <input type="number"
-                                                               name="CauHoiChuong${chuong.maChuong}"
-                                                               class="form-control"
-                                                               min="0"
-                                                               max="100"
-                                                               value="0" />
-                                                    </td>
-                                                </tr>`;
-                        });
-                    }
-                    $('#ChuongTableBody').html(html);
-                },
-                error: function () {
-                    alert('Không thể tải danh sách chương.');
+                data: { maLop },
+
+                success: (data) => {
+                    let html = `
+                            <table class="table table-bordered mt-2">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Chương</th>
+                                        <th>Số câu hiện có</th>
+                                        <th>Số câu muốn chọn</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                    data.forEach(ch => {
+                        const soChon = ch.soCauDaChon ?? 0; // từ ViewBag.DanhSachChuong
+                        html += `
+                                <tr>
+                                    <td>${ch.tenChuong}</td>
+                                    <td>${ch.soLuongCauHoi}</td>
+                                    <td>
+                                        <input type="number"
+                                            name="Chuong_${maLop}_${ch.maChuong}"
+                                            class="form-control"
+                                            min="0"
+                                            max="${ch.soLuongCauHoi}"
+                                            value="${soChon}" />
+                                    </td>
+                                </tr>
+                            `;
+                    });
+
+                    html += "</tbody></table>";
+
+                    $("#" + blockId).html(`
+                            <h5 class="fw-bold mb-2">${tenLop}</h5>
+                            ${html}
+                        `);
                 }
+            });
+        }
+
+        // ⭐ Load lại danh sách lớp đã chọn và bảng chương ngay khi mở trang
+        $(document).ready(function () {
+            initSelectedTags();
+
+            $(".chk-lop:checked").each(function () {
+                loadBangChuong($(this).val());
             });
         });
     </script>

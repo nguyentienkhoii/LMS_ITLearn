@@ -249,27 +249,21 @@
     <!-- Sidebar phải -->
     <div class="col-md-2 sidebar-right">
         <div class="card mb-3">
-            <div class="card-body text-center">
-                
-                @* <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố</button>
-                <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button> *@
-                 @if (User.IsInRole("GiangVien"))
-                {
-                    <h6 class="fw-bold">Tác vụ của giảng viên</h6>
-                    <!-- Nút Rời lớp học (chỉ GV thấy) -->
-                    <a class="btn btn-outline-danger w-100"
-                    href="@Url.Action("Index","Home", new { area = "GiangVien" })">
-                        <i class="fa fa-door-open me-1"></i> Ra ngoài lớp học
-                    </a>
-                }
-                else if (User.IsInRole("Admin"))
-                {
-                    <h6 class="fw-bold">Tình trạng lớp học</h6>
-                    <!-- Admin giữ nguyên 2 nút bạn gửi -->
-                    <button class="btn btn-danger w-100 mb-2"><i class="fa fa-ban me-1"></i> Ngừng công bố </button>
-                    <button class="btn btn-outline-success w-100"><i class="fa fa-check me-1"></i> Công bố</button>
-                }
-            </div>
+        <div class="card-body text-center">
+            <h6 class="fw-bold">Tình trạng lớp học</h6>
+
+            @if(Model.TrangThai == "Hoạt động")
+            {
+                <button class="btn btn-success w-100">
+                    <i class="fa fa-check me-1"></i> Đang hoạt động
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-danger w-100">
+                    <i class="fa fa-ban me-1"></i> Không hoạt động
+                </button>
+            }
         </div>
     </div>
 
@@ -279,12 +273,43 @@
             <a href="#" class="list-group-item list-group-item-action"><i class="fa fa-eye me-2"></i>Chế độ xem của học viên</a>
         </div>
 
-        <div class="card mt-3">
-            <div class="card-body">
-                <h6 class="fw-bold">Sắp diễn ra</h6>
-                <p class="text-muted mb-0">Không có gì cho tuần tới</p>
+<div class="card mt-3">
+    <div class="card-body">
+        <h6 class="fw-bold text-primary">Sắp hết hạn</h6>
+
+        @if (ViewBag.Upcoming != null && ViewBag.Upcoming.Count > 0)
+        {
+            <ul class="timeline-upcoming mt-2 list-unstyled">
+    @foreach (var item in ViewBag.Upcoming)
+    {
+        <li class="mb-3">
+
+            <div class="time">
+                @(((DateTime?)item.Ngay)?.ToString("dd/MM HH:mm"))
             </div>
-        </div>
+
+            <div class="event">
+                Sắp hết hạn nộp <b>@item.Ten</b>
+            </div>
+
+            <div class="text-muted small mt-1">
+                <i class="fa fa-user-check me-1"></i>
+                Đã nộp: @item.DaNop/@item.TongHV học viên
+            </div>
+
+        </li>
+    }
+</ul>
+
+        }
+        else
+        {
+            <p class="text-muted small mt-2">Không có sự kiện nào sắp hết hạn.</p>
+        }
+    </div>
+</div>
+
+
     </div>
 </div>
 
@@ -751,6 +776,46 @@
 .action-btn:hover i {
     transform: scale(1.15);
 }
+
+.timeline-upcoming {
+    list-style: none;
+    padding-left: 18px;
+    border-left: 3px solid #00d08433; /* xanh mint */
+    margin: 0;
+}
+
+.timeline-upcoming li {
+    position: relative;
+    margin-bottom: 14px;
+    padding-left: 10px;
+}
+
+.timeline-upcoming li::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    background: #00d084; /* màu xanh chủ đạo */
+    border-radius: 50%;
+    position: absolute;
+    left: -7px;
+    top: 3px;
+    box-shadow: 0 0 4px #00d08490;
+}
+
+.timeline-upcoming .time {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 1px;
+}
+
+.timeline-upcoming .event {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+
+
 
 </style>
 

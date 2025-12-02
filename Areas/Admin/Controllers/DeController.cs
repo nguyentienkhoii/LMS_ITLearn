@@ -101,119 +101,193 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("DeId,KyKiemTraId,SoCauHoi,DoKhoDe")] De de)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var existingDe = await _context.De.FirstOrDefaultAsync(d => d.KyKiemTraId == de.KyKiemTraId);
-                if (existingDe != null)
+                ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
+                ViewBag.LopHoc = _context.LopHocs.AsNoTracking().ToList();
+                return View(de);
+            }
+
+            // Kiểm tra kỳ kiểm tra đã có đề chưa
+            var existingDe = await _context.De
+                .FirstOrDefaultAsync(d => d.KyKiemTraId == de.KyKiemTraId);
+
+            if (existingDe != null)
+            {
+                _notyfService.Error("Đã có đề thi cho kỳ kiểm tra này!");
+                ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
+                return View(de);
+            }
+
+            _context.Add(de);
+            de.CauHoi_DeThi = new List<CauHoi_De>();
+
+            int tongSoCauChon = 0;
+            bool hasInvalidInput = false;
+
+            // 🔥 DUYỆT TOÀN BỘ INPUT TỪ FORM
+            foreach (var key in Request.Form.Keys)
+            {
+                // Chỉ lấy key dạng: Chuong_x_y
+                if (!key.StartsWith("Chuong_")) continue;
+
+                string[] parts = key.Split('_');
+                // parts[1] = MaLop
+                // parts[2] = MaChuong
+
+                if (parts.Length != 3) continue;
+
+                int maChuong = int.Parse(parts[2]);
+                int soCauMuonChon = 0;
+
+                int.TryParse(Request.Form[key], out soCauMuonChon);
+
+                if (soCauMuonChon <= 0) continue;
+
+                // Lấy tổng số câu hiện có của chương này
+                int tongCauHoiTrongChuong = await _context.CauHoi
+                    .CountAsync(c => c.MaChuong == maChuong);
+
+                if (soCauMuonChon > tongCauHoiTrongChuong)
                 {
-                    _notyfService.Error("Đã có đề thi cho kỳ kiểm tra này!");
-                    ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
-                    return View(de);
+                    var tenChuong = await _context.ChuongNews
+                        .Where(x => x.MaChuong == maChuong)
+                        .Select(x => x.TenChuong)
+                        .FirstOrDefaultAsync();
+
+                    _notyfService.Error($"Số câu hỏi nhập vào cho chương '{tenChuong}' vượt quá số lượng có trong ngân hàng câu hỏi.");
+                    hasInvalidInput = true;
+                    break;
                 }
 
-                _context.Add(de);
-
-                var danhSachChuong = await _context.CauHoi
-                    .Select(c => c.ChuongNew)
-                    .Distinct()
+                // Lấy danh sách câu hỏi và random
+                var dsCauHoi = await _context.CauHoi
+                    .Where(c => c.MaChuong == maChuong)
                     .ToListAsync();
 
-                de.CauHoi_DeThi = new List<CauHoi_De>();
-                int tongSoCauHoi = 0;
-                bool hasInvalidInput = false;
+                var rng = new Random();
+                dsCauHoi = dsCauHoi.OrderBy(x => rng.Next()).ToList();
 
-                foreach (var chuong in danhSachChuong)
+                // Chọn số câu
+                var selected = dsCauHoi.Take(soCauMuonChon).ToList();
+
+                tongSoCauChon += selected.Count;
+
+                // Thêm vào bảng De mapping
+                foreach (var cauHoi in selected)
                 {
-                    if (int.TryParse(Request.Form["CauHoiChuong" + chuong.MaChuong], out var soCauHoiChuong))
+                    de.CauHoi_DeThi.Add(new CauHoi_De
                     {
-                        var cauHoiChuongCount = await _context.CauHoi
-                            .CountAsync(c => c.MaChuong == chuong.MaChuong);
-
-                        if (soCauHoiChuong > cauHoiChuongCount)
-                        {
-                            _notyfService.Error($"Số câu hỏi cho chương {chuong.TenChuong} vượt quá số câu hỏi hiện có.");
-                            hasInvalidInput = true;
-                            break;
-                        }
-
-                        var cauHoiChuong = await _context.CauHoi
-                            .Where(c => c.MaChuong == chuong.MaChuong)
-                            .ToListAsync();
-
-                        var rng = new Random();
-                        cauHoiChuong = cauHoiChuong.OrderBy(x => rng.Next()).ToList();
-                        var cauHoiChuongSelected = cauHoiChuong.Take(soCauHoiChuong).ToList();
-
-                        tongSoCauHoi += cauHoiChuongSelected.Count;
-
-                        foreach (var cauHoi in cauHoiChuongSelected)
-                        {
-                            de.CauHoi_DeThi.Add(new CauHoi_De
-                            {
-                                DeId = de.DeId,
-                                CauHoiId = cauHoi.CauHoiId
-                            });
-                        }
-                    }
-                }
-
-                if (!hasInvalidInput && tongSoCauHoi == de.SoCauHoi)
-                {
-                    _notyfService.Success("Thêm đề thi thành công");
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-                else if (hasInvalidInput)
-                {
-                    _notyfService.Error("Vui lòng kiểm tra lại số câu hỏi nhập cho từng chương.");
-                }
-                else
-                {
-                    _notyfService.Error("Tổng số câu hỏi nhập không khớp với số câu hỏi của đề thi.");
+                        DeId = de.DeId,
+                        CauHoiId = cauHoi.CauHoiId
+                    });
                 }
             }
 
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
-            ViewBag.LopHoc = _context.LopHocs.AsNoTracking().ToList();
-            return View(de);
+            // Kiểm tra tổng số câu
+            if (hasInvalidInput)
+            {
+                ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
+                ViewBag.LopHoc = _context.LopHocs.AsNoTracking().ToList();
+                return View(de);
+            }
+
+            if (tongSoCauChon != de.SoCauHoi)
+            {
+                _notyfService.Error($"Tổng số câu đã chọn ({tongSoCauChon}) không bằng tổng số câu của đề ({de.SoCauHoi}).");
+                ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
+                ViewBag.LopHoc = _context.LopHocs.AsNoTracking().ToList();
+                return View(de);
+            }
+
+            // Lưu
+            await _context.SaveChangesAsync();
+            _notyfService.Success("Thêm đề thi thành công!");
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Admin/De/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.De == null)
-            {
+            if (id == null)
                 return NotFound();
-            }
 
             var de = await _context.De
-                .Include(d => d.KyKiemTra)
                 .Include(d => d.CauHoi_DeThi)
                     .ThenInclude(chd => chd.CauHoi)
                         .ThenInclude(c => c.ChuongNew)
                 .FirstOrDefaultAsync(d => d.DeId == id);
 
             if (de == null)
-            {
                 return NotFound();
+            
+
+            var ky = await _context.KyKiemTra
+                .FirstOrDefaultAsync(k => k.KyKiemTraId == de.KyKiemTraId);
+
+            if (ky.ThoiGianBatDau <= DateTime.Now)
+            {
+                _notyfService.Error("Kỳ kiểm tra đã bắt đầu, không thể chỉnh sửa đề thi!");
+                return RedirectToAction(nameof(Index));
             }
 
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
-            ViewBag.LopHoc = await _context.LopHocs.AsNoTracking().ToListAsync();
 
-            // Lấy danh sách chương có câu hỏi
-            ViewBag.DanhSachChuong = await _context.ChuongNews
-                .Where(c => _context.CauHoi.Any(ch => ch.MaChuong == c.MaChuong))
-                .Select(c => new
-                {
-                    c.MaChuong,
-                    c.TenChuong,
-                    SoLuongCauHoi = _context.CauHoi.Count(ch => ch.MaChuong == c.MaChuong)
-                })
-                .ToListAsync();
+            // Danh sách lớp
+            var dsLop = await _context.LopHocs.AsNoTracking().ToListAsync();
+            ViewBag.LopHoc = dsLop;
+
+            // Lớp đã chọn
+            var lopDaChon = de.CauHoi_DeThi
+                .Select(x => x.CauHoi.ChuongNew.MaLopHoc)
+                .Distinct()
+                .ToList();
+
+            ViewBag.LopDaChon = lopDaChon;
+
+            // ⚠ FIX: Chuẩn bị dictionary số câu đã chọn
+            var soCauDaChonDict = de.CauHoi_DeThi
+                .GroupBy(x => x.CauHoi.MaChuong)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // Bảng chương
+            var danhSachChuong = new List<object>();
+
+            foreach (var maLop in lopDaChon)
+            {
+                var chuongTheoLop = await _context.ChuongNews
+                    .Where(c => c.MaLopHoc == maLop)
+                    .Select(c => new
+                    {
+                        maLop = maLop,
+                        maChuong = c.MaChuong,
+                        tenChuong = c.TenChuong,
+                        soLuongCauHoi = _context.CauHoi
+                            .Where(ch => ch.MaChuong == c.MaChuong)
+                            .Count(),
+
+                        // ⚠ FIX: Lấy từ dictionary, không truy vấn cross-context nữa
+                        soCauDaChon = soCauDaChonDict.ContainsKey(c.MaChuong)
+                            ? soCauDaChonDict[c.MaChuong]
+                            : 0
+                    })
+                    .ToListAsync();
+
+                danhSachChuong.AddRange(chuongTheoLop);
+            }
+
+            ViewBag.DanhSachChuong = danhSachChuong;
+
+            ViewData["KyKiemTraId"] = new SelectList(
+                _context.KyKiemTra,
+                "KyKiemTraId",
+                "TenKyKiemTra",
+                de.KyKiemTraId
+            );
 
             return View(de);
         }
+
+
 
 
         [HttpPost]
@@ -223,8 +297,10 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             if (id != de.DeId)
                 return NotFound();
 
+            // Nếu đã có sinh viên làm → không cho sửa
             var kiemtrasv = await _context.BaiLam
                 .FirstOrDefaultAsync(x => x.CauHoi_BaiLam.First().CauHoi_De.DeId == id);
+
             if (kiemtrasv != null)
             {
                 _notyfService.Error("Đề thi này đã có sinh viên làm bài, không thể chỉnh sửa!");
@@ -232,91 +308,98 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 return View(de);
             }
 
-            if (ModelState.IsValid)
+            var dbDe = await _context.De
+                .Include(d => d.CauHoi_DeThi)
+                .FirstOrDefaultAsync(d => d.DeId == id);
+
+            if (dbDe == null)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(de);
+
+            // Cập nhật info cơ bản
+            dbDe.KyKiemTraId = de.KyKiemTraId;
+            dbDe.SoCauHoi = de.SoCauHoi;
+            dbDe.DoKhoDe = de.DoKhoDe;
+            dbDe.CauHoi_DeThi.Clear();
+
+            int tongSoCauChon = 0;
+            bool hasInvalidInput = false;
+
+            // Duyệt tất cả input dạng: Chuong_maLop_maChuong
+            foreach (var key in Request.Form.Keys)
             {
-                try
+                if (!key.StartsWith("Chuong_"))
+                    continue;
+
+                string[] parts = key.Split('_');
+                if (parts.Length != 3)
+                    continue;
+
+                int maChuong = int.Parse(parts[2]);
+
+                int soCauMuonChon = 0;
+                int.TryParse(Request.Form[key], out soCauMuonChon);
+
+                if (soCauMuonChon <= 0)
+                    continue;
+
+                // Lấy tổng số câu hỏi trong chương
+                int tongCauHoiTrongChuong = await _context.CauHoi
+                    .CountAsync(c => c.MaChuong == maChuong);
+
+                if (soCauMuonChon > tongCauHoiTrongChuong)
                 {
-                    var dbDe = await _context.De
-                        .Include(d => d.CauHoi_DeThi)
-                        .FirstOrDefaultAsync(d => d.DeId == id);
+                    string tenChuong = await _context.ChuongNews
+                        .Where(c => c.MaChuong == maChuong)
+                        .Select(c => c.TenChuong)
+                        .FirstOrDefaultAsync();
 
-                    if (dbDe == null)
-                        return NotFound();
-
-                    dbDe.KyKiemTraId = de.KyKiemTraId;
-                    dbDe.SoCauHoi = de.SoCauHoi;
-                    dbDe.DoKhoDe = de.DoKhoDe;
-                    dbDe.CauHoi_DeThi.Clear();
-
-                    var danhSachChuong = await _context.CauHoi
-                        .Select(c => c.ChuongNew)
-                        .Distinct()
-                        .ToListAsync();
-
-                    int tongSoCauHoi = 0;
-                    bool hasInvalidInput = false;
-
-                    foreach (var chuong in danhSachChuong)
-                    {
-                        if (int.TryParse(Request.Form["CauHoiChuong" + chuong.MaChuong], out var soCauHoiChuong))
-                        {
-                            var cauHoiChuongCount = await _context.CauHoi.CountAsync(c => c.MaChuong == chuong.MaChuong);
-
-                            if (soCauHoiChuong > cauHoiChuongCount)
-                            {
-                                _notyfService.Error($"Số câu hỏi cho chương {chuong.TenChuong} vượt quá số câu hỏi hiện có.");
-                                hasInvalidInput = true;
-                                break;
-                            }
-
-                            var cauHoiChuong = await _context.CauHoi
-                                .Where(c => c.MaChuong == chuong.MaChuong)
-                                .ToListAsync();
-
-                            var rng = new Random();
-                            cauHoiChuong = cauHoiChuong.OrderBy(x => rng.Next()).ToList();
-                            var cauHoiChuongSelected = cauHoiChuong.Take(soCauHoiChuong).ToList();
-
-                            tongSoCauHoi += cauHoiChuongSelected.Count;
-
-                            foreach (var cauHoi in cauHoiChuongSelected)
-                            {
-                                dbDe.CauHoi_DeThi.Add(new CauHoi_De
-                                {
-                                    DeId = dbDe.DeId,
-                                    CauHoiId = cauHoi.CauHoiId
-                                });
-                            }
-                        }
-                    }
-                    _notyfService.Information($"Tổng nhập: {tongSoCauHoi}, Đề yêu cầu: {dbDe.SoCauHoi}");
-
-                    if (hasInvalidInput)
-                    {
-                        _notyfService.Error("Vui lòng kiểm tra lại số câu hỏi nhập cho từng chương.");
-                        return View(de);
-                    }
-
-                    if (tongSoCauHoi != dbDe.SoCauHoi)
-                    {
-                        _notyfService.Error("Tổng số câu hỏi nhập không khớp với số câu hỏi của đề thi.");
-                        return View(de);
-                    }
-
-                    await _context.SaveChangesAsync();
-                    _notyfService.Success("Cập nhật đề thi thành công!");
-                    return RedirectToAction(nameof(Index));
+                    _notyfService.Error($"Số câu của chương '{tenChuong}' vượt quá số lượng hiện có!");
+                    hasInvalidInput = true;
+                    break;
                 }
-                catch (Exception ex)
+
+                // Random câu
+                var dsCauHoi = await _context.CauHoi
+                    .Where(c => c.MaChuong == maChuong)
+                    .ToListAsync();
+
+                var rng = new Random();
+                dsCauHoi = dsCauHoi.OrderBy(x => rng.Next()).ToList();
+
+                var selected = dsCauHoi.Take(soCauMuonChon).ToList();
+                tongSoCauChon += selected.Count;
+
+                foreach (var cauHoi in selected)
                 {
-                    _notyfService.Error("Lỗi khi cập nhật đề thi: " + ex.Message);
+                    dbDe.CauHoi_DeThi.Add(new CauHoi_De
+                    {
+                        DeId = dbDe.DeId,
+                        CauHoiId = cauHoi.CauHoiId
+                    });
                 }
             }
 
-            ViewData["KyKiemTraId"] = new SelectList(_context.KyKiemTra, "KyKiemTraId", "TenKyKiemTra", de.KyKiemTraId);
-            ViewBag.LopHoc = await _context.LopHocs.AsNoTracking().ToListAsync();
-            return View(de);
+            // Nếu có lỗi → trả về view
+            if (hasInvalidInput)
+                return View(de);
+
+            // Tổng số câu không khớp
+            if (tongSoCauChon != dbDe.SoCauHoi)
+            {
+                _notyfService.Error($"Tổng số câu chọn ({tongSoCauChon}) không bằng tổng đề ({dbDe.SoCauHoi})");
+                return View(de);
+            }
+
+            // Lưu
+            await _context.SaveChangesAsync();
+
+            _notyfService.Success("Cập nhật đề thi thành công!");
+            return RedirectToAction(nameof(Index));
         }
+
 
 
         // DELETE
@@ -329,6 +412,13 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 .FirstOrDefaultAsync(m => m.DeId == id);
 
             if (de == null) return NotFound();
+            
+            if (de.KyKiemTra.ThoiGianBatDau <= DateTime.Now)
+            {
+                _notyfService.Error("Kỳ kiểm tra đã bắt đầu, không thể xóa đề thi!");
+                return RedirectToAction(nameof(Index));
+            }
+
 
             return View(de);
         }
