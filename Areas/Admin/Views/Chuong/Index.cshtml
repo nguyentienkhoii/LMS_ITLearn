@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
-    var MonHocId = @ViewBag.MaLopHoc;
+    var MonHocId = ViewBag.MaLopHoc;
     var lopList = ViewBag.LopHocList as IEnumerable<dynamic>;
 }
 
