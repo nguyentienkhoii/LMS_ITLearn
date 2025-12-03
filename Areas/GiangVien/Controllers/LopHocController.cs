@@ -43,19 +43,47 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
             var lop = await _context.LopHocs
                 .Include(l => l.KhoaHoc)
+                .Include(l => l.HocVien_LopHocs)  // ⭐ để đếm số học viên trong lớp
                 .Include(l => l.Chuongs)
                     .ThenInclude(c => c.Bais)
                         .ThenInclude(b => b.Mucs)
                 .Include(l => l.Chuongs)
                     .ThenInclude(c => c.Bais)
-                        .ThenInclude(b => b.BaiTaps) // ✅ thêm dòng này để load danh sách bài tập
+                        .ThenInclude(b => b.BaiTaps)
+                            .ThenInclude(bt => bt.BaiTapNops) // ⭐ để đếm bài nộp
                 .FirstOrDefaultAsync(l => l.MaLopHoc == id && l.MaGiangVien == gv.MaGiangVien);
 
             if (lop == null) return NotFound();
 
+            // ===========================
+            // ⭐ CHỈ LẤY SỰ KIỆN SẮP HẾT HẠN NỘP BÀI (≤ 24 GIỜ)
+            // ===========================
+            var now = DateTime.Now;
+
+            var upcoming = lop.Chuongs
+                .SelectMany(c => c.Bais)
+                .SelectMany(b => b.BaiTaps)
+                .Where(bt => bt.HanNop != null &&
+                             bt.HanNop > now &&
+                             bt.HanNop <= now.AddDays(1)) // ⭐ chỉ trong 24 giờ trước hạn
+                .Select(bt => new
+                {
+                    Ten = bt.TenBaiTap,
+                    Ngay = bt.HanNop,
+                    DaNop = bt.BaiTapNops?.Count() ?? 0,
+                    TongHV = lop.HocVien_LopHocs?.Count() ?? 0,
+                    Text = $"Sắp hết hạn nộp {bt.TenBaiTap} – {(bt.BaiTapNops?.Count() ?? 0)}/{(lop.HocVien_LopHocs?.Count() ?? 0)} học viên đã nộp"
+                })
+                .OrderBy(x => x.Ngay)
+                .ToList();
+
+            ViewBag.Upcoming = upcoming;
             ViewBag.MaLopHoc = id;
+
             return View(lop);
         }
+
+
 
         // 🖼️ ✅ Upload & cập nhật ảnh banner lớp học
         [HttpPost]

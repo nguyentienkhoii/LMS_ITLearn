@@ -31,19 +31,19 @@
                         <input type="hidden" name="maLopHoc" value="@ViewBag.MaLopHoc" />
 
                         <div class="mb-3">
-                            <label asp-for="TenBaiTap" class="form-label fw-semibold"></label>
+                            <label asp-for="TenBaiTap" class="form-label fw-semibold">Tên bài tập</label>
                             <input asp-for="TenBaiTap" class="form-control" placeholder="Nhập tên bài tập..." />
                             <span asp-validation-for="TenBaiTap" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="MoTa" class="form-label fw-semibold"></label>
+                            <label asp-for="MoTa" class="form-label fw-semibold">Mô tả</label>
                             <textarea asp-for="MoTa" id="MoTa" class="form-control" rows="5" placeholder="Nhập mô tả hoặc nội dung bài tập..."></textarea>
                             <span asp-validation-for="MoTa" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="HanNop" class="form-label fw-semibold"></label>
+                            <label asp-for="HanNop" class="form-label fw-semibold">Hạn nộp</label>
                             <input asp-for="HanNop" type="datetime-local" class="form-control" />
                             <span asp-validation-for="HanNop" class="text-danger"></span>
                         </div>

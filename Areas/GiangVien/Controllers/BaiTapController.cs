@@ -229,11 +229,21 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 return RedirectToAction("Index", "LopHoc", new { area = "GiangVien" });
             }
 
-            var danhSachNop = await _context.BaiTapNops
+            // ⭐ CHỈ LẤY BÀI NỘP MỚI NHẤT CỦA MỖI HỌC VIÊN
+            // Lấy tất cả bài đã nộp của bài tập
+            var tatCaNop = await _context.BaiTapNops
                 .Include(n => n.HocVien)
                 .Where(n => n.MaBaiTap == id)
                 .OrderByDescending(n => n.NgayNop)
                 .ToListAsync();
+
+            // Chọn bài mới nhất của mỗi học viên
+            var danhSachNop = tatCaNop
+                .GroupBy(n => n.MaHocVien)
+                .Select(g => g.First())     // bài mới nhất do đã OrderBy trước
+                .OrderByDescending(n => n.NgayNop)
+                .ToList();
+
 
             ViewBag.BaiTap = baiTap;
             ViewBag.LopHoc = baiTap.Bai?.Chuong?.LopHoc;
@@ -241,6 +251,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
             return View(danhSachNop);
         }
+
 
         // Model/BaiTapNop/SubmissionStatus.cs
         // (Để đây cho tiện xem)
@@ -438,6 +449,37 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             _notyf.Success("Đã mở khóa bài nộp, giảng viên có thể chấm lại.");
             return RedirectToAction(nameof(ChamDiem), new { id });
         }
+
+        public async Task<IActionResult> LichSuNop(int hocVienId, int baiTapId)
+        {
+            var hocVien = await _context.HocViens
+                .Include(h => h.TaiKhoan)
+                .FirstOrDefaultAsync(h => h.MaHocVien == hocVienId);
+
+            if (hocVien == null)
+                return NotFound();
+
+            // Lấy lịch sử nộp (tất cả các bản ghi)
+            var lichSu = await _context.BaiTapNops
+                .Where(n => n.MaHocVien == hocVienId && n.MaBaiTap == baiTapId)
+                .OrderByDescending(n => n.NgayNop)
+                .ToListAsync();
+
+            var baiTap = await _context.BaiTaps
+                .Include(bt => bt.Bai)
+                    .ThenInclude(b => b.Chuong)
+                .FirstOrDefaultAsync(bt => bt.MaBaiTap == baiTapId);
+
+            ViewBag.HocVien = hocVien;
+            ViewBag.BaiTap = baiTap;
+
+            // ⭐ lấy bài nộp mới nhất để quay lại đúng trang chấm điểm
+            ViewBag.MaBaiTapNopMoiNhat = lichSu.FirstOrDefault()?.MaBaiTapNop;
+
+            return View(lichSu);
+        }
+
+
 
     }
 }

@@ -145,56 +145,55 @@
 
                                 </fieldset>
                                 
-                                <div class="text-end mt-4 d-flex justify-content-end">
+                                <!-- HÀNG 1: Lịch sử nộp + Quay lại -->
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="@Url.Action("LichSuNop", "BaiTap",
+        new { area = "GiangVien",
+              baiTapId = Model.BaiTap?.MaBaiTap,
+              hocVienId = Model.HocVien?.MaHocVien })"
+                                       class="btn btn-outline-info w-50 me-2">
+                                        <i class="fa fa-history"></i> Lịch sử nộp
+                                    </a>
+
                                     <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { area = "GiangVien", id = Model.MaBaiTap })"
-                                        class="btn btn-secondary me-2">
-                                            <i class="fa fa-arrow-left"></i> Quay lại
-                                        </a>
-                                        @* <button type="submit" class="btn btn-primary" @(locked ? "disabled" : null)>
-                                            <i class="fa fa-save"></i> Lưu kết quả
-                                        </button> *@
-                                        @if (!softLocked && !withinGrace && !hardLocked && !isReopened)
-                                        {
-                                            <button type="submit" class="btn btn-success">
-                                                <i class="fa fa-check"></i> Xác nhận
-                                            </button>
-                                        }
-                                        @if (softLocked || withinGrace)
-                                        {
-                                            <button type="button" class="btn btn-warning" id="btnEditSoft">
-                                                <i class="fa fa-edit"></i> Chỉnh sửa
-                                            </button>
-                                             <button type="submit" class="btn btn-success ml-2 d-none" id="btnSaveGrace">
-                                                <i class="fa fa-save"></i> Lưu
-                                            </button>
-                                            @* <button type="submit"
-                                                    id="btnConfirmSoft"
-                                                    class="btn btn-success ml-2 d-none"
-                                                    formaction="@Url.Action("BatDauCapNhat","BaiTap",new { area="GiangVien" })"
-                                                    formmethod="post"
-                                                    formnovalidate>
+                                       class="btn btn-secondary w-50">
+                                        <i class="fa fa-arrow-left"></i> Quay lại
+                                    </a>
+                                </div>
+
+                                <!-- HÀNG 2: Xác nhận / Lưu / Chỉnh sửa -->
+                                <div class="mt-3 text-end">
+                                    @if (!softLocked && !withinGrace && !hardLocked && !isReopened)
+                                    {
+                                        <!-- CHƯA CHẤM / CHƯA KHÓA -->
+                                        <button type="submit" class="btn btn-success w-100">
                                             <i class="fa fa-check"></i> Xác nhận
-                                            </button> *@
-                                        }
-                                        @if (isReopened)
-                                        {
-                                            <button type="button" class="btn btn-warning" id="btnEditReopen">
-                                                <i class="fa fa-edit"></i> Chỉnh sửa
-                                            </button>
-                                            <button type="submit" class="btn btn-success ml-2 d-none" id="btnSaveReopen">
-                                                <i class="fa fa-save"></i> Lưu
-                                            </button>
-                                        }
-                                        @* else if(withinGrace){
-                                           <button type="button" class="btn btn-warning" id="btnEditGrace">
-                                                <i class="fa fa-edit"></i> Cập nhật
-                                            </button>
-                                            <!-- Nút LƯU (submit về ChamDiem) ẩn sẵn, chỉ hiện sau khi mở form -->
-                                            <button type="submit" class="btn btn-success ml-2 d-none" id="btnSaveGrace">
-                                                <i class="fa fa-save"></i> Lưu
-                                            </button>
-                                        } *@
-                                 </div>
+                                        </button>
+                                    }
+
+                                    @if (softLocked || withinGrace)
+                                    {
+                                        <button type="button" class="btn btn-warning w-100 mb-2" id="btnEditSoft">
+                                            <i class="fa fa-edit"></i> Chỉnh sửa
+                                        </button>
+
+                                        <button type="submit" class="btn btn-success w-100 d-none" id="btnSaveGrace">
+                                            <i class="fa fa-save"></i> Lưu
+                                        </button>
+                                    }
+
+                                    @if (isReopened)
+                                    {
+                                        <button type="button" class="btn btn-warning w-100 mb-2" id="btnEditReopen">
+                                            <i class="fa fa-edit"></i> Chỉnh sửa
+                                        </button>
+
+                                        <button type="submit" class="btn btn-success w-100 d-none" id="btnSaveReopen">
+                                            <i class="fa fa-save"></i> Lưu
+                                        </button>
+                                    }
+                                </div>
+
                             </form>
                             @* Thông điệp & hành động khi bài đã chốt *@
                             @if (hardLocked)

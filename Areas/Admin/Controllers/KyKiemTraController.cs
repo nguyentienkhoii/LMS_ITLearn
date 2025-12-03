@@ -211,6 +211,13 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (kyKiemTra.ThoiGianBatDau <= DateTime.Now)
+            {
+                _notyfService.Error("Kỳ kiểm tra đã bắt đầu – không thể chỉnh sửa thông tin!");
+                return RedirectToAction(nameof(Index));
+            }
+
+
 
             return View(kyKiemTra);
         }
@@ -266,6 +273,12 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             if (kyKiemTra == null)
             {
                 return NotFound();
+            }
+
+            if (kyKiemTra.ThoiGianBatDau <= DateTime.Now)
+            {
+                _notyfService.Error("Kỳ kiểm tra đã bắt đầu – không thể xóa!");
+                return RedirectToAction(nameof(Index));
             }
 
             return View(kyKiemTra);
