@@ -51,7 +51,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
                 var bai = await _context.Bai.Include(b => b.Chuong).FirstOrDefaultAsync(b => b.BaiId == baiTap.BaiId);
                 ViewBag.Bai = bai;
                 ViewBag.MaLopHoc = maLopHoc;
-                _notyf.Error("⚠️ Vui lòng nhập đầy đủ thông tin hợp lệ!");
+                _notyf.Error("Vui lòng nhập đầy đủ thông tin hợp lệ!");
                 return View(baiTap);
             }
 
@@ -79,27 +79,19 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             // 📌 2. Xử lý nhắc chấm bài (Noti1)
             // ======================
 
-            // Nếu GV không chọn → mặc định nhắc đúng hạn nộp
+
+            // Nếu GV không chọn → KHÔNG nhắc
             if (!baiTap.RemindToGrade.HasValue)
-                baiTap.RemindToGrade = baiTap.HanNop;
+                baiTap.RemindToGrade = null;
 
-            baiTap.ReminderSent = false;   // Quan trọng!!!
+            baiTap.ReminderSent = false;
 
-            // ======================
-            // 📌 3. Lưu DB
-            // ======================
             _context.BaiTaps.Add(baiTap);
             await _context.SaveChangesAsync();
-            // Tạo job nhắc chấm bài
-            // Nếu GV không chọn → mặc định nhắc đúng hạn nộp
-            if (!baiTap.RemindToGrade.HasValue)
-                baiTap.RemindToGrade = baiTap.HanNop;
-
-            // Quan trọng để background service biết chưa gửi
-            baiTap.ReminderSent = false;
 
             _notyf.Success("✅ Đã thêm bài tập mới thành công!");
             return RedirectToAction("NoiDung", "LopHoc", new { area = "GiangVien", id = maLopHoc });
+
         }
 
 
@@ -129,53 +121,92 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
         // POST: GiangVien/BaiTap/Sua
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Sua(BaiTap baiTap, int maLopHoc, IFormFile? FileUpload)
+        public async Task<IActionResult> Sua(
+            BaiTap baiTap,
+            int maLopHoc,
+            IFormFile? FileUpload,
+            DateTime? LateSubmission,
+            DateTime? RemindToGrade)
         {
             if (!ModelState.IsValid)
             {
-                var bai = await _context.Bai.Include(b => b.Chuong).FirstOrDefaultAsync(b => b.BaiId == baiTap.BaiId);
+                var bai = await _context.Bai
+                        .Include(b => b.Chuong)
+                        .FirstOrDefaultAsync(b => b.BaiId == baiTap.BaiId);
+
                 ViewBag.Bai = bai;
                 ViewBag.MaLopHoc = maLopHoc;
-                _notyf.Warning("⚠️ Dữ liệu không hợp lệ, vui lòng kiểm tra lại!");
+                _notyf.Warning("Dữ liệu không hợp lệ, vui lòng kiểm tra lại!");
                 return View(baiTap);
             }
 
-            var existingBaiTap = await _context.BaiTaps.FindAsync(baiTap.MaBaiTap);
-            if (existingBaiTap == null)
+            var existing = await _context.BaiTaps.FindAsync(baiTap.MaBaiTap);
+            if (existing == null)
             {
-                _notyf.Error("❌ Không tìm thấy bài tập cần sửa!");
+                _notyf.Error("Không tìm thấy bài tập cần sửa!");
                 return RedirectToAction("NoiDung", "LopHoc", new { area = "GiangVien", id = maLopHoc });
             }
 
-            // Cập nhật thông tin
-            existingBaiTap.TenBaiTap = baiTap.TenBaiTap;
-            existingBaiTap.MoTa = baiTap.MoTa;
-            existingBaiTap.HanNop = baiTap.HanNop;
+            // =============================
+            // 🔹 Cập nhật thông tin cơ bản
+            // =============================
+            existing.TenBaiTap = baiTap.TenBaiTap;
+            existing.MoTa = baiTap.MoTa;
+            existing.HanNop = baiTap.HanNop;
 
-            // Nếu có file upload mới
+            // =============================
+            // 🔹 Hạn nộp muộn (LateSubmission)
+            // =============================
+            // Nếu checkbox không bật → null
+            existing.LateSubmission = LateSubmission;
+
+            // =============================
+            // 🔹 Nhắc chấm điểm (RemindToGrade)
+            // =============================
+            if (RemindToGrade.HasValue)
+            {
+                // GV bật checkbox và chọn ngày
+                existing.RemindToGrade = RemindToGrade;
+                existing.ReminderSent = false;
+            }
+            else
+            {
+                // Checkbox không bật → không nhắc
+                existing.RemindToGrade = null;
+                existing.ReminderSent = false;
+            }
+
+
+            // =============================
+            // 🔹 Upload file mới (nếu có)
+            // =============================
             if (FileUpload != null && FileUpload.Length > 0)
             {
-                var uploadFolder = Path.Combine("wwwroot", "uploads", "baitap");
-                if (!Directory.Exists(uploadFolder))
-                    Directory.CreateDirectory(uploadFolder);
+                var folder = Path.Combine("wwwroot", "uploads", "baitap");
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
 
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(FileUpload.FileName)}";
-                var filePath = Path.Combine(uploadFolder, uniqueFileName);
+                var newName = $"{Guid.NewGuid()}_{Path.GetFileName(FileUpload.FileName)}";
+                var filePath = Path.Combine(folder, newName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await FileUpload.CopyToAsync(stream);
                 }
 
-                existingBaiTap.FileDinhKem = "/uploads/baitap/" + uniqueFileName;
+                existing.FileDinhKem = "/uploads/baitap/" + newName;
             }
 
-            _context.Update(existingBaiTap);
+            // =============================
+            // 🔹 Cập nhật DB
+            // =============================
+            _context.Update(existing);
             await _context.SaveChangesAsync();
 
             _notyf.Success("✅ Đã cập nhật bài tập thành công!");
             return RedirectToAction("NoiDung", "LopHoc", new { area = "GiangVien", id = maLopHoc });
         }
+
 
         // ======================
         // 🔹 XÓA BÀI TẬP
@@ -190,7 +221,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
             if (baiTap == null)
             {
-                _notyf.Error("❌ Không tìm thấy bài tập để xóa!");
+                _notyf.Error("Không tìm thấy bài tập để xóa!");
                 return RedirectToAction("Index", "LopHoc");
             }
 
@@ -201,11 +232,11 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
             {
                 _context.BaiTaps.Remove(baiTap);
                 await _context.SaveChangesAsync();
-                _notyf.Success("🗑️ Đã xóa bài tập thành công!");
+                _notyf.Success("Đã xóa bài tập thành công!");
             }
             catch (Exception)
             {
-                _notyf.Error("⚠️ Không thể xóa bài tập (có thể đang được liên kết)!");
+                _notyf.Error("Không thể xóa bài tập (có thể đang được liên kết)!");
             }
 
             // ✅ Quay về đúng lớp học
@@ -225,7 +256,7 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 
             if (baiTap == null)
             {
-                _notyf.Error("❌ Không tìm thấy bài tập!");
+                _notyf.Error("Không tìm thấy bài tập!");
                 return RedirectToAction("Index", "LopHoc", new { area = "GiangVien" });
             }
 

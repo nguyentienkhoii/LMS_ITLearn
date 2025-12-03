@@ -96,7 +96,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             // Lớp chỉ lấy đang hoạt động
             ViewBag.LopHocList = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -186,7 +186,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         {
             // Lớp đang hoạt động
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -317,7 +317,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         {
             // Lớp (active)
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -364,7 +364,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             // Lớp đang hoạt động
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -449,7 +449,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             var chuongId = mapping?.MaChuong;
 
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();

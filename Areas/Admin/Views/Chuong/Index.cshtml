@@ -259,7 +259,7 @@
 
       const rowNode = settings.aoData[dataIndex].nTr; // <tr>
       const st = (rowNode.dataset.trangthai || '').trim().toLowerCase();
-      if (st !== 'đang hoạt động') return false;
+      if (st !== 'hoạt động') return false;
 
       const picked = $('#lopFilter').val();
       if (!picked) return true; // tất cả lớp
@@ -449,7 +449,7 @@
             ]).draw(false).node(); *@
 
              const $tr = $(`
-            <tr data-lop="${res.maLopHoc}" data-trangthai="Đang hoạt động">
+            <tr data-lop="${res.maLopHoc}" data-trangthai="Hoạt động">
                 <td>${res.id}</td>
                 <td>${escapeHtml(res.tenLopHoc)}</td>
                 <td>${escapeHtml(res.tenChuong)}</td>
