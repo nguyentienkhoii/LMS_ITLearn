@@ -20,13 +20,13 @@
 
         <!-- Nội dung bên phải -->
         <div class="noidung">
-@*             <h2>Danh sách môn học</h2>
+            @*             <h2>Danh sách môn học</h2>
             <p>Chọn một môn học để xem nội dung</p>
 
             <!-- Thanh tìm kiếm -->
             <form asp-action="SearchMonHoc" method="get" class="search-form">
-                <input type="text" name="keyword" placeholder="Tìm kiếm môn học..." value="@ViewData["SearchKeyword"]" />
-                <button type="submit"><i class="fas fa-search"></i></button>
+            <input type="text" name="keyword" placeholder="Tìm kiếm môn học..." value="@ViewData["SearchKeyword"]" />
+            <button type="submit"><i class="fas fa-search"></i></button>
             </form> *@
 
             <!-- Danh sách môn học -->
@@ -58,15 +58,15 @@
                                     </p>
 
                                     <!-- ✅ Thêm trạng thái lớp học -->
-                                     <p class="course-status mt-1">
+                                    <p class="course-status mt-1">
                                         <i class="fas fa-circle me-1 @(lop.TrangThai == "Hoạt động" ? "text-success" : lop.TrangThai == "Hoàn thành" ? "text-primary" : "text-warning")"></i>
-                                        <span>@lop.TrangThai</span>
-                                    </p> 
+                                        <span>@(lop.TrangThai == "Hoạt động" ? "Đang hoạt động" : lop.TrangThai)</span>
+                                    </p>
                                     @* NEW *@
-                                     @* <p class="course-status mt-1">
-                                        <i class="fas fa-circle me-1 @(lop.TrangThai == TrangThaiLopHoc.DangHoatDong ? "text-success" : lop.TrangThai == TrangThaiLopHoc.DaKetThuc ? "text-primary" : "text-warning")"></i>
-                                        <span>@(lop.TrangThai == TrangThaiLopHoc.DangHoatDong ? "Đang hoạt động" : lop.TrangThai == TrangThaiLopHoc.DaKetThuc ? "Đã kết thúc" : "Chưa hoạt động")</span>
-                                    </p> *@
+                                    @* <p class="course-status mt-1">
+                            <i class="fas fa-circle me-1 @(lop.TrangThai == TrangThaiLopHoc.DangHoatDong ? "text-success" : lop.TrangThai == TrangThaiLopHoc.DaKetThuc ? "text-primary" : "text-warning")"></i>
+                            <span>@(lop.TrangThai == TrangThaiLopHoc.DangHoatDong ? "Đang hoạt động" : lop.TrangThai == TrangThaiLopHoc.DaKetThuc ? "Đã kết thúc" : "Chưa hoạt động")</span>
+                            </p> *@
 
                                 </div>
                             </a>
@@ -106,9 +106,9 @@
 }
 
 <>
-    
 
-    <!-- Font Awesome -->
+
+<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>

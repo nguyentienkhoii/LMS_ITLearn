@@ -374,8 +374,26 @@
                       $img.attr('src', '').addClass('d-none');
                   }
 
+<<<<<<< HEAD
                   $('#v-soLuongDangKy').text(l.soLuongDangKy ?? 0);
                   $('#v-tongSoBai').text(l.tongSoBai ?? 0);
+=======
+             const $tr = $(`
+            <tr data-lop="${res.maLopHoc}" data-trangthai="Hoạt động">
+                <td>${res.id}</td>
+                <td>${escapeHtml(res.tenLopHoc)}</td>
+                <td>${escapeHtml(res.tenChuong)}</td>
+                <td>${res.id}</td>
+                <td>${actionsHtml}</td>
+            </tr>
+            `); 
+            // Gắn data-* để filter vẫn chạy
+            @* $(row).attr('data-lop', res.maLopHoc)
+                    .attr('data-trangthai', 'Đang hoạt động');
+            dt.row(row).invalidate().draw(false); *@
+            dt.row.add($tr[0]).draw(false);
+            Toast.fire({ icon:'success', title: res.message || 'Thêm chương thành công' });
+>>>>>>> a20e68c13646d8c7630e7045f5cccc6c0a2e8d53
 
                   const el = document.getElementById('viewChuongModal');
                   const modal = bootstrap.Modal.getOrCreateInstance(el);

@@ -9,14 +9,12 @@ namespace WebBaiGiang_CKC.Areas.GiangVien.Controllers
 {
     [Area("GiangVien")]
     [Authorize(Roles = "GiangVien")]
-    public class MucController : Controller
+    public class MucController : GiangVienBaseController
     {
-        private readonly WebBaiGiangContext _context;
         private readonly INotyfService _notyf;
 
-        public MucController(WebBaiGiangContext context, INotyfService notyf)
+        public MucController(WebBaiGiangContext context, INotyfService notyf) : base(context)
         {
-            _context = context;
             _notyf = notyf;
         }
 

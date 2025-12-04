@@ -18,13 +18,22 @@
 
         $(document).ready(function () {
             var ctx = document.getElementById('score-chart').getContext('2d');
+
+            var dataScores = [
+                parseFloat("@ViewBag.Percent0to5".replace(",", ".")) || 0,
+                parseFloat("@ViewBag.Percent5to7".replace(",", ".")) || 0,
+                parseFloat("@ViewBag.Percent7to8".replace(",", ".")) || 0,
+                parseFloat("@ViewBag.Percent8to10".replace(",", ".")) || 0
+            ];
+
+
             var chart = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: ['0-5', '5-7', '7-8', '8-10'],
                     datasets: [{
-                        label: 'Số lượng sinh viên',
-                        data: [@ViewBag.Percent0to5, @ViewBag.Percent5to7, @ViewBag.Percent7to8, @ViewBag.Percent8to10],
+                        label: 'Tỷ lệ sinh viên (%)',
+                        data: dataScores,
                         backgroundColor: [
                             '#f1556c',
                             '#ffbf00',
@@ -46,7 +55,7 @@
                         },
                         datalabels: {
                             formatter: function (value, context) {
-                                return (value * 100).toFixed(2);
+                                return value.toFixed(2) + "%"; // KHÔNG nhân 100 nữa
                             },
                             color: '#fff',
                             anchor: 'end',
@@ -62,8 +71,7 @@
                                 right: 12,
                                 bottom: 10,
                                 left: 12,
-                            },
-                            suffix: '%'
+                            }
                         }
                     }
                 }
@@ -83,15 +91,18 @@
         });
         $(document).ready(function () {
             var ctx = document.getElementById('myChart').getContext('2d');
-            var tinhtiletraloidungtungcauhoi = @Json.Serialize(ViewBag.tinhtiletraloidungtungcauhoi);
 
-            var listQuestions = [];
-            for (var i = 1; i <= 40; i++) {
-                listQuestions.push("Câu " + i);
-            }
+            // Lấy dictionary từ ViewBag (key: CauHoiId, value: TiLeDung)
+            var tiLeDungDict = @Html.Raw(Json.Serialize(ViewBag.TiLeTraLoiDungTungCauHoi ?? new Dictionary<int, double>()));
 
-            var labels = listQuestions.slice(0, Object.keys(tinhtiletraloidungtungcauhoi).length);
-            var data = Object.values(tinhtiletraloidungtungcauhoi);
+
+            // Labels: "Câu {id}" theo đúng ID câu hỏi
+            var labels = Object.keys(tiLeDungDict).map(function (key) {
+                return "Câu " + key;
+            });
+
+            // Data: % tỉ lệ đúng
+            var data = Object.values(tiLeDungDict);
 
             var myChart = new Chart(ctx, {
                 type: 'bar',
@@ -105,6 +116,19 @@
                         borderWidth: 1
                     }]
                 },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function (value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
             });
         });
     </script>

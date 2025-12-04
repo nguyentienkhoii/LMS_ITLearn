@@ -26,25 +26,26 @@
                                 Lớp học của tôi
                             </a>
 
-                            <div class="dropdown-menu" aria-labelledby="dropdownMonHoc">
+                            <div class="dropdown-menu dropdown-menu-left dropdown-lophoc" aria-labelledby="dropdownMonHoc">
                                 @if (monHocDangKy != null && monHocDangKy.Any())
                                 {
                                     foreach (var lop in monHocDangKy)
                                     {
                                         <a class="dropdown-item @(currentLopHocId == lop.MaLopHoc ? "active" : "")"
                                            asp-controller="Home" asp-action="LopHoc" asp-route-id="@lop.MaLopHoc">
-                                            <i class="iconoir-book"></i> @lop.TenLopHoc
+                                            @lop.TenLopHoc
                                         </a>
                                     }
                                 }
                                 else
                                 {
                                     <span class="dropdown-item text-muted">
-                                        <i class="iconoir-info-empty"></i> Chưa đăng ký lớp
+                                        Chưa đăng ký lớp
                                     </span>
                                 }
                             </div>
                         </li>
+
 
                         <li>
                             <a asp-controller="Home" asp-action="Index">
@@ -54,21 +55,21 @@
                         <li><a asp-controller="BaiGiangs" asp-action="GiaoVien">Giảng viên</a></li>
                         <li><a data-toggle="modal" data-target="#lienhe">Liên hệ</a></li>
                         <li class="nav-item dropdown ml-2" style="@(User.Identity.IsAuthenticated ? "" : "display:none")">
-                        <a class="nav-link position-relative" href="#" id="bellMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-bell"></i>
-                            <span id="notifyCount" class="badge badge-danger notify-badge" style="display:none;">0</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right p-0" aria-labelledby="bellMenu" style="min-width:320px;">
-                            <!-- Trong dropdown header, thêm nút clear (tuỳ chọn) -->
-                            <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
-                                <span class="font-weight-bold">Thông báo</span>
-                                <button id="notifyMarkRead" type="button" class="btn btn-link btn-sm p-0">Đánh dấu đã đọc</button>
-                            </div>
-                            <div id="notifyList" style="max-height:360px; overflow:auto;">
-                                <div id="notifyEmpty" class="p-3 text-muted small mb-0">Chưa có thông báo</div>
-                            </div>
+                            <a class="nav-link position-relative" href="#" id="bellMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-bell"></i>
+                                <span id="notifyCount" class="badge badge-danger notify-badge" style="display:none;">0</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right p-0" aria-labelledby="bellMenu" style="min-width:320px;">
+                                <!-- Trong dropdown header, thêm nút clear (tuỳ chọn) -->
+                                <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold">Thông báo</span>
+                                    <button id="notifyMarkRead" type="button" class="btn btn-link btn-sm p-0">Đánh dấu đã đọc</button>
+                                </div>
+                                <div id="notifyList" style="max-height:360px; overflow:auto;">
+                                    <div id="notifyEmpty" class="p-3 text-muted small mb-0">Chưa có thông báo</div>
+                                </div>
 
-                        </div>
+                            </div>
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
@@ -212,26 +213,76 @@
 </div>
 <style>
     .heder1 {
-        overflow: visible; 
+        overflow: visible;
         position: relative;
     }
 
     h2.d-flex {
         display: flex;
         align-items: center;
-        color: #fff; 
+        color: #fff;
     }
-.notify-badge{ position:absolute; top:-6px; right:-6px; }
-.dropdown-menu a.dropdown-item{ white-space: normal; }
 
-/* chấm xanh cho notify chưa đọc */
-.notify-dot {
-  display:inline-block;
-  width:8px; height:8px;
-  border-radius:50%;
-  background:#574bff; /* xanh lá Bootstrap-ish */
-  margin-right:6px;
-}
-.notify-item.read .notify-dot { display:none; } /* đã đọc thì ẩn chấm */
+    .notify-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+    }
+
+    .dropdown-menu a.dropdown-item {
+        white-space: normal;
+    }
+
+    /* Dropdown lớp học */
+    .dropdown-lophoc {
+        min-width: 280px !important; /* rộng hơn */
+        padding: 8px 0 !important;
+        border-radius: 10px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+        /* item trong dropdown */
+        .dropdown-lophoc .dropdown-item {
+            padding: 10px 16px;
+            font-size: 15px;
+            border-radius: 8px;
+        }
+
+            /* hover */
+            .dropdown-lophoc .dropdown-item:hover {
+                background-color: #eef4ff;
+            }
+
+            /* Active item */
+            .dropdown-lophoc .dropdown-item.active {
+                background-color: #0069d9 !important;
+                color: #fff !important;
+            }
+
+            /* Không icon – spacing tự nhiên */
+            .dropdown-lophoc .dropdown-item span {
+                margin-left: 0 !important;
+            }
+
+            /* Khi không có lớp */
+            .dropdown-lophoc .dropdown-item.text-muted {
+                opacity: 0.7;
+            }
+
+
+    /* chấm xanh cho notify chưa đọc */
+    .notify-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #574bff; /* xanh lá Bootstrap-ish */
+        margin-right: 6px;
+    }
+
+    .notify-item.read .notify-dot {
+        display: none;
+    }
+    /* đã đọc thì ẩn chấm */
 </style>
 

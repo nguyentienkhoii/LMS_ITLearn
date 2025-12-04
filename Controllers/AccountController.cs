@@ -43,9 +43,10 @@ namespace WebBaiGiang_CKC.Controllers
             var user = await _context.TaiKhoanNews
                 .Include(t => t.HocVien)
                 .Include(t => t.GiangVien)
-                .FirstOrDefaultAsync(t => t.TenDangNhap == model.TenDangNhap
-                                           && t.MatKhau == password
-                                           && t.TrangThai);
+                .FirstOrDefaultAsync(t =>
+                    EF.Functions.Collate(t.TenDangNhap, "SQL_Latin1_General_CP1_CS_AS") == model.TenDangNhap
+                    && t.MatKhau == password
+                    && t.TrangThai);
 
             if (user == null)
             {
