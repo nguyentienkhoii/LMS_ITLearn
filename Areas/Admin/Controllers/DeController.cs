@@ -28,9 +28,18 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         // GET: Admin/De
         public async Task<IActionResult> Index()
         {
-            var baiGiangContext = _context.De.Include(d => d.KyKiemTra);
-            return View(await baiGiangContext.ToListAsync());
+            var list = await _context.De
+                .Include(d => d.KyKiemTra)
+                .OrderByDescending(d => d.DeId)
+                .ToListAsync();
+
+            ViewBag.KyKiemTraList = _context.KyKiemTra
+                .OrderBy(x => x.TenKyKiemTra)
+                .ToList();
+
+            return View(list);
         }
+
 
         // GET: Admin/De/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -41,12 +50,12 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             }
 
             var de = await _context.De
-    .Include(d => d.KyKiemTra)
-    .Include(d => d.CauHoi_DeThi)
-        .ThenInclude(chd => chd.CauHoi)
-            .ThenInclude(c => c.ChuongNew) // nếu muốn hiển thị tên chương
-    .FirstOrDefaultAsync(m => m.DeId == id);
-
+            .Include(d => d.KyKiemTra)
+            .Include(d => d.CauHoi_DeThi)
+                .ThenInclude(chd => chd.CauHoi)
+                    .ThenInclude(c => c.ChuongNew)
+                        .ThenInclude(ch => ch.LopHoc)   
+            .FirstOrDefaultAsync(m => m.DeId == id);
 
             if (de == null)
             {

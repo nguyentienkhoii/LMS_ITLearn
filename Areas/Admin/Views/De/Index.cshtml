@@ -14,48 +14,146 @@
 <hr />
 <br />
 
-<a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+<a asp-action="Create" class="btn btn-success mb-2">Thêm đề thi</a>
 
-<table class="table table alert-light">
-    <thead class="table-dark">
-        <tr style="text-align: center;">
-            <th>
-                @Html.DisplayNameFor(model => model.KyKiemTra.TenKyKiemTra)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SoCauHoi)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DoKhoDe)
-            </th>
-          
-            <th></th>
-        </tr>
-    </thead>
-    <tbody style="text-align: center;">
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.KyKiemTra.TenKyKiemTra)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SoCauHoi)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DoKhoDe)
-                </td>
-               
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.DeId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
-                    <a asp-action="Edit" asp-route-id="@item.DeId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
-                    <a asp-action="Delete" asp-route-id="@item.DeId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
-                    <a href="@Url.Action("PdfDeViewer", new { deId = @item.DeId })" class="btn btn-info">Xuất đề thi</a>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-centered w-100 dt-responsive nowrap" id="dethi-datatable">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th style="display:none;">MaKy</th>  @* cột ẩn để filter *@
+                        <th>Kỳ kiểm tra</th>
+                        <th>Số câu hỏi</th>
+                        <th>Độ khó đề</th>
+                        <th style="width:200px;">Thao tác</th>
+                    </tr>
+                </thead>
 
-                    <a href="@Url.Action("PdfDapAnViewer", new { deId = @item.DeId })" class="btn btn-danger">Xuất đáp án</a>
+                <tbody class="text-center">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="display:none;">
+                                @item.KyKiemTra?.KyKiemTraId
+                            </td>
 
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                            <td>@item.KyKiemTra?.TenKyKiemTra</td>
+                            <td>@item.SoCauHoi</td>
+                            <td>@item.DoKhoDe</td>
+
+                            <td class="table-action text-center">
+                                <a asp-action="Details" asp-route-id="@item.DeId" class="action-icon">
+                                    <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.DeId" class="action-icon">
+                                    <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.DeId" class="action-icon">
+                                    <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
+                                </a>
+
+                                <a href="@Url.Action("PdfDeViewer", new { deId = item.DeId })" class="btn btn-info btn-sm">Xuất đề</a>
+                                <a href="@Url.Action("PdfDapAnViewer", new { deId = item.DeId })" class="btn btn-danger btn-sm">Đáp án</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dropdown filter – sẽ được kéo vào DataTables bằng JS -->
+        @* <div id="kyFilterWrapper" class="d-none">
+            <label class="form-label mb-0 ms-2">
+                Lọc theo kỳ kiểm tra:
+                <select id="kyFilter" class="form-select form-select-sm d-inline-block w-auto ms-1">
+                    <option value="">Tất cả</option>
+                    @foreach (var ky in ViewBag.KyKiemTraList)
+                    {
+                        <option value="@ky.KyKiemTraId">@ky.TenKyKiemTra</option>
+                    }
+                </select>
+            </label>
+        </div> *@
+    </div>
+</div>
+
+@section scripts{
+       <!-- third party css -->
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css"> 
+    <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
+    <!-- third party css end -->
+    <!-- App css -->
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
+
+     <!-- DataTables JS -->
+    <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
+
+</style>
+    <script>
+        $(function () {
+
+            const dt = $('#dethi-datatable').DataTable({
+                dom:
+                    '<"row align-items-center mb-2"'
+                        + '<"col-md-6"l>'
+                        + '<"col-md-6 text-md-end"f>'
+                    + '>'
+                    + 'rt'
+                    + '<"row align-items-center mt-2"'
+                        + '<"col-md-6"i>'
+                        + '<"col-md-6"p>'
+                    + '>',
+                responsive: true,
+                pageLength: 10,
+                autoWidth: false,
+
+                language: {
+                    paginate: {
+                        previous: "<i class='mdi mdi-chevron-left'></i>",
+                        next: "<i class='mdi mdi-chevron-right'></i>"
+                    },
+                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ đề thi",
+                    lengthMenu:
+                        "Hiển thị <select class='form-select form-select-sm ms-1 me-1'>"
+                        + "<option value='5'>5</option>"
+                        + "<option value='10'>10</option>"
+                        + "<option value='20'>20</option>"
+                        + "<option value='-1'>All</option>"
+                        + "</select> đề thi"
+                },
+
+                columnDefs: [
+                    { targets: 0, visible: false }, // cột MaKy ẩn
+                    { targets: -1, orderable: false },
+                    { targets: '_all', className: 'align-middle text-center' }
+                ],
+                  drawCallback: function () {
+                    $('#dethi-datatable_wrapper .dataTables_paginate .pagination')
+                        .addClass('pagination-rounded');
+
+                    $('#dethi-datatable_length label')
+                        .addClass('form-label');
+                },
+
+                @* initComplete: function () {
+                    // add dropdown lọc vào .dataTables_length
+                    const $kyFilter = $('#kyFilterWrapper').removeClass('d-none');
+                    $('#dethi-datatable_wrapper .dataTables_length').append($kyFilter);
+
+                    // event filter
+                    $('#kyFilter').on('change', function () {
+                        const val = $(this).val();
+                        dt.column(0).search(val ? '^' + val + '$' : '', true, false).draw();
+                    });
+                } *@
+            });
+
+        });
+    </script>
+}
+

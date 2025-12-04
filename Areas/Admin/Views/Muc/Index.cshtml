@@ -17,41 +17,56 @@
 <a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
 
 <!-- Templates cho dropdown filters -->
-<div id="mucFiltersTemplate" class="d-none">
-  <div class="dt-extra-filters d-inline-flex align-items-center flex-nowrap">
-    <label class="form-label mb-0 me-2">Lớp:
-      <select id="lopFilterMucTemplate" class="form-select form-select-sm w-auto ms-1">
-        <option value="">Tất cả lớp học</option>
-        @if (lopList != null) {
-          foreach (var l in lopList) {
-            <option value="@l.MaLopHoc">@l.TenLopHoc</option>
-          }
-        }
-      </select>
-    </label>
+<div id="mucFiltersTemplate" class="d-none"> 
+    <div class="filter-bar d-inline-flex align-items-center flex-nowrap">
 
-    <label class="form-label mb-0 ms-3 me-2">Chương:
-      <select id="chuongFilterMucTemplate" class="form-select form-select-sm w-auto ms-1">
-        <option value="">Tất cả chương</option>
-        @if (chuongList != null) {
-          foreach (var c in chuongList) {
-            <option value="@c.MaChuong" data-lop="@c.MaLopHoc">@c.TenChuong</option>
-          }
-        }
-      </select>
-    </label>
+        <span class="badge bg-primary me-2">
+            <i class="mdi mdi-filter-variant"></i> Bộ lọc
+        </span>
 
-    <label class="form-label mb-0 ms-3">Bài:
-      <select id="baiFilterMucTemplate" class="form-select form-select-sm w-auto ms-1">
-        <option value="">Tất cả bài</option>
-        @if (baiList != null) {
-          foreach (var b in baiList) {
-            <option value="@b.BaiId" data-chuong="@b.MaChuong">@b.TenBai</option>
-          }
-        }
-      </select>
-    </label>
-  </div>
+        <!-- Lọc theo lớp -->
+        <div class="me-2">
+            <select id="lopFilterMucTemplate" class="form-select form-select-sm filter-select">
+                <option value="">Lớp: Tất cả</option>
+                @if (lopList != null)
+                {
+                    foreach (var l in lopList)
+                    {
+                        <option value="@l.MaLopHoc">@l.TenLopHoc</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- Lọc theo chương -->
+        <div class="me-2">
+            <select id="chuongFilterMucTemplate" class="form-select form-select-sm filter-select">
+                <option value="">Chương: Tất cả</option>
+                @if (chuongList != null)
+                {
+                    foreach (var c in chuongList)
+                    {
+                        <option value="@c.MaChuong" data-lop="@c.MaLopHoc">@c.TenChuong</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- Lọc theo bài -->
+        <div>
+            <select id="baiFilterMucTemplate" class="form-select form-select-sm filter-select">
+                <option value="">Bài: Tất cả</option>
+                @if (baiList != null)
+                {
+                    foreach (var b in baiList)
+                    {
+                        <option value="@b.BaiId" data-chuong="@b.MaChuong">@b.TenBai</option>
+                    }
+                }
+            </select>
+        </div>
+
+    </div>
 </div>
 
 <div class="card">
@@ -175,7 +190,7 @@
         + "<option value='-1'>All</option>"
         + "</select> mục"
     },
-    pageLength: 5,
+    pageLength: 10,
     columnDefs: [
         { targets: -1, orderable: false, className: 'text-center' },
         { targets: '_all', className: 'align-middle' }
@@ -188,43 +203,42 @@
     });
 
     // 2) Đưa nhóm filters vào hàng 2 (dt-filterbar)
-    const $group = $('#mucFiltersTemplate .dt-extra-filters').clone();
+   // clone đúng class filter-bar
+    const $group = $('#mucFiltersTemplate .filter-bar').clone();
     $('#muc-datatable_wrapper .dt-filterbar').empty().append($group);
 
-    // 3) Đặt id thật cho 3 select (nếu bạn dùng template có id *Template*)
+    // gán ID thật
     const $lop    = $('#lopFilterMucTemplate', $group).attr('id','lopFilterMuc');
     const $chuong = $('#chuongFilterMucTemplate', $group).attr('id','chuongFilterMuc');
     const $bai    = $('#baiFilterMucTemplate', $group).attr('id','baiFilterMuc');
 
-    // 4) Mặc định giá trị rỗng và gọi lại các hàm cascade + vẽ
-     $lop.val('');
-     $chuong.val(''); 
-     $bai.val('');
-        // --- Cascade helpers
-      function rebuildChuong(maLop) {
-        const $tpl = $('#chuongFilterMucTemplate'); // template gốc
-        $chuong.empty().append($('<option/>', { value:'', text:'Tất cả chương' }));
-        $tpl.find('option').each(function(){
-          const v = this.value; if (!v) return;
-          const txt = $(this).text();
-          const lopOfCh = $(this).data('lop');
-          if (!maLop || String(lopOfCh) === String(maLop)) {
-            $chuong.append($('<option/>', { value: v, text: txt, 'data-lop': lopOfCh }));
-          }
+    // cascade CHƯƠNG theo LỚP
+    function rebuildChuong(maLop) {
+        const $tpl = $('#chuongFilterMucTemplate', $('#mucFiltersTemplate'));
+        $chuong.empty().append(new Option('Tất cả chương', ''));
+
+        $tpl.find('option').each(function () {
+            if (!this.value) return;
+            const lopOfChuong = $(this).data('lop');
+            if (!maLop || String(lopOfChuong) === String(maLop)) {
+                $chuong.append(new Option($(this).text(), this.value));
+            }
         });
-      }
-      function rebuildBai(maChuong) {
-        const $tpl = $('#baiFilterMucTemplate');
-        $bai.empty().append($('<option/>', { value:'', text:'Tất cả bài' }));
-        $tpl.find('option').each(function(){
-          const v = this.value; if (!v) return;
-          const txt = $(this).text();
-          const chOfBai = $(this).data('chuong');
-          if (!maChuong || String(chOfBai) === String(maChuong)) {
-            $bai.append($('<option/>', { value: v, text: txt, 'data-chuong': chOfBai }));
-          }
+    }
+
+    // cascade BÀI theo CHƯƠNG
+    function rebuildBai(maChuong) {
+        const $tpl = $('#baiFilterMucTemplate', $('#mucFiltersTemplate'));
+        $bai.empty().append(new Option('Tất cả bài', ''));
+
+        $tpl.find('option').each(function () {
+            if (!this.value) return;
+            const chOfBai = $(this).data('chuong');
+            if (!maChuong || String(chOfBai) === String(maChuong)) {
+                $bai.append(new Option($(this).text(), this.value));
+            }
         });
-      }
+    }
 
     // 5) Sự kiện chọn
     $lop.on('change', function(){
@@ -249,20 +263,34 @@
   </script>
 
   <style>
+  /* Khung đẹp giống trang câu hỏi */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #e1e1e1;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    white-space: nowrap;
+}
+
+.filter-select {
+    min-width: 150px;
+}
+
+.badge.bg-primary {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+}
+
     /* Chỉ áp cho bar lọc của Mục */
-    #muc-datatable_wrapper .dt-filterbar { display:flex; align-items:center; }
-    #muc-datatable_wrapper .dt-extra-filters {
-    display:inline-flex; align-items:center; gap:.75rem; flex-wrap:wrap;
-    }
+    #muc-datatable_wrapper .dt-filterbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+}
 
-    /* Giữ "Lớp:" và <select> luôn chung 1 dòng */
-    #muc-datatable_wrapper .dt-extra-filters label.form-label{
-    display:inline-flex; align-items:center; gap:.5rem; margin-bottom:0; white-space:nowrap;
-    }
-
-    /* Select gọn, không chiếm full width */
-    #muc-datatable_wrapper .dt-extra-filters .form-select{
-    width:auto; min-width:160px;
-    }
   </style>
 }

@@ -30,7 +30,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         // GET: Admin/ChuongNew
         public async Task<IActionResult> Index(int? maLopHoc = null, int? editId = null)
         {
-            const string ACTIVE = "Đang hoạt động";
+            const string ACTIVE = "Hoạt động";
 
             // Dropdown lọc: chỉ lớp đang hoạt động
             var lopList = await _context.LopHocs
@@ -65,8 +65,10 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
                 // Chỉ load chương thuộc lớp đang hoạt động
                 ListChuong = await _context.ChuongNews
                     .Include(c => c.LopHoc)
+                    .Include(c => c.Bais) 
                     .Where(c => c.LopHoc.TrangThai == ACTIVE)
-                    .OrderBy(c => c.MaLopHoc).ThenBy(c => c.TenChuong)
+                    .OrderBy(c => c.MaLopHoc)
+                    .ThenBy(c => c.TenChuong)
                     .ToListAsync()
             };
 

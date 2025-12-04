@@ -1,8 +1,5 @@
-﻿@using X.PagedList.Mvc.Core;
-@using X.PagedList.Web.Common;
-@using X.PagedList;
-@model IPagedList<WebBaiGiang_CKC.Models.BaiTap>
-
+﻿
+@model IEnumerable<WebBaiGiang_CKC.Models.BaiTap>
 @{
     ViewData["Title"] = "Quản lý bài tập";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
@@ -16,113 +13,226 @@
 <h1 class="text-center">QUẢN LÝ BÀI TẬP</h1>
 <hr />
 <br />
-<form method="get" class="row mb-3">
-    <div class="col-md-4">
-        <select name="lopId" class="form-select">
-            <option value="">-- Tất cả lớp học --</option>
-
-            @foreach (var lop in ViewBag.LopList)
-            {
-                <option value="@lop.MaLopHoc"
-                        selected="@(ViewBag.SelectedLop == lop.MaLopHoc ? "selected" : null)">
-                    @lop.TenLopHoc
-                </option>
-
-            }
-        </select>
-    </div>
-
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100" type="submit">Lọc</button>
-    </div>
-
-    <div class="col-md-2">
-        <a href="@Url.Action("Index")" class="btn btn-secondary w-100">Xóa lọc</a>
-    </div>
-</form>
 
 <a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
 
-<table class="table table alert-light">
-    <thead class="table-dark">
-        <tr class="text-center">
-            <th>Chương</th>
-            <th>Bài</th>
-            <th>Tên bài tập</th>
-            <th>Hạn nộp</th>
-            <th>Nộp muộn đến</th>
-            <th></th>
-        </tr>
-    </thead>
-
-    <tbody class="text-center">
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Bai?.Chuong?.TenChuong</td>
-                <td>@item.Bai?.TenBai</td>
-                <td>
-                    <a asp-action="DanhSachBaiNop" asp-route-id="@item.MaBaiTap" class="fw-semibold text-primary">
-                        @item.TenBaiTap
-                    </a>
-                </td>
-
-
-                <td>
-                    @if (item.HanNop != null)
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-centered w-100 dt-responsive nowrap" id="baitap-datatable">
+                <thead class="table-dark">
+                    <tr class="text-center">
+                        <th style="display:none;">Mã lớp</th> @* cột ẩn để filter *@
+                        <th>Chương</th>
+                        <th>Bài</th>
+                        <th>Tên bài tập</th>
+                        <th>Hạn nộp</th>
+                        <th>Nộp muộn đến</th>
+                        <th style="width:120px;" class="text-center"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
                     {
-                        @item.HanNop?.ToString("dd/MM/yyyy HH:mm")
+                        <tr class="align-middle">
+                            <td style="display:none;">
+                                @item.Bai?.Chuong?.MaLopHoc
+                            </td>
+                            <td>@item.Bai?.Chuong?.TenChuong</td>
+                            <td>@item.Bai?.TenBai</td>
+                            <td>
+                                <a asp-action="DanhSachBaiNop" asp-route-id="@item.MaBaiTap" class="fw-semibold text-primary">
+                                    @item.TenBaiTap
+                                </a>
+                            </td>
+                            <td>
+                                @if (item.HanNop != null)
+                                {
+                                    @item.HanNop?.ToString("dd/MM/yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Không có</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.LateSubmission != null)
+                                {
+                                    @item.LateSubmission?.ToString("dd/MM/yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Không có</span>
+                                }
+                            </td>
+                            <td class="table-action text-center">
+                                <a asp-action="Details" asp-route-id="@item.MaBaiTap" class="action-icon" title="Xem">
+                                    <i class="mdi mdi-eye" style="font-size:25px;color:#19b6ff;"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.MaBaiTap" class="action-icon" title="Sửa">
+                                    <i class="mdi mdi-square-edit-outline" style="font-size:25px;color:#ffd83b;"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.MaBaiTap" class="action-icon" title="Xoá">
+                                    <i class="mdi mdi-delete" style="font-size:25px;color:#e75555;"></i>
+                                </a>
+                            </td>
+                        </tr>
                     }
-                    else
-                    {
-                        <span class="text-muted">Không có</span>
-                    }
-                </td>
+                </tbody>
+            </table>
+        </div>
 
-                <td>
-                    @if (item.LateSubmission != null)
-                    {
-                        @item.LateSubmission?.ToString("dd/MM/yyyy HH:mm")
-                    }
-                    else
-                    {
-                        <span class="text-muted">Không có</span>
-                    }
-                </td>
+        @* Template thanh lọc LỚP – sẽ được JS kéo vào trong .dataTables_length *@
+        <div id="baitapFiltersTemplate" class="d-none">
+            <div class="filter-bar d-inline-flex align-items-center flex-nowrap">
+                <span class="badge bg-primary me-2">
+                    <i class="mdi mdi-filter-variant"></i> Bộ lọc
+                </span>
 
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.MaBaiTap" class="action-icon">
-                        <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>
-                    </a>
+                <div>
+                    <select id="lopFilterBaiTapTemplate" class="form-select form-select-sm filter-select">
+                        <option value="">Lớp: Tất cả</option>
+                        @foreach (var lop in ViewBag.LopList)
+                        {
+                            <option value="@lop.MaLopHoc">@lop.TenLopHoc</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
 
-                    <a asp-action="Edit" asp-route-id="@item.MaBaiTap" class="action-icon">
-                        <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i>
-                    </a>
-
-                    <a asp-action="Delete" asp-route-id="@item.MaBaiTap" class="action-icon">
-                        <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i>
-                    </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<!-- Pagination -->
-<div class="row">
-    <ul class="pagination justify-content-end">
-        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
-                 new PagedListRenderOptions()
-        {
-            ActiveLiElementClass = "active",
-            PageClasses = new[] { "page-link" },
-            LiElementClasses = new[] { "page-item" },
-            UlElementClasses = new[] { "pagination", "justify-content-center", "mt-3" },
-            LinkToNextPageFormat = "Sau",
-            LinkToPreviousPageFormat = "Trước",
-            MaximumPageNumbersToDisplay = 3,
-            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
-            DisplayLinkToNextPage = PagedListDisplayMode.Always
-        })
-    </ul>
+    </div>
 </div>
+
+
+@section scripts{
+    <!-- third party css -->
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css"> 
+    <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
+
+    <!-- App css -->
+    <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
+
+    <!-- DataTables JS -->
+    <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
+
+    <style>
+        .table-action a {
+            display:inline-block;
+            margin: 0 4px;
+        }
+
+        /* Thanh "Bộ lọc" giống các trang khác */
+        .filter-bar {
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .badge.bg-primary {
+            font-size: 0.75rem;
+            padding: 5px 8px;
+        }
+
+        #baitap-datatable_wrapper .dataTables_length{
+            display:flex;
+            align-items:center;
+            gap:1rem;
+            white-space:nowrap;
+            flex-wrap:nowrap;
+        }
+
+        /* Đẩy "Bộ lọc" cách chữ Hiển thị 1 đoạn */
+        #baitap-datatable_wrapper .dataTables_length .filter-bar{
+            margin-left: 1rem;
+        }
+
+        /* Bo tròn nút phân trang */
+        .dataTables_wrapper .pagination .page-link {
+            border-radius: 999px !important;
+        }
+    </style>
+
+    <script>
+        $(function () {
+            if (!$.fn.DataTable) {
+                console.error('DataTables chưa sẵn sàng');
+                return;
+            }
+
+            const dt = $('#baitap-datatable').DataTable({
+                dom:
+                    '<"row align-items-center mb-2"'
+                        +'<"col-md-6"l>'
+                        +'<"col-md-6 text-md-end"f>'
+                    +'>'
+                    +'rt'
+                    +'<"row align-items-center mt-2"'
+                        +'<"col-md-6"i>'
+                        +'<"col-md-6"p>'
+                    +'>',
+                responsive: true,
+                autoWidth: false,
+                language: {
+                    paginate: { 
+                        previous: "<i class='mdi mdi-chevron-left'></i>", 
+                        next: "<i class='mdi mdi-chevron-right'></i>" 
+                    },
+                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ bài tập",
+                    lengthMenu:
+                        "Hiển thị <select class='form-select form-select-sm ms-1 me-1'>"
+                        +"<option value='5'>5</option>"
+                        +"<option value='10'>10</option>"
+                        +"<option value='20'>20</option>"
+                        +"<option value='-1'>All</option>"
+                        +"</select> bài tập"
+                },
+                pageLength: 5,
+                columnDefs: [
+                    { targets: 0, visible: false }, // cột Mã lớp ẩn
+                    { targets: -1, orderable: false, className: 'text-center' },
+                    { targets: '_all', className: 'align-middle text-center' }
+                ],
+                order: [[1, "asc"]],
+                drawCallback: function () {
+                    $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
+                    $("#baitap-datatable_length label").addClass("form-label");
+                },
+                initComplete: function () {
+                    // Đưa UI "Bộ lọc" vào bên cạnh "Hiển thị X bài tập"
+                    const $group = $('#baitapFiltersTemplate .filter-bar').clone();
+                    $('#baitap-datatable_wrapper .dataTables_length').append($group);
+
+                    const $lopFilter = $group.find('#lopFilterBaiTapTemplate')
+                                             .attr('id','lopFilterBaiTap');
+
+                    // Event change lọc theo cột 0 (Mã lớp)
+                    $lopFilter.on('change', function () {
+                        const val = $(this).val();
+                        if (val) {
+                            dt.column(0).search('^' + val + '$', true, false).draw();
+                        } else {
+                            dt.column(0).search('', true, false).draw();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+
+

@@ -25,62 +25,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Admin/Muc
-        // public IActionResult Index(int? page, int? chuongId)
-        // {
-
-        //     ViewBag.ChuongId = chuongId;   // giữ trạng thái dropdown
-
-        //     // Lấy danh sách Chương
-        //     ViewBag.ChuongList = _context.ChuongNews
-        //         .OrderBy(x => x.MaChuong)
-        //         .ToList();
-
-        //     // Query gốc
-        //     var query = _context.Muc
-        //         .Include(m => m.Bai).ThenInclude(b => b.Chuong)
-        //         .AsQueryable();
-
-        //     // Nếu chọn chương
-        //     if (chuongId != null && chuongId > 0)
-        //     {
-        //         query = query.Where(x => x.Bai.MaChuong == chuongId);
-        //     }
-
-        //     // Sắp xếp + phân trang
-        //     query = query.OrderBy(x => x.Bai.Chuong.MaChuong)
-        //                 .ThenBy(x => x.Bai.SoBai)
-        //                 .ThenBy(x => x.MucSo);
-
-        //     var pageNo = page ?? 1;
-        //     int pageSize = 12;
-
-        //     var models = new PagedList<Muc>(query, pageNo, pageSize);
-        //     return View(models);
-
-            // var baiGiangContext = _context.Muc.OrderBy(x => x.Bai.Chuong.MaChuong).ThenBy(c => c.Bai.SoBai).ThenBy(m => m.MucSo).Include(m => m.Bai).ThenInclude(x => x.Chuong).AsNoTracking();
-            // var pageNo = page == null || page <= 0 ? 1 : page.Value;
-            // var pageSize = 12;
-            // PagedList<Muc> models = new PagedList<Muc>(baiGiangContext, pageNo, pageSize);
-            // return View(models);
-        //}
-
-        // public IActionResult Index()
-        // {
-        //     ViewBag.LopHocList = _context.LopHocs
-        //         .OrderBy(x => x.TenLopHoc)
-        //         .ToList();
-
-        //     var query = _context.Muc
-        //         .Include(m => m.Bai).ThenInclude(b => b.Chuong)
-        //         .OrderBy(m => m.Bai.Chuong.MaChuong)
-        //         .ThenBy(m => m.Bai.SoBai)
-        //         .ThenBy(m => m.MucSo);
-
-        //     var models = query.ToPagedList(1, 12);
-        //     return View(models);
-        // }
-
+    
         // GET: Admin/Muc
         public async Task<IActionResult> Index()
         {
@@ -96,7 +41,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             // Lớp chỉ lấy đang hoạt động
             ViewBag.LopHocList = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -186,7 +131,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         {
             // Lớp đang hoạt động
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -317,7 +262,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         {
             // Lớp (active)
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -364,7 +309,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             // Lớp đang hoạt động
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -449,7 +394,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             var chuongId = mapping?.MaChuong;
 
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();

@@ -28,18 +28,50 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         }
 
         // ====================== INDEX ======================
-        public IActionResult Index(int? page)
-        {
-            var list = _context.CauHoi
-                .Include(k => k.ChuongNew)
-                .ThenInclude(c => c.LopHoc)  
-                .OrderByDescending(c => c.CauHoiId);
-            int pageNo = page ?? 1;
-            int pageSize = 12;
-            PagedList<CauHoi> models = new PagedList<CauHoi>(list, pageNo, pageSize);
-            return View(models);
-        }
+        //{CŨ}
+        // public IActionResult Index(int? page)
+        // {
+        //     var list = _context.CauHoi
+        //         .Include(k => k.ChuongNew)
+        //         .ThenInclude(c => c.LopHoc)  
+        //         .OrderByDescending(c => c.CauHoiId);
+        //     int pageNo = page ?? 1;
+        //     int pageSize = 12;
+        //     PagedList<CauHoi> models = new PagedList<CauHoi>(list, pageNo, pageSize);
+        //     return View(models);
+        // }
 
+        public async Task<IActionResult> Index()
+        {
+            // Lấy full kho câu hỏi + include Chương + Lớp
+            var data = await _context.CauHoi
+                .Include(c => c.ChuongNew)
+                    .ThenInclude(ch => ch.LopHoc)
+                .AsNoTracking()
+                .OrderByDescending(c => c.CauHoiId)
+                .ToListAsync();
+
+            // Lấy danh sách LỚP DISTINCT từ kho câu hỏi
+            var lopList = data
+                .Where(x => x.ChuongNew?.LopHoc != null)
+                .Select(x => x.ChuongNew.LopHoc)
+                .GroupBy(l => l.MaLopHoc)
+                .Select(g => g.First())
+                .ToList();
+
+            // Lấy danh sách CHƯƠNG DISTINCT từ kho câu hỏi
+            var chuongList = data
+                .Where(x => x.ChuongNew != null)
+                .Select(x => x.ChuongNew)
+                .GroupBy(ch => ch.MaChuong)
+                .Select(g => g.First())
+                .ToList();
+
+            ViewBag.LopList    = lopList;
+            ViewBag.ChuongList = chuongList;
+
+            return View(data);   
+        }
         // ====================== DETAILS ======================
         public async Task<IActionResult> Details(int? id)
         {

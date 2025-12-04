@@ -6,31 +6,6 @@
     var lopList = ViewBag.LopHocList as IEnumerable<dynamic>;
     var chuongList = ViewBag.ChuongList as IEnumerable<dynamic>;
 }
-<div id="baiFiltersTemplate" class="d-none">
-  <div class="dt-extra-filters d-inline-flex align-items-center flex-nowrap">
-    <label class="form-label mb-0">Lớp:
-      <select id="lopFilterBaiTemplate" class="form-select form-select-sm w-auto">
-        <option value="">Tất cả lớp học</option>
-        @if (lopList != null) {
-          foreach (var l in lopList) {
-            <option value="@l.MaLopHoc">@l.TenLopHoc</option>
-          }
-        }
-      </select>
-    </label>
-
-    <label class="form-label mb-0 ms-2">Chương:
-      <select id="chuongFilterBaiTemplate" class="form-select form-select-sm w-auto">
-        <option value="">Tất cả chương</option>
-        @if (chuongList != null) {
-          foreach (var c in chuongList) {
-            <option value="@c.MaChuong" data-lop="@c.MaLopHoc">@c.TenChuong</option>
-          }
-        }
-      </select>
-    </label>
-  </div>
-</div>
 
 <ol class="breadcrumb">
 
@@ -47,228 +22,246 @@
 <hr />
 <br />
 
-<a asp-action="Create" class="btn btn-success mb-2">Thêm</a>
+<a asp-action="Create" class="btn btn-success mb-2">Thêm bài học</a>
 
-@* <table class="table table alert-light">
-    <thead class="table-dark">
-        <tr style="text-align: center;">
-            <th>
-                @Html.DisplayNameFor(model => model.Chuong.TenChuong)
-            </th>
-            <th> @Html.DisplayNameFor(model => model.TenBai)</th>
-            <th>
-                @Html.DisplayNameFor(model => model.SoBai)
-            </th>
-           
-           
-            <th></th>
-        </tr>
-    </thead>
-    <tbody style="text-align: center;">
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Chuong.TenChuong)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TenBai)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SoBai)
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.BaiId" class="action-icon"> <i class="mdi mdi-eye" style="color:#19b6ff;font-size:25px;"></i>  </a>
-                    <a asp-action="Edit" asp-route-id="@item.BaiId" class="action-icon"> <i class="mdi mdi-square-edit-outline" style="color:#ffd83b;font-size:25px;"></i></a>
-                    <a asp-action="Delete" asp-route-id="@item.BaiId" class="action-icon"> <i class="mdi mdi-delete" style="color:#e75555;font-size:25px;"></i></a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table> *@
 <div class="card">
-  <div class="card-body">
-    <div class="table-responsive">
-        <table class="table table-centered w-100 dt-responsive nowrap" id="bai-datatable">
-        <thead class="table-dark">
-            <tr>
-            <th>Mã bài</th>
-            <th>Tên chương</th>
-            <th>Tên bài</th>
-            <th>Số bài</th>
-            <th style="width:120px;" class="text-center"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-            <tr class="align-middle"
-             data-lop="@item.Chuong?.MaLopHoc"
-             data-chuong="@item.Chuong?.MaChuong">
-                <td>@item.BaiId</td>
-                <td>@item.Chuong?.TenChuong</td>
-                <td>@item.TenBai</td>
-                <td>@item.SoBai</td>
-                <td class="table-action text-center">
-                <a asp-action="Details" asp-route-id="@item.BaiId" class="action-icon" title="Xem">
-                    <i class="mdi mdi-eye" style="font-size:25px;color:#19b6ff;"></i>
-                </a>
-                <a asp-action="Edit" asp-route-id="@item.BaiId" class="action-icon" title="Sửa">
-                    <i class="mdi mdi-square-edit-outline" style="font-size:25px;color:#ffd83b;"></i>
-                </a>
-                <a asp-action="Delete" asp-route-id="@item.BaiId" class="action-icon" title="Xoá">
-                    <i class="mdi mdi-delete" style="font-size:25px;color:#e75555;"></i>
-                </a>
-                </td>
-            </tr>
-            }
-        </tbody>
-        </table>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-centered w-100 dt-responsive nowrap" id="bai-datatable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã bài</th>
+                        <th>Tên chương</th>
+                        <th>Tên bài</th>
+                        <th>Số bài</th>
+                        <th style="width:120px;" class="text-center"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="align-middle"
+                            data-lop="@item.Chuong?.MaLopHoc"
+                            data-chuong="@item.Chuong?.MaChuong">
+                            <td>@item.BaiId</td>
+                            <td>@item.Chuong?.TenChuong</td>
+                            <td>@item.TenBai</td>
+                            <td>@item.SoBai</td>
+                            <td class="table-action text-center">
+                                <a asp-action="Details" asp-route-id="@item.BaiId" class="action-icon" title="Xem">
+                                    <i class="mdi mdi-eye" style="font-size:25px;color:#19b6ff;"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.BaiId" class="action-icon" title="Sửa">
+                                    <i class="mdi mdi-square-edit-outline" style="font-size:25px;color:#ffd83b;"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.BaiId" class="action-icon" title="Xoá">
+                                    <i class="mdi mdi-delete" style="font-size:25px;color:#e75555;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
 </div>
 
-<style>
-  .table-action a { display:inline-block; margin: 0 4px; }
-  .dataTables_wrapper .dataTables_length label { margin-bottom: 0; }
-</style>
+<!-- Template thanh lọc -->
+<div id="baiFiltersTemplate" class="d-none">
+    <div class="filter-bar d-inline-flex align-items-center flex-nowrap">
 
-<!-- Pagination with icons -->
+        <span class="badge bg-primary me-2">
+            <i class="mdi mdi-filter-variant"></i> Bộ lọc
+        </span>
+
+        <!-- Lọc theo lớp -->
+        <div class="me-2">
+            <select id="lopFilterBaiTemplate" class="form-select form-select-sm filter-select">
+                <option value="">Lớp: Tất cả</option>
+                @foreach (var l in lopList ?? Enumerable.Empty<dynamic>())
+                {
+                    <option value="@l.MaLopHoc">@l.TenLopHoc</option>
+                }
+            </select>
+        </div>
+
+        <!-- Lọc theo chương -->
+        <div>
+            <select id="chuongFilterBaiTemplate" class="form-select form-select-sm filter-select">
+                <option value="">Chương: Tất cả</option>
+                @foreach (var c in chuongList ?? Enumerable.Empty<dynamic>())
+                {
+                    <option value="@c.MaChuong" data-lop="@c.MaLopHoc">@c.TenChuong</option>
+                }
+            </select>
+        </div>
+
+    </div>
+</div>
+
 @section scripts{
-       <!-- third party css -->
-    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css"> 
+    <!-- third party css -->
+    <link href="~/AdminAssets/css/vendor/dataTables.bootstrap5.css" rel="stylesheet" type="text/css">
     <link href="~/AdminAssets/css/vendor/responsive.bootstrap5.css" rel="stylesheet" type="text/css">
-    <!-- third party css end -->
     <!-- App css -->
     <link href="~/AdminAssets/css/icons.min.css" rel="stylesheet" type="text/css">
     <link href="~/AdminAssets/css/app.min.css" rel="stylesheet" type="text/css" id="light-style">
 
-  <!-- DataTables JS (đảm bảo jQuery đã được nạp trước đó) -->
-  <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
-  <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
-  <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
-  <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="~/AdminAssets/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.bootstrap5.js"></script>
+    <script src="~/AdminAssets/js/vendor/dataTables.responsive.min.js"></script>
+    <script src="~/AdminAssets/js/vendor/responsive.bootstrap5.min.js"></script>
 
- <style>
-    /* giữ 2 dropdown luôn thẳng hàng cùng “Hiển thị …” */
-    #bai-datatable_wrapper .dataTables_length{
-      display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;
-    }
-    #bai-datatable_wrapper .dataTables_length .form-label
-    { 
-        margin-left: 1.5rem;
-        margin-bottom:0; 
-    }
-  </style>
-  <script>
-    $(function () {
-    if (!$.fn.DataTable) { console.error('DataTables chưa sẵn sàng'); return; }
-    // --- KHỞI TẠO DATATABLE và GIỮ instance vào biến dt
-    const dt = $('#bai-datatable').DataTable({
-        dom:
-        '<"row align-items-center mb-2"'
-            +'<"col-md-6"l>'
-            +'<"col-md-6 text-md-end"f>'
-        +'>'
-        +'rt'
-        +'<"row align-items-center mt-2"'
-            +'<"col-md-6"i>'
-            +'<"col-md-6"p>'
-        +'>',
-        responsive: true,
-        autoWidth: false,
-        language: {
-        paginate: { previous: "<i class='mdi mdi-chevron-left'></i>", next: "<i class='mdi mdi-chevron-right'></i>" },
-        info: "Hiển thị _START_ đến _END_ trong _TOTAL_ bài",
-        lengthMenu:
-            "Hiển thị <select class='form-select form-select-sm ms-1 me-1'>"
-            +"<option value='5'>5</option>"
-            +"<option value='10'>10</option>"
-            +"<option value='20'>20</option>"
-            +"<option value='-1'>All</option>"
-            +"</select> bài"
-        },
-        pageLength: 5,
-        columnDefs: [
-        { targets: -1, orderable: false, className: 'text-center' },
-        { targets: '_all', className: 'align-middle' }
-        ],
-        order: [[1, "asc"]],
-        drawCallback: function () {
-        $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
-        $("#bai-datatable_length label").addClass("form-label");
+    <style>
+        .table-action a {
+            display: inline-block;
+            margin: 0 4px;
         }
-    });
 
-   
-    // --- filter cho bảng Bài (push 1 lần)
-    function baiFilter(settings, data, dataIndex) {
-        if (settings.nTable.id !== 'bai-datatable') return true;
-
-        const row = settings.aoData[dataIndex].nTr;
-        const pickedLop    = $('#lopFilterBai').val();
-        const pickedChuong = $('#chuongFilterBai').val();
-
-        if (pickedLop    && String(row.dataset.lop)    !== String(pickedLop))    return false;
-        if (pickedChuong && String(row.dataset.chuong) !== String(pickedChuong)) return false;
-        return true;
-    }
-    if (!window.__baiFilterHook) {
-        $.fn.dataTable.ext.search.push(baiFilter);
-        window.__baiFilterHook = true;
-    }
-
-    const $filters = $('#baiFiltersTemplate .dt-extra-filters').clone();
-    $filters.find('#lopFilterBaiTemplate').attr('id','lopFilterBai');
-    $filters.find('#chuongFilterBaiTemplate').attr('id','chuongFilterBai');
-    $('#bai-datatable_wrapper .dataTables_length').append($filters);
-    // --- Thêm dropdown Lớp & Chương vào hàng "Hiển thị ..."
-    @* const $lopSelect = $('#lopFilterBaiTemplate').clone().removeAttr('id').removeClass('d-none')
-                        .attr('id','lopFilterBai').addClass('form-select form-select-sm ms-2');
-    const $lopLabel  = $('<label class="form-label ms-3 mb-0">Lớp:</label>').append($lopSelect);
-
-    const $chuongSelect = $('#chuongFilterBaiTemplate').clone().removeAttr('id').removeClass('d-none')
-                            .attr('id','chuongFilterBai').addClass('form-select form-select-sm ms-2'); *@
-    @* const $chuongLabel  = $('<label class="form-label ms-3 mb-0">Chương:</label>').append($chuongSelect);
-
-    $('#bai-datatable_wrapper .dataTables_length').append($lopLabel, $chuongLabel); *@
-
-
-    // --- Cascade: rebuild Chương theo Lớp
-    function rebuildChuongOptions(maLop) {
-        const $tpl = $('#baiFiltersTemplate #chuongFilterBaiTemplate');
-        const $cur = $('#chuongFilterBai');
-        const curVal = $cur.val();
-
-        $cur.empty().append($('<option/>', { value: '', text: 'Tất cả chương' }));
-
-        $tpl.find('option').each(function(){
-        const v = this.value;
-        if (!v) return; // bỏ option "Tất cả chương" của template
-        const txt         = $(this).text();
-        const lopOfChuong = $(this).data('lop');
-        if (!maLop || String(lopOfChuong) === String(maLop)) {
-            $cur.append($('<option/>', { value: v, text: txt, 'data-lop': lopOfChuong }));
+        .dataTables_wrapper .dataTables_length label {
+            margin-bottom: 0;
         }
+
+        /* Thanh "Bộ lọc" giống các trang khác */
+        .filter-bar {
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .badge.bg-primary {
+            font-size: 0.75rem;
+            padding: 5px 8px;
+        }
+
+        #bai-datatable_wrapper .dataTables_length {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+        }
+        #bai-datatable_wrapper .dataTables_length .filter-bar {
+            margin-left: 2rem; /* tăng/giảm tuỳ mắt: 0.75rem, 1.5rem đều được */
+        }
+        /* Bo tròn nút phân trang */
+        .dataTables_wrapper .pagination .page-link {
+            border-radius: 999px !important;
+        }
+    </style>
+
+    <script>
+        $(function () {
+            if (!$.fn.DataTable) return;
+
+            // Init datatable
+            const dt = $('#bai-datatable').DataTable({
+                dom:
+                    '<"row align-items-center mb-2"'
+                        + '<"col-md-6"l>'
+                        + '<"col-md-6 text-md-end"f>'
+                    + '>'
+                    + 'rt'
+                    + '<"row align-items-center mt-2"'
+                        + '<"col-md-6"i>'
+                        + '<"col-md-6"p>'
+                    + '>',
+                responsive: true,
+                autoWidth: false,
+                pageLength: 5,
+                language: {
+                    paginate: {
+                        previous: "<i class='mdi mdi-chevron-left'></i>",
+                        next: "<i class='mdi mdi-chevron-right'></i>"
+                    },
+                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ bài",
+                    lengthMenu:
+                        "Hiển thị <select class='form-select form-select-sm ms-1 me-1'>"
+                        + "<option value='5'>5</option>"
+                        + "<option value='10'>10</option>"
+                        + "<option value='20'>20</option>"
+                        + "<option value='-1'>All</option>"
+                        + "</select> bài"
+                },
+                columnDefs: [
+                    { targets: -1, orderable: false, className: "text-center" },
+                    { targets: "_all", className: "align-middle" }
+                ],
+                order: [[1, 'asc']],
+                drawCallback: function () {
+                    $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
+                }
+            });
+
+            /** FILTER HOOK **/
+            function baiFilter(settings, data, dataIndex) {
+                if (settings.nTable.id !== "bai-datatable") return true;
+
+                const row = settings.aoData[dataIndex].nTr;
+                const pickedLop = $('#lopFilterBai').val();
+                const pickedChuong = $('#chuongFilterBai').val();
+
+                if (pickedLop && row.dataset.lop !== pickedLop) return false;
+                if (pickedChuong && row.dataset.chuong !== pickedChuong) return false;
+
+                return true;
+            }
+
+            if (!window.__baiFilterHook) {
+                $.fn.dataTable.ext.search.push(baiFilter);
+                window.__baiFilterHook = true;
+            }
+
+            /** CLONE FILTER UI */
+            const $group = $('#baiFiltersTemplate .filter-bar').clone();
+            $('#bai-datatable_wrapper .dataTables_length').append($group);
+
+            // Mapping ID
+            const $lop = $group.find('#lopFilterBaiTemplate').attr('id', 'lopFilterBai');
+            const $chuong = $group.find('#chuongFilterBaiTemplate').attr('id', 'chuongFilterBai');
+
+            /** CASCADE CHƯƠNG THEO LỚP */
+            function rebuildChuongOptions(maLop) {
+                const $tpl = $('#baiFiltersTemplate #chuongFilterBaiTemplate');
+                const $cur = $('#chuongFilterBai');
+
+                $cur.empty().append(new Option('Chương: Tất cả', ''));
+
+                $tpl.find('option').each(function () {
+                    if (!this.value) return;
+                    const lopOfChuong = $(this).data('lop');
+                    if (!maLop || String(lopOfChuong) === String(maLop)) {
+                        $cur.append(new Option($(this).text(), this.value));
+                    }
+                });
+            }
+
+            /** EVENTS */
+            $lop.on('change', function () {
+                rebuildChuongOptions(this.value);
+                dt.draw();
+            });
+
+            $chuong.on('change', function () {
+                dt.draw();
+            });
+
+            // init lần đầu
+            $('#lopFilterBai').val('');
+            $('#chuongFilterBai').val('');
+            rebuildChuongOptions('');
+            dt.draw();
         });
-
-        $cur.val($cur.find(`option[value="${curVal}"]`).length ? curVal : '');
-    }
-
-    // --- Events: đổi dropdown -> redraw
-    $('#lopFilterBai').on('change', function () {
-        rebuildChuongOptions(this.value);
-        dt.draw();
-    });
-    $('#chuongFilterBai').on('change', function () {
-        dt.draw();
-    });
-
-    // init lần đầu
-    $('#lopFilterBai').val('');
-    $('#chuongFilterBai').val('');
-    rebuildChuongOptions('');
-    });
     </script>
 }
 

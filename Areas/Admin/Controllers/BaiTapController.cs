@@ -23,32 +23,19 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         }
 
         // ========== INDEX ==========
-        public IActionResult Index(int? lopId, int page = 1)
+       public IActionResult Index()
         {
-            int pageSize = 10;
-
-            // Lấy danh sách lớp để đổ dropdown
+            // Lấy danh sách lớp để build dropdown lọc
             ViewBag.LopList = _context.LopHocs
                 .OrderBy(x => x.TenLopHoc)
                 .ToList();
 
-            // Query gốc
-            var query = _context.BaiTaps
+            var list = _context.BaiTaps
                 .Include(b => b.Bai)
                     .ThenInclude(b => b.Chuong)
                         .ThenInclude(c => c.LopHoc)
-                .AsQueryable();
-
-            // Nếu có filter lớp
-            if (lopId.HasValue)
-            {
-                query = query.Where(x => x.Bai.Chuong.LopHoc.MaLopHoc == lopId.Value);
-                ViewBag.SelectedLop = lopId.Value;
-            }
-
-            var list = query
                 .OrderByDescending(b => b.MaBaiTap)
-                .ToPagedList(page, pageSize);
+                .ToList();
 
             return View(list);
         }

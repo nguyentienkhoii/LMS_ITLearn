@@ -33,6 +33,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             // Dropdown Lớp
             ViewBag.LopHocList = await _context.LopHocs
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -86,7 +87,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
         // GET: Admin/Bai/Create
         public async Task<IActionResult> Create(int? maLopHoc = null)
         {
-            const string ACTIVE = "Đang hoạt động";
+            const string ACTIVE = "Hoạt động";
 
             // Lớp chỉ lấy đang hoạt động
             var lopActive = await _context.LopHocs
@@ -158,7 +159,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             }
 
             // Nếu fail: nạp lại dropdown Lớp (active) + Chương theo Lớp của Chương đang chọn
-            const string ACTIVE = "Đang hoạt động";
+            const string ACTIVE = "Hoạt động";
             var lopActive = await _context.LopHocs
                 .Where(l => l.TrangThai == ACTIVE)
                 .OrderBy(l => l.TenLopHoc)
@@ -225,7 +226,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
 
             // Lớp "Đang hoạt động"
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
@@ -363,7 +364,7 @@ namespace WebBaiGiang_CKC.Areas.Admin.Controllers
             int? lopId = chuong?.MaLopHoc;
 
             var lopActive = await _context.LopHocs
-                .Where(l => l.TrangThai == "Đang hoạt động")
+                .Where(l => l.TrangThai == "Hoạt động")
                 .OrderBy(l => l.TenLopHoc)
                 .Select(l => new { l.MaLopHoc, l.TenLopHoc })
                 .ToListAsync();
